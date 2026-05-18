@@ -92,29 +92,39 @@ function Index() {
       </header>
 
       {/* HERO */}
-      <section className="relative diamond-bg overflow-hidden">
+      <section className="relative overflow-hidden">
+        {/* Background image layer — active flavour */}
+        {flavours.map((fl, i) => (
+          <div
+            key={fl.no}
+            aria-hidden
+            className={`absolute inset-0 bg-center bg-no-repeat bg-contain md:bg-cover transition-opacity duration-[1200ms] ease-out ${
+              i === idx ? "opacity-100" : "opacity-0"
+            }`}
+            style={{
+              backgroundImage: `url(${fl.image})`,
+              transform: "scale(1.15)",
+            }}
+          />
+        ))}
+        {/* Darkening + vignette layers for readability */}
+        <div className="absolute inset-0 bg-ink/70 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,8,6,0.55)_55%,var(--ink)_100%)] pointer-events-none" />
+        <div className="absolute inset-0 diamond-bg opacity-40 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-ink pointer-events-none" />
+
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 pt-32 md:pt-40 pb-16 md:pb-24 min-h-[100vh] flex flex-col">
           <div className="flex-1 flex items-center justify-center md:justify-end">
             <div className="flex items-center gap-6 md:gap-10 w-full">
-              {f.image && (
-                <div className="hidden md:flex flex-1 items-center justify-center">
-                  <img
-                    src={f.image}
-                    alt={f.name}
-                    className="w-full max-w-md drop-shadow-[0_30px_60px_rgba(201,161,74,0.25)] animate-[spin_60s_linear_infinite]"
-                  />
-                </div>
-              )}
               <button
                 onClick={prev}
                 aria-label="Previous flavour"
-                className="hidden md:flex h-12 w-12 items-center justify-center border border-line text-gold hover:border-gold transition"
+                className="hidden md:flex h-12 w-12 items-center justify-center border border-line text-gold hover:border-gold transition backdrop-blur-md bg-ink/30"
               >
                 ←
               </button>
 
-              <div className="flex-1 max-w-xl mx-auto md:mx-0 md:ml-auto border border-line bg-ink/60 backdrop-blur p-8 md:p-12">
+              <div className="flex-1 max-w-xl mx-auto md:mx-0 md:ml-auto border border-gold/30 bg-ink/55 backdrop-blur-xl p-8 md:p-12 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]">
                 <div className="eyebrow mb-6">{f.label}</div>
                 <h1 className="font-serif-display text-6xl md:text-7xl leading-[0.95] mb-6">
                   {f.prefix}
@@ -145,7 +155,7 @@ function Index() {
               <button
                 onClick={next}
                 aria-label="Next flavour"
-                className="hidden md:flex h-12 w-12 items-center justify-center border border-line text-gold hover:border-gold transition"
+                className="hidden md:flex h-12 w-12 items-center justify-center border border-line text-gold hover:border-gold transition backdrop-blur-md bg-ink/30"
               >
                 →
               </button>
