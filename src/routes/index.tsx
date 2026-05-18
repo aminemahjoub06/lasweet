@@ -73,6 +73,13 @@ function Index() {
   const prev = () => setIdx((i) => (i - 1 + flavours.length) % flavours.length);
   const next = () => setIdx((i) => (i + 1) % flavours.length);
 
+  const [expandedNo, setExpandedNo] = useState<string | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const toggleExpand = (no: string) => {
+    setShowDetails(false);
+    setExpandedNo((cur) => (cur === no ? null : no));
+  };
+
   return (
     <main className="min-h-screen bg-ink text-[color:var(--foreground)]">
       {/* HEADER */}
