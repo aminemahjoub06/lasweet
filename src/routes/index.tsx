@@ -296,6 +296,164 @@ function Index() {
         </div>
       </section>
 
+      {/* PRODUCTS */}
+      <section id="products" className="relative bg-ink border-t border-line">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32">
+          <div className="text-center mb-16">
+            <div className="eyebrow justify-center mb-6 inline-flex">Products</div>
+            <h2 className="font-serif-display text-5xl md:text-6xl leading-tight mb-4">
+              Trompe-l'œil desserts <span className="italic text-gold">you can explore</span>
+            </h2>
+          </div>
+
+          <div className="relative">
+            {/* Backdrop dim when something is expanded */}
+            <div
+              className={`pointer-events-none absolute inset-0 -m-6 md:-m-10 bg-ink/80 backdrop-blur-sm transition-opacity duration-500 ${
+                expandedNo ? "opacity-100" : "opacity-0"
+              }`}
+              onClick={() => {
+                setExpandedNo(null);
+                setShowDetails(false);
+              }}
+              aria-hidden
+            />
+
+            <div className="relative grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+              {flavours.map((fl) => {
+                const isExpanded = expandedNo === fl.no;
+                const isDimmed = expandedNo && !isExpanded;
+                return (
+                  <button
+                    key={fl.no}
+                    type="button"
+                    onClick={() => toggleExpand(fl.no)}
+                    className={`group/prod relative overflow-hidden border bg-ink-2 text-left transition-all duration-500 ease-out ${
+                      isExpanded
+                        ? "z-30 scale-[1.04] border-gold/60 shadow-[0_40px_120px_-20px_rgba(212,168,76,0.35),0_20px_60px_-10px_rgba(0,0,0,0.9)]"
+                        : isDimmed
+                          ? "z-0 scale-[0.97] opacity-40 border-line"
+                          : "z-10 border-line hover:border-gold/40"
+                    }`}
+                  >
+                    <div className="relative aspect-[4/3] w-full overflow-hidden">
+                      {fl.image && (
+                        <div
+                          aria-hidden
+                          className={`absolute inset-0 bg-center bg-no-repeat bg-contain transition-transform duration-[1200ms] ease-out ${
+                            isExpanded ? "scale-110" : "group-hover/prod:scale-105"
+                          }`}
+                          style={{ backgroundImage: `url(${fl.image})` }}
+                        />
+                      )}
+                      {/* Soft bottom gradient so caption stays readable */}
+                      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ink via-ink/60 to-transparent pointer-events-none" />
+
+                      {/* Top-left number */}
+                      <div className="absolute top-4 left-4 text-[10px] tracking-[0.28em] uppercase text-gold">
+                        No. {fl.no}
+                      </div>
+
+                      {/* Default small caption */}
+                      <div
+                        className={`absolute inset-x-0 bottom-0 p-4 md:p-5 transition-opacity duration-300 ${
+                          isExpanded && showDetails ? "opacity-0" : "opacity-100"
+                        }`}
+                      >
+                        <div className="inline-flex items-center gap-3 bg-ink/55 backdrop-blur-md border border-gold/30 px-4 py-2">
+                          <span className="font-serif-display text-xl md:text-2xl">
+                            {fl.prefix}
+                            <span className="italic text-gold">{fl.suffix}</span>
+                          </span>
+                          <span className="hidden md:inline text-[10px] tracking-[0.2em] uppercase text-[color:var(--foreground)]/60">
+                            {fl.label}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Expanded controls: View details / Close */}
+                      {isExpanded && (
+                        <div className="absolute top-4 right-4 flex items-center gap-2">
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowDetails((v) => !v);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setShowDetails((v) => !v);
+                              }
+                            }}
+                            className="cursor-pointer text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 bg-ink/60 backdrop-blur-md px-3 py-2 hover:bg-gold hover:text-ink transition"
+                          >
+                            {showDetails ? "Back to image" : "View details"}
+                          </span>
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            aria-label="Close"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedNo(null);
+                              setShowDetails(false);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setExpandedNo(null);
+                                setShowDetails(false);
+                              }
+                            }}
+                            className="cursor-pointer h-9 w-9 inline-flex items-center justify-center text-gold border border-gold/50 bg-ink/60 backdrop-blur-md hover:bg-gold hover:text-ink transition"
+                          >
+                            ×
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Details slide-up panel */}
+                      <div
+                        className={`absolute inset-x-0 bottom-0 transition-all duration-500 ease-out ${
+                          isExpanded && showDetails
+                            ? "translate-y-0 opacity-100"
+                            : "translate-y-full opacity-0"
+                        }`}
+                        aria-hidden={!(isExpanded && showDetails)}
+                      >
+                        <div className="m-3 md:m-4 border border-gold/30 bg-ink/70 backdrop-blur-xl p-5 md:p-6 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)]">
+                          <div className="eyebrow mb-3">{fl.label}</div>
+                          <h3 className="font-serif-display text-2xl md:text-3xl mb-3">
+                            {fl.prefix}
+                            <span className="italic text-gold">{fl.suffix}</span>
+                          </h3>
+                          <p className="text-sm text-[color:var(--foreground)]/80 leading-relaxed">
+                            {fl.description}
+                          </p>
+                          <div className="mt-4 h-px w-10 bg-gold" />
+                        </div>
+                      </div>
+
+                      {/* Extra darkening behind details for readability */}
+                      <div
+                        className={`absolute inset-0 bg-ink/40 transition-opacity duration-500 pointer-events-none ${
+                          isExpanded && showDetails ? "opacity-100" : "opacity-0"
+                        }`}
+                        aria-hidden
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* WHOLESALE / EVENTS */}
       <section className="bg-ink-3 border-t border-line">
         <div className="mx-auto max-w-7xl grid md:grid-cols-2 gap-px bg-line">
