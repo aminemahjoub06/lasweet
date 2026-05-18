@@ -252,16 +252,36 @@ function Index() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-line">
             {flavours.map((fl) => (
-              <article key={fl.no} className="bg-ink-2 p-8 md:p-10 min-h-[280px] flex flex-col">
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-6">No. {fl.no}</div>
-                <h3 className="font-serif-display text-3xl md:text-4xl mb-4">
-                  {fl.prefix}<span className="italic text-gold">{fl.suffix}</span>
-                </h3>
-                <p className="text-sm text-[color:var(--foreground)]/65 leading-relaxed">
-                  {fl.short}
-                </p>
-                <div className="mt-auto pt-8">
-                  <div className="h-px w-10 bg-gold" />
+              <article
+                key={fl.no}
+                className="group/card relative overflow-hidden bg-ink-2 min-h-[420px] flex flex-col"
+              >
+                {/* Background image */}
+                {fl.image && (
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 bg-center bg-no-repeat bg-contain transition-transform duration-[1200ms] ease-out group-hover/card:scale-110"
+                    style={{ backgroundImage: `url(${fl.image})` }}
+                  />
+                )}
+                {/* Dark overlays for readability */}
+                <div className="absolute inset-0 bg-ink/70 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-transparent pointer-events-none" />
+
+                {/* Top tag */}
+                <div className="relative p-6 md:p-8">
+                  <div className="text-[10px] tracking-[0.28em] uppercase text-gold">No. {fl.no}</div>
+                </div>
+
+                {/* Glass text panel pinned to bottom */}
+                <div className="relative mt-auto m-4 md:m-5 border border-gold/30 bg-ink/55 backdrop-blur-xl p-6 md:p-7 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)]">
+                  <h3 className="font-serif-display text-3xl md:text-4xl mb-3">
+                    {fl.prefix}<span className="italic text-gold">{fl.suffix}</span>
+                  </h3>
+                  <p className="text-sm text-[color:var(--foreground)]/75 leading-relaxed">
+                    {fl.short}
+                  </p>
+                  <div className="mt-5 h-px w-10 bg-gold" />
                 </div>
               </article>
             ))}
