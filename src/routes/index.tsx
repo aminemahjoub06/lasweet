@@ -92,13 +92,13 @@ function Index() {
       </header>
 
       {/* HERO */}
-      <section className="relative overflow-hidden">
+      <section className="group/hero relative overflow-hidden">
         {/* Background image layer — active flavour */}
         {flavours.map((fl, i) => (
           <div
             key={fl.no}
             aria-hidden
-            className={`absolute inset-0 bg-center bg-no-repeat bg-contain md:bg-cover transition-opacity duration-[1200ms] ease-out ${
+            className={`absolute inset-0 bg-center bg-no-repeat bg-contain md:bg-cover transition-[opacity,transform] duration-[1200ms] ease-out group-hover/hero:scale-[1.22] ${
               i === idx ? "opacity-100" : "opacity-0"
             }`}
             style={{
