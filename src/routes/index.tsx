@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import raspberryImg from "@/assets/raspberry.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -13,6 +14,7 @@ type Flavour = {
   label: string;
   description: string;
   short: string;
+  image?: string;
 };
 
 const flavours: Flavour[] = [
@@ -35,6 +37,7 @@ const flavours: Flavour[] = [
     description:
       "Sharp, vivid raspberry ganache wrapped in smooth white chocolate. The perfect contrast — bold fruit against quiet sweetness.",
     short: "Bold and brave. A nuance that bites. Raspberry ganache with a sharp, vivid note, wrapped in smooth white chocolate for perfect balance.",
+    image: raspberryImg,
   },
   {
     no: "03",
@@ -88,6 +91,15 @@ function Index() {
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 pt-32 md:pt-40 pb-16 md:pb-24 min-h-[100vh] flex flex-col">
           <div className="flex-1 flex items-center justify-center md:justify-end">
             <div className="flex items-center gap-6 md:gap-10 w-full">
+              {f.image && (
+                <div className="hidden md:flex flex-1 items-center justify-center">
+                  <img
+                    src={f.image}
+                    alt={f.name}
+                    className="w-full max-w-md drop-shadow-[0_30px_60px_rgba(201,161,74,0.25)] animate-[spin_60s_linear_infinite]"
+                  />
+                </div>
+              )}
               <button
                 onClick={prev}
                 aria-label="Previous flavour"
