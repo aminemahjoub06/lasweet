@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import raspberryImg from "@/assets/raspberry.png";
+import mangoImg from "@/assets/mango.png";
+import vanillaImg from "@/assets/vanilla.png";
+import lemonImg from "@/assets/lemon.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -27,6 +30,7 @@ const flavours: Flavour[] = [
     description:
       "White chocolate shell. Lush mango ganache hidden inside. A trompe-l'œil that dissolves the eye and delights the palate — every single time.",
     short: "Exotic, sun-drenched ganache. Bright mango folded into silky white chocolate, for a fresh, tropical finish that lifts any dessert menu.",
+    image: mangoImg,
   },
   {
     no: "02",
@@ -48,6 +52,7 @@ const flavours: Flavour[] = [
     description:
       "A classic vanilla ganache enclosed in a crisp white-chocolate shell. Timeless, silky, and universally loved.",
     short: "Timeless, silky, universally loved. A classic vanilla ganache in a crisp white-chocolate shell — pure comfort, dressed as an illusion.",
+    image: vanillaImg,
   },
   {
     no: "04",
@@ -58,6 +63,7 @@ const flavours: Flavour[] = [
     description:
       "Fresh lemon ganache with a clean, citrus edge, in a white-chocolate casing that melts on the tongue.",
     short: "Bright, zesty, effortlessly light. Fresh lemon ganache with a clean, citrus edge, in a white-chocolate casing that melts on the tongue.",
+    image: lemonImg,
   },
 ];
 
