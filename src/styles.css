@@ -2,6 +2,8 @@
 @source "../src";
 @import "tw-animate-css";
 
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500&display=swap");
+
 @custom-variant dark (&:is(.dark *));
 
 /*
@@ -63,8 +65,60 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --background: #0a0806;
+  --foreground: #ede4d3;
+  --gold: #c9a14a;
+  --gold-soft: #d9b66a;
+  --ink: #0a0806;
+  --ink-2: #15110c;
+  --ink-3: #1d1812;
+  --line: rgba(201,161,74,0.25);
+}
+
+html, body {
+  background: var(--ink);
+  color: var(--foreground);
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-serif-display {
+  font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.text-gold { color: var(--gold); }
+.bg-ink { background: var(--ink); }
+.bg-ink-2 { background: var(--ink-2); }
+.bg-ink-3 { background: var(--ink-3); }
+.border-gold { border-color: var(--gold); }
+.border-line { border-color: var(--line); }
+
+.diamond-bg {
+  background-image:
+    linear-gradient(135deg, rgba(201,161,74,0.06) 1px, transparent 1px),
+    linear-gradient(45deg, rgba(201,161,74,0.06) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.eyebrow {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: var(--gold);
+  display: inline-block;
+}
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
