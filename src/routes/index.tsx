@@ -1724,13 +1724,10 @@ function CheckoutModal({
               </div>
               <div className="eyebrow justify-center mb-4 inline-flex">Order Confirmed</div>
               <h3 className="font-serif-display text-3xl mb-4">
-                Thank you,{" "}
-                <span className="italic text-gold">
-                  {form.fullName.split(" ")[0] || "friend"}
-                </span>
+                Thank you — your <span className="italic text-gold">order</span> has been received.
               </h3>
               <p className="text-sm text-[color:var(--foreground)]/75 max-w-md mx-auto leading-relaxed">
-                Your order has been received. You will receive a confirmation shortly at{" "}
+                A confirmation will be sent shortly to{" "}
                 <span className="text-gold">{form.email}</span>.
               </p>
               <div className="mt-8 inline-block border border-gold/40 bg-ink-3/60 px-6 py-4">
@@ -1752,7 +1749,7 @@ function CheckoutModal({
                   onClick={resetOrder}
                   className="inline-flex items-center text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-5 py-3 hover:bg-gold hover:text-ink transition-colors"
                 >
-                  Close
+                  Return Home
                 </button>
               </div>
             </div>
