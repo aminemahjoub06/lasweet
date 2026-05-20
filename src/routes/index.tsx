@@ -118,11 +118,6 @@ function Index() {
     setCart((c) => ({ ...c, [no]: Math.min(999, (c[no] ?? 0) + n) }));
     setCartOpen(true);
   };
-  const scrollToOrder = () => {
-    if (typeof document !== "undefined") {
-      document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
   const startOrderFlow = (opts?: { no?: string; qty?: number; orderType?: string }) => {
     if (opts?.no) {
       setCart((c) => ({ ...c, [opts.no!]: Math.min(999, (c[opts.no!] ?? 0) + (opts.qty ?? 1)) }));
@@ -130,8 +125,11 @@ function Index() {
     if (opts?.orderType) {
       setForm((f) => ({ ...f, orderType: opts.orderType! }));
     }
-    setCartOpen(false);
-    setTimeout(scrollToOrder, 60);
+    // Always open the cart first — the customer must validate the cart
+    // before the checkout flow begins.
+    setCheckoutOpen(false);
+    setCheckoutStep("account");
+    setCartOpen(true);
   };
   const setCartQty = (no: string, n: number) => {
     setCart((c) => {
@@ -151,6 +149,7 @@ function Index() {
     orderType: string;
     date: string;
     delivery: "delivery" | "pickup";
+    address: string;
     notes: string;
     createAccount: boolean;
     password: string;
@@ -164,13 +163,19 @@ function Index() {
     orderType: "Restaurant",
     date: "",
     delivery: "delivery",
+    address: "",
     notes: "",
     createAccount: false,
     password: "",
     confirmPassword: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
-  const [step, setStep] = useState<"form" | "payment" | "confirmed">("form");
+  // Step-by-step checkout modal — only opens after the customer validates
+  // the cart. Account choice → details → review → payment → confirmed.
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  type CheckoutStep = "account" | "details" | "review" | "payment" | "confirmed";
+  const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>("account");
+  const [accountMode, setAccountMode] = useState<"create" | "login" | "guest" | null>(null);
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
   // Snapshot of the cart at the moment the customer advances to payment,
@@ -182,7 +187,7 @@ function Index() {
   const snapshotMax = orderSnapshot.reduce((s, i) => s + i.qty * PRICE_MAX, 0);
   const updateForm = <K extends keyof OrderForm>(k: K, v: OrderForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
-  const submitQuote = (e: React.FormEvent) => {
+  const validateDetails = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
     const name = form.fullName.trim();
@@ -193,13 +198,15 @@ function Index() {
       return setFormError("Please enter a valid email address.");
     if (!/^[+\d\s\-()]{6,20}$/.test(phone)) return setFormError("Please enter a valid phone number.");
     if (form.business.length > 120) return setFormError("Business name is too long.");
+    if (form.delivery === "delivery" && form.address.trim().length < 5)
+      return setFormError("Please enter a delivery address.");
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartItems.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     if (form.createAccount) {
       if (form.password.length < 8) return setFormError("Password must be at least 8 characters.");
       if (form.password !== form.confirmPassword) return setFormError("Passwords do not match.");
     }
-    // Lock in a snapshot of the cart for the payment review step.
+    // Lock in a snapshot of the cart so quantities can't change mid-review.
     setOrderSnapshot(
       cartItems.map((fl) => ({
         no: fl.no,
@@ -210,10 +217,7 @@ function Index() {
         qty: cart[fl.no]!,
       })),
     );
-    setStep("payment");
-    setTimeout(() => {
-      document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 60);
+    setCheckoutStep("review");
   };
 
   const generateOrderRef = () => {
@@ -274,17 +278,27 @@ function Index() {
       }
 
       setCart({});
-      setStep("confirmed");
+      setCheckoutStep("confirmed");
     } finally {
       setPaying(false);
     }
   };
 
   const resetOrder = () => {
-    setStep("form");
+    setCheckoutOpen(false);
+    setCheckoutStep("account");
+    setAccountMode(null);
     setOrderRef(null);
     setOrderSnapshot([]);
     setForm((f) => ({ ...f, password: "", confirmPassword: "" }));
+  };
+  const openCheckout = () => {
+    if (cartItems.length === 0) return;
+    setCartOpen(false);
+    setFormError(null);
+    setAccountMode(null);
+    setCheckoutStep("account");
+    setCheckoutOpen(true);
   };
   const toggleExpand = (no: string) => {
     setShowDetails(false);
