@@ -75,6 +75,11 @@ function Index() {
 
   const [expandedNo, setExpandedNo] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [qty, setQty] = useState<Record<string, number>>({});
+  const [added, setAdded] = useState<string | null>(null);
+  const getQty = (no: string) => qty[no] ?? 1;
+  const setQ = (no: string, n: number) =>
+    setQty((q) => ({ ...q, [no]: Math.max(1, Math.min(99, n)) }));
   const toggleExpand = (no: string) => {
     setShowDetails(false);
     setExpandedNo((cur) => (cur === no ? null : no));
