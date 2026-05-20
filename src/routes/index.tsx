@@ -1153,6 +1153,35 @@ function CheckoutModal({
     setStep("details");
   };
 
+  // Local-only card state — never persisted, never sent anywhere until Stripe is wired.
+  const [card, setCard] = React.useState({
+    number: "",
+    expiry: "",
+    cvc: "",
+    name: "",
+    sameAsDelivery: true,
+    billingAddress: "",
+  });
+  const formatCardNumber = (v: string) =>
+    v.replace(/\D/g, "").slice(0, 19).replace(/(.{4})/g, "$1 ").trim();
+  const formatExpiry = (v: string) => {
+    const d = v.replace(/\D/g, "").slice(0, 4);
+    return d.length <= 2 ? d : `${d.slice(0, 2)}/${d.slice(2)}`;
+  };
+  const handlePay = () => {
+    setFormError(null);
+    const digits = card.number.replace(/\s/g, "");
+    if (digits.length < 12) return setFormError("Enter a valid card number.");
+    if (!/^\d{2}\/\d{2}$/.test(card.expiry)) return setFormError("Enter expiry as MM/YY.");
+    if (card.cvc.length < 3) return setFormError("Enter the 3-digit CVC.");
+    if (!card.name.trim()) return setFormError("Enter the cardholder name.");
+    if (!card.sameAsDelivery && !card.billingAddress.trim())
+      return setFormError("Enter the billing address.");
+    // TODO(stripe): submit `card` + order via a server function that creates a
+    // Stripe PaymentIntent and confirms it. For now we simulate success.
+    payOrder();
+  };
+
   return (
     <div
       className={`fixed inset-0 z-[70] transition-opacity duration-300 ${
