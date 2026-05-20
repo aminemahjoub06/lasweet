@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import * as React from "react";
-import { ShoppingBag, X, Minus, Plus, Trash2 } from "lucide-react";
+import { ShoppingBag, X, Minus, Plus, Trash2, Check, ChefHat, Sparkles } from "lucide-react";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
 import vanillaImg from "@/assets/vanilla.png";
