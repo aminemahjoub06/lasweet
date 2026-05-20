@@ -1409,6 +1409,11 @@ function CheckoutModal({
                   Pick-up: no minimum · Delivery: 6 pcs minimum · Restaurants & cafés: 20 pcs recommended.
                   Longer distances may require a higher minimum or delivery fee.
                 </p>
+                <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
+                  Under 15 pcs: may be available immediately depending on stock ·
+                  15+ pcs: preparation time may be required unless stock is available ·
+                  Final availability confirmed after order request.
+                </p>
                 {form.delivery === "delivery" && cartCount < 6 && (
                   <p className="mt-2 text-[11px] text-rose-300/90">
                     Delivery requires a minimum of 6 pieces. Please add more items or choose pick-up.
