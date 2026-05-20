@@ -771,9 +771,10 @@ function Index() {
             </h3>
             <ul className="space-y-3 text-sm text-[color:var(--foreground)]/75 mb-10">
               {[
-                "From 20 pieces per order",
-                "$12–20 per piece per model",
-                "24–48h lead time, Brisbane & 50 km",
+                "Recommended from 20 pieces per order",
+                "Under 15 pcs: subject to immediate stock availability",
+                "15+ pcs: preparation time may be required",
+                "Brisbane & 50 km — final availability confirmed after order request",
                 "Custom quotes — payment by invoice or bank transfer",
                 "Ready to plate and serve",
               ].map((li) => (
