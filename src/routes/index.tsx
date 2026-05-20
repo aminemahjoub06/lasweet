@@ -1,6 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { ShoppingBag, X, Minus, Plus, Trash2 } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ShoppingBag, X, Minus, Plus, Trash2, User } from "lucide-react";
+import {
+  consumePendingReorder,
+  saveOrder,
+  useCurrentUser,
+  useHydrated,
+  type CustomerType,
+} from "@/lib/account";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
 import vanillaImg from "@/assets/vanilla.png";
