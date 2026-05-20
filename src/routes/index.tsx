@@ -1669,6 +1669,12 @@ function CheckoutModal({
                     <span className="text-gold">${snapshotMax}</span>
                   </span>
                 </div>
+                <div className="mt-2 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
+                  <span>Delivery fee</span>
+                  <span className="text-gold">
+                    {form.delivery === "pickup" ? "Free" : "Confirmed after order details"}
+                  </span>
+                </div>
               </div>
 
               {/* Card details */}
