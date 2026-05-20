@@ -176,6 +176,43 @@ function Index() {
     password: "",
     confirmPassword: "",
   });
+
+  // ─── Account integration ───
+  const hydrated = useHydrated();
+  const currentUser = useCurrentUser();
+
+  // Pre-fill the order form with saved details when the customer signs in.
+  useEffect(() => {
+    if (!currentUser) return;
+    const d = currentUser.details;
+    setForm((f) => ({
+      ...f,
+      fullName: f.fullName || d.fullName,
+      email: f.email || d.email,
+      phone: f.phone || d.phone,
+      business: f.business || d.business || "",
+      orderType: f.orderType || d.customerType,
+      createAccount: false,
+    }));
+  }, [currentUser?.email]);
+
+  // Pick up a "reorder" request queued from /account.
+  useEffect(() => {
+    if (!hydrated) return;
+    const pending = consumePendingReorder();
+    if (pending && pending.length) {
+      setCart((c) => {
+        const next = { ...c };
+        for (const { no, qty } of pending) {
+          if (flavours.some((fl) => fl.no === no)) {
+            next[no] = Math.min(999, (next[no] ?? 0) + qty);
+          }
+        }
+        return next;
+      });
+      setCartOpen(true);
+    }
+  }, [hydrated]);
   const [formError, setFormError] = useState<string | null>(null);
   const [step, setStep] = useState<"form" | "payment" | "confirmed">("form");
   const [orderRef, setOrderRef] = useState<string | null>(null);
