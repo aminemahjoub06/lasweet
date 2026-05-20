@@ -456,9 +456,8 @@ function Index() {
           {[
             { v: "4", l: "Flavours" },
             { v: "50 km", l: "Brisbane delivery" },
-            { v: "24–48h", l: "Preparation time" },
+            { v: "15+ pcs", l: "Preparation time may apply" },
             { v: "6 pcs", l: "Delivery minimum (pick-up: none)" },
-            { v: "$12–20", l: "Per piece" },
           ].map((s, i) => (
             <div
               key={s.l}
@@ -772,9 +771,10 @@ function Index() {
             </h3>
             <ul className="space-y-3 text-sm text-[color:var(--foreground)]/75 mb-10">
               {[
-                "From 20 pieces per order",
-                "$12–20 per piece per model",
-                "24–48h lead time, Brisbane & 50 km",
+                "Recommended from 20 pieces per order",
+                "Under 15 pcs: subject to immediate stock availability",
+                "15+ pcs: preparation time may be required",
+                "Brisbane & 50 km — final availability confirmed after order request",
                 "Custom quotes — payment by invoice or bank transfer",
                 "Ready to plate and serve",
               ].map((li) => (
@@ -1028,6 +1028,11 @@ function Index() {
             </p>
             <p className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
               Pick-up: no minimum · Delivery: 6 pcs minimum
+            </p>
+            <p className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
+              {cartCount >= 15
+                ? "15+ pcs: preparation time may be required unless stock is available."
+                : "Under 15 pcs: may be available immediately depending on stock."}
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
@@ -1408,6 +1413,11 @@ function CheckoutModal({
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
                   Pick-up: no minimum · Delivery: 6 pcs minimum · Restaurants & cafés: 20 pcs recommended.
                   Longer distances may require a higher minimum or delivery fee.
+                </p>
+                <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
+                  Under 15 pcs: may be available immediately depending on stock ·
+                  15+ pcs: preparation time may be required unless stock is available ·
+                  Final availability confirmed after order request.
                 </p>
                 {form.delivery === "delivery" && cartCount < 6 && (
                   <p className="mt-2 text-[11px] text-rose-300/90">
