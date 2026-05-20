@@ -1178,8 +1178,28 @@ function CheckoutModal({
     if (!card.name.trim()) return setFormError("Enter the cardholder name.");
     if (!card.sameAsDelivery && !card.billingAddress.trim())
       return setFormError("Enter the billing address.");
-    // TODO(stripe): submit `card` + order via a server function that creates a
-    // Stripe PaymentIntent and confirms it. For now we simulate success.
+    // ───────────────────────────────────────────────────────────────────────
+    // FUTURE STRIPE INTEGRATION — placeholder only, do NOT enable yet.
+    //
+    // When Stripe is activated, replace this simulated flow with:
+    //   1. Build an order payload from `orderSnapshot` + `form`
+    //      (customer info, delivery vs pick-up, preferred date, notes).
+    //   2. Call a server function that creates a Stripe Checkout Session
+    //      (or a PaymentIntent if using Stripe Elements) on the backend.
+    //         e.g. const { url } = await createCheckoutSession({ data: payload })
+    //              window.location.href = url
+    //   3. Stripe hosts the secure payment page — no raw card data is ever
+    //      sent through this app. The local `card` state above is UI-only
+    //      and must be removed once Stripe Elements / Checkout is wired in.
+    //   4. On Stripe webhook `checkout.session.completed`, mark the order
+    //      as paid server-side and persist it.
+    //   5. Redirect the customer to the success route, which advances the
+    //      checkout modal to the "confirmed" step shown below.
+    //
+    // Until then, we simulate a successful authorisation so the rest of the
+    // post-payment journey (confirmation, order reference, cart clear) can
+    // be tested end-to-end without a real charge.
+    // ───────────────────────────────────────────────────────────────────────
     payOrder();
   };
 
