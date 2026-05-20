@@ -263,13 +263,13 @@ function Index() {
                 key={fl.no}
                 className="group/card relative overflow-hidden bg-ink-2 flex flex-col transition-transform duration-500 hover:-translate-y-1"
               >
-                {/* Image on top, fully visible */}
-                <div className="relative aspect-square w-full overflow-hidden bg-ink">
+                {/* Image on top, fully contained inside the card */}
+                <div className="relative aspect-square w-full overflow-hidden bg-ink p-6 md:p-8">
                   {fl.image && (
                     <img
                       src={fl.image}
                       alt={`${fl.prefix}${fl.suffix}`}
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover/card:scale-110"
+                      className="absolute inset-0 m-auto h-full w-full object-contain p-6 md:p-8 transition-transform duration-[1200ms] ease-out group-hover/card:scale-[1.04]"
                     />
                   )}
                   <div className="absolute top-4 left-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/60 backdrop-blur-md px-3 py-1.5 border border-gold/30">
