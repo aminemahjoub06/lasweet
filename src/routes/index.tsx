@@ -662,6 +662,329 @@ function Index() {
       </section>
 
       {/* QUOTE */}
+      {/* CREATE YOUR ORDER */}
+      <section id="order" className="relative bg-ink border-t border-line diamond-bg">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32">
+          <div className="text-center mb-14 md:mb-20">
+            <div className="eyebrow justify-center mb-6 inline-flex">Order &amp; Account</div>
+            <h2 className="font-serif-display text-5xl md:text-6xl leading-tight mb-5">
+              Create your <span className="italic text-gold">Order</span>
+            </h2>
+            <p className="max-w-2xl mx-auto text-sm md:text-base text-[color:var(--foreground)]/70 leading-relaxed">
+              Build your selection, share your details, and we'll confirm availability and final pricing.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-12 gap-6 lg:gap-8">
+            {/* LEFT — Cart summary */}
+            <aside
+              className="lg:col-span-5 border border-gold/30 bg-ink-2/60 backdrop-blur-xl p-6 md:p-8 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.9)] self-start"
+              aria-label="Cart summary"
+            >
+              <div className="flex items-baseline justify-between mb-6">
+                <div>
+                  <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Cart</div>
+                  <h3 className="font-serif-display text-2xl md:text-3xl">
+                    Your <span className="italic text-gold">Selection</span>
+                  </h3>
+                </div>
+                <span className="text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/55">
+                  {cartCount} {cartCount === 1 ? "piece" : "pieces"}
+                </span>
+              </div>
+
+              {cartItems.length === 0 ? (
+                <div className="border border-dashed border-line py-10 text-center text-sm text-[color:var(--foreground)]/55">
+                  <p>No flavours selected yet.</p>
+                  <a
+                    href="#products"
+                    className="mt-3 inline-block text-[10px] tracking-[0.24em] uppercase text-gold border-b border-gold/40 hover:border-gold transition"
+                  >
+                    Explore the collection
+                  </a>
+                </div>
+              ) : (
+                <ul className="divide-y divide-line">
+                  {cartItems.map((fl) => {
+                    const q = cart[fl.no];
+                    return (
+                      <li key={fl.no} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
+                        <div
+                          className="h-14 w-14 shrink-0 border border-line bg-ink-3 bg-center bg-no-repeat bg-contain"
+                          style={{ backgroundImage: fl.image ? `url(${fl.image})` : undefined }}
+                          aria-hidden
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
+                            No. {fl.no}
+                          </div>
+                          <div className="font-serif-display text-lg leading-tight">
+                            {fl.prefix}
+                            <span className="italic text-gold">{fl.suffix}</span>
+                          </div>
+                        </div>
+                        <div className="inline-flex items-center border border-gold/40 text-gold">
+                          <button
+                            type="button"
+                            aria-label="Decrease quantity"
+                            onClick={() => setCartQty(fl.no, q - 1)}
+                            className="h-8 w-8 inline-flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"
+                          >
+                            <Minus className="h-3 w-3" strokeWidth={1.8} />
+                          </button>
+                          <span className="min-w-[2ch] text-center text-xs tracking-[0.2em] text-[color:var(--foreground)]/85">
+                            {q}
+                          </span>
+                          <button
+                            type="button"
+                            aria-label="Increase quantity"
+                            onClick={() => setCartQty(fl.no, q + 1)}
+                            className="h-8 w-8 inline-flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"
+                          >
+                            <Plus className="h-3 w-3" strokeWidth={1.8} />
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              <div className="mt-6 pt-5 border-t border-line space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/60">
+                    Estimated subtotal
+                  </span>
+                  <span className="font-serif-display text-xl">
+                    <span className="text-gold">${subtotalMin}</span>
+                    <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
+                    <span className="text-gold">${subtotalMax}</span>
+                  </span>
+                </div>
+                <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
+                  Range based on $12–20 per piece. Final price confirmed after quote.
+                </p>
+              </div>
+            </aside>
+
+            {/* RIGHT — Form */}
+            <div className="lg:col-span-7 border border-gold/30 bg-ink-2/60 backdrop-blur-xl p-6 md:p-8 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.9)]">
+              {submitted ? (
+                <div className="py-10 text-center">
+                  <div className="eyebrow justify-center mb-6 inline-flex">Received</div>
+                  <h3 className="font-serif-display text-3xl md:text-4xl mb-4">
+                    Thank you, <span className="italic text-gold">{form.fullName.split(" ")[0] || "friend"}</span>
+                  </h3>
+                  <p className="text-sm text-[color:var(--foreground)]/70 max-w-md mx-auto leading-relaxed">
+                    Your quote request has been recorded. We'll confirm availability and final pricing
+                    within 24 hours at <span className="text-gold">{form.email}</span>.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSubmitted(false);
+                      setCart({});
+                    }}
+                    className="mt-8 inline-flex items-center text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-5 py-3 hover:bg-gold hover:text-ink transition-colors"
+                  >
+                    Start a new order
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={submitQuote} className="space-y-6" noValidate>
+                  <div>
+                    <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Contact</div>
+                    <h3 className="font-serif-display text-2xl md:text-3xl">
+                      Your <span className="italic text-gold">Details</span>
+                    </h3>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-5">
+                    <FieldLA label="Full name" required>
+                      <input
+                        type="text"
+                        required
+                        maxLength={100}
+                        autoComplete="name"
+                        value={form.fullName}
+                        onChange={(e) => updateForm("fullName", e.target.value)}
+                        className={inputCls}
+                      />
+                    </FieldLA>
+                    <FieldLA label="Email" required>
+                      <input
+                        type="email"
+                        required
+                        maxLength={255}
+                        autoComplete="email"
+                        value={form.email}
+                        onChange={(e) => updateForm("email", e.target.value)}
+                        className={inputCls}
+                      />
+                    </FieldLA>
+                    <FieldLA label="Phone" required>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={20}
+                        autoComplete="tel"
+                        value={form.phone}
+                        onChange={(e) => updateForm("phone", e.target.value)}
+                        className={inputCls}
+                      />
+                    </FieldLA>
+                    <FieldLA label="Business name (optional)">
+                      <input
+                        type="text"
+                        maxLength={120}
+                        autoComplete="organization"
+                        value={form.business}
+                        onChange={(e) => updateForm("business", e.target.value)}
+                        className={inputCls}
+                      />
+                    </FieldLA>
+                    <FieldLA label="Order type">
+                      <select
+                        value={form.orderType}
+                        onChange={(e) => updateForm("orderType", e.target.value)}
+                        className={inputCls}
+                      >
+                        <option className="bg-ink-2">Restaurant</option>
+                        <option className="bg-ink-2">Café</option>
+                        <option className="bg-ink-2">Private event</option>
+                        <option className="bg-ink-2">Other</option>
+                      </select>
+                    </FieldLA>
+                    <FieldLA label="Preferred date">
+                      <input
+                        type="date"
+                        value={form.date}
+                        onChange={(e) => updateForm("date", e.target.value)}
+                        className={inputCls}
+                      />
+                    </FieldLA>
+                  </div>
+
+                  <FieldLA label="Delivery or pick-up">
+                    <div className="grid grid-cols-2 gap-3">
+                      {(["delivery", "pickup"] as const).map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => updateForm("delivery", opt)}
+                          className={`text-[10px] tracking-[0.24em] uppercase py-3 border transition-colors ${
+                            form.delivery === opt
+                              ? "bg-gold text-ink border-gold"
+                              : "text-gold border-gold/40 hover:border-gold"
+                          }`}
+                        >
+                          {opt === "delivery" ? "Delivery" : "Pick-up"}
+                        </button>
+                      ))}
+                    </div>
+                  </FieldLA>
+
+                  <FieldLA label="Notes (optional)">
+                    <textarea
+                      rows={4}
+                      maxLength={1000}
+                      value={form.notes}
+                      onChange={(e) => updateForm("notes", e.target.value)}
+                      className={`${inputCls} resize-none`}
+                      placeholder="Allergens, presentation, event size…"
+                    />
+                  </FieldLA>
+
+                  {/* Account */}
+                  <div className="border-t border-line pt-6 space-y-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
+                          Account
+                        </div>
+                        <p className="text-sm text-[color:var(--foreground)]/70 leading-relaxed">
+                          Create an account to track orders and save your details.
+                        </p>
+                      </div>
+                      <label className="inline-flex items-center gap-3 shrink-0 cursor-pointer select-none">
+                        <span className="text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/70">
+                          Create
+                        </span>
+                        <span className="relative inline-block w-10 h-5 align-middle">
+                          <input
+                            type="checkbox"
+                            checked={form.createAccount}
+                            onChange={(e) => updateForm("createAccount", e.target.checked)}
+                            className="peer sr-only"
+                          />
+                          <span className="absolute inset-0 border border-gold/40 bg-ink-3 peer-checked:bg-gold/30 peer-checked:border-gold transition-colors" />
+                          <span className="absolute top-0.5 left-0.5 h-4 w-4 bg-gold transition-transform peer-checked:translate-x-5" />
+                        </span>
+                      </label>
+                    </div>
+                    {form.createAccount && (
+                      <div className="grid sm:grid-cols-2 gap-5 animate-fade-in">
+                        <FieldLA label="Password" required>
+                          <input
+                            type="password"
+                            required
+                            minLength={8}
+                            maxLength={128}
+                            autoComplete="new-password"
+                            value={form.password}
+                            onChange={(e) => updateForm("password", e.target.value)}
+                            className={inputCls}
+                          />
+                        </FieldLA>
+                        <FieldLA label="Confirm password" required>
+                          <input
+                            type="password"
+                            required
+                            minLength={8}
+                            maxLength={128}
+                            autoComplete="new-password"
+                            value={form.confirmPassword}
+                            onChange={(e) => updateForm("confirmPassword", e.target.value)}
+                            className={inputCls}
+                          />
+                        </FieldLA>
+                      </div>
+                    )}
+                  </div>
+
+                  {formError && (
+                    <p className="text-xs tracking-wide text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-4 py-3">
+                      {formError}
+                    </p>
+                  )}
+
+                  <div className="border-t border-line pt-6 space-y-3">
+                    <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
+                      Quote-based — no payment is taken now. Final price confirmed after quote.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        type="submit"
+                        className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors"
+                      >
+                        Request Quote
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateForm("createAccount", false)}
+                        className="sm:flex-1 border border-gold/50 text-gold text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-gold hover:text-ink transition-colors"
+                      >
+                        Continue as Guest
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="bg-ink">
         <div className="mx-auto max-w-3xl px-6 md:px-10 py-24 md:py-32 text-center">
           <div className="font-serif-display text-5xl text-gold mb-8 leading-none">”</div>
