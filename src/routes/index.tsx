@@ -1065,6 +1065,7 @@ function Index() {
         snapshotMax={snapshotMax}
         PRICE_MIN={PRICE_MIN}
         PRICE_MAX={PRICE_MAX}
+        cartCount={cartCount}
         paying={paying}
         payOrder={payOrder}
         orderRef={orderRef}
@@ -1118,6 +1119,7 @@ function CheckoutModal({
   snapshotMax,
   PRICE_MIN,
   PRICE_MAX,
+  cartCount,
   paying,
   payOrder,
   orderRef,
