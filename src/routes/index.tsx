@@ -296,7 +296,11 @@ function Index() {
                   ))}
                 </div>
 
-                <button className="w-full border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold hover:text-ink transition">
+                <button
+                  type="button"
+                  onClick={() => startOrderFlow({ no: f.no, qty: 1 })}
+                  className="w-full border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold hover:text-ink transition"
+                >
                   Order this flavour
                 </button>
               </div>
