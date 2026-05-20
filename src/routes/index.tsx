@@ -1133,11 +1133,16 @@ function Index() {
                   const q = cart[fl.no];
                   return (
                     <li key={fl.no} className="flex gap-4 border-b border-line pb-5 last:border-b-0">
-                      <div
-                        className="h-16 w-16 shrink-0 border border-line bg-ink-3 bg-center bg-no-repeat bg-contain"
-                        style={{ backgroundImage: fl.image ? `url(${fl.image})` : undefined }}
-                        aria-hidden
-                      />
+                      <div className="h-16 w-16 shrink-0 border border-gold/40 bg-ink-3 p-1.5 flex items-center justify-center">
+                        {fl.image && (
+                          <img
+                            src={fl.image}
+                            alt={fl.name}
+                            className="max-h-full max-w-full object-contain"
+                            loading="lazy"
+                          />
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div>
