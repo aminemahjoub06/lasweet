@@ -452,7 +452,7 @@ function Index() {
 
       {/* STATS BAR */}
       <section className="border-y border-line bg-ink-2">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-8 md:py-10 grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-4">
+        <div className="mx-auto max-w-[1000px] px-6 md:px-10 py-8 md:py-10 grid grid-cols-2 md:grid-cols-4 gap-0 items-center text-center">
           {[
             { v: "4", l: "Flavours" },
             { v: "50 km", l: "Brisbane delivery" },
@@ -461,12 +461,14 @@ function Index() {
           ].map((s, i) => (
             <div
               key={s.l}
-              className={`flex flex-col items-start md:items-center ${
-                i > 0 ? "md:border-l md:border-line md:pl-4" : ""
+              className={`flex flex-col items-center justify-center px-4 py-2 ${
+                i % 2 !== 0 ? "border-l border-line" : ""
+              } ${i >= 2 ? "border-t border-line md:border-t-0" : ""} ${
+                i > 0 && i % 2 === 0 ? "md:border-l md:border-line" : ""
               }`}
             >
               <div className="font-serif-display text-2xl md:text-3xl">{s.v}</div>
-              <div className="text-[10px] tracking-[0.24em] uppercase text-gold/80 mt-1">{s.l}</div>
+              <div className="text-[10px] tracking-[0.24em] uppercase text-gold/80 mt-1 leading-relaxed">{s.l}</div>
             </div>
           ))}
         </div>
