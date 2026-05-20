@@ -530,7 +530,7 @@ function Index() {
             </h2>
           </div>
 
-          <div className="relative">
+          <div id="product-grid" className="relative scroll-mt-[120px]">
             {/* Backdrop dim when something is expanded */}
             <div
               className={`pointer-events-none absolute inset-0 -m-6 md:-m-10 bg-ink/80 backdrop-blur-sm transition-opacity duration-500 ${
@@ -863,7 +863,14 @@ function Index() {
                   Book My Event
                 </button>
                 <a
-                  href="#products"
+                  href="#product-grid"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById("product-grid")?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "center",
+                    });
+                  }}
                   className="block w-full text-center text-[10px] tracking-[0.28em] uppercase text-gold/80 hover:text-gold transition"
                 >
                   Create my selection →
