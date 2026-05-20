@@ -1280,14 +1280,14 @@ function Index() {
 
                   <div className="border-t border-line pt-6 space-y-3">
                     <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
-                      Quote-based — no payment is taken now. Final price confirmed after quote.
+                      Review your order on the next step before completing secure payment.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         type="submit"
                         className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors"
                       >
-                        Request Quote
+                        Continue to Payment →
                       </button>
                       <button
                         type="button"
