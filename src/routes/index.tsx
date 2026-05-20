@@ -201,6 +201,10 @@ function Index() {
     if (form.business.length > 120) return setFormError("Business name is too long.");
     if (form.delivery === "delivery" && form.address.trim().length < 5)
       return setFormError("Please enter a delivery address.");
+    if (form.delivery === "delivery" && cartCount < 6)
+      return setFormError(
+        "Delivery requires a minimum of 6 pieces. Please add more items or choose pick-up.",
+      );
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartItems.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     if (form.createAccount) {
@@ -453,7 +457,7 @@ function Index() {
             { v: "4", l: "Flavours" },
             { v: "50 km", l: "Brisbane delivery" },
             { v: "24–48h", l: "Preparation time" },
-            { v: "20 pcs", l: "Minimum order" },
+            { v: "6 pcs", l: "Delivery minimum (pick-up: none)" },
             { v: "$12–20", l: "Per piece" },
           ].map((s, i) => (
             <div
@@ -1022,6 +1026,9 @@ function Index() {
             <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
               Final price confirmed after quote.
             </p>
+            <p className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
+              Pick-up: no minimum · Delivery: 6 pcs minimum
+            </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
                 type="button"
@@ -1061,6 +1068,7 @@ function Index() {
         snapshotMax={snapshotMax}
         PRICE_MIN={PRICE_MIN}
         PRICE_MAX={PRICE_MAX}
+        cartCount={cartCount}
         paying={paying}
         payOrder={payOrder}
         orderRef={orderRef}
@@ -1114,6 +1122,7 @@ function CheckoutModal({
   snapshotMax,
   PRICE_MIN,
   PRICE_MAX,
+  cartCount,
   paying,
   payOrder,
   orderRef,
@@ -1135,6 +1144,7 @@ function CheckoutModal({
   snapshotMax: number;
   PRICE_MIN: number;
   PRICE_MAX: number;
+  cartCount: number;
   paying: boolean;
   payOrder: () => void;
   orderRef: string | null;
@@ -1395,6 +1405,15 @@ function CheckoutModal({
                     </button>
                   ))}
                 </div>
+                <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
+                  Pick-up: no minimum · Delivery: 6 pcs minimum · Restaurants & cafés: 20 pcs recommended.
+                  Longer distances may require a higher minimum or delivery fee.
+                </p>
+                {form.delivery === "delivery" && cartCount < 6 && (
+                  <p className="mt-2 text-[11px] text-rose-300/90">
+                    Delivery requires a minimum of 6 pieces. Please add more items or choose pick-up.
+                  </p>
+                )}
               </FieldLA>
 
               {form.delivery === "delivery" && (
