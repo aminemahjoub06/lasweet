@@ -521,11 +521,77 @@ function OrdersTab() {
                     </div>
                   </details>
                 </div>
+
+                {/* Inline order conversation */}
+                <OrderConversation order={o} email={user.email} />
               </div>
             )}
           </article>
         );
       })}
+    </div>
+  );
+}
+
+function OrderConversation({ order, email }: { order: Order; email: string }) {
+  const [text, setText] = useState("");
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    sendCustomerMessage(email, order.ref, text);
+    setText("");
+  };
+  return (
+    <div className="pt-5 border-t border-line">
+      <div className="text-[10px] tracking-[0.24em] uppercase text-gold mb-3 inline-flex items-center gap-2">
+        <MessageSquare className="h-3.5 w-3.5" strokeWidth={1.5} /> Conversation
+      </div>
+      <ul className="space-y-3 mb-4 max-h-72 overflow-y-auto pr-1">
+        {order.messages.map((m) => {
+          const mine = m.from === "customer";
+          return (
+            <li key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-[80%] px-4 py-2.5 text-sm leading-relaxed border ${
+                  mine
+                    ? "bg-gold/10 border-gold/40 text-[color:var(--foreground)]"
+                    : m.from === "system"
+                    ? "bg-ink-3/60 border-line text-[color:var(--foreground)]/70 italic"
+                    : "bg-ink-3 border-gold/30 text-[color:var(--foreground)]/90"
+                }`}
+              >
+                <p>{m.text}</p>
+                <div
+                  className={`text-[9px] tracking-[0.2em] uppercase mt-2 ${
+                    mine ? "text-gold/70" : "text-[color:var(--foreground)]/40"
+                  }`}
+                >
+                  {m.from === "studio" ? "L&A Sweet" : m.from === "system" ? "System" : "You"}
+                  <span className="mx-2">·</span>
+                  {new Date(m.at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      <form onSubmit={submit} className="flex items-end gap-2">
+        <textarea
+          rows={2}
+          maxLength={1000}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Write a message about this order…"
+          className={`${inputCls} resize-none flex-1`}
+        />
+        <button
+          type="submit"
+          disabled={!text.trim()}
+          className="border border-gold text-gold text-[10px] tracking-[0.24em] uppercase px-4 py-3 hover:bg-gold hover:text-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
+        >
+          <Send className="h-3.5 w-3.5" strokeWidth={1.5} /> Send
+        </button>
+      </form>
     </div>
   );
 }
