@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import * as React from "react";
-import { ShoppingBag, X, Minus, Plus, Trash2 } from "lucide-react";
+import { ShoppingBag, X, Minus, Plus, Trash2, Check, ChefHat, Sparkles } from "lucide-react";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
 import vanillaImg from "@/assets/vanilla.png";
@@ -762,66 +762,114 @@ function Index() {
       </section>
 
       {/* WHOLESALE / EVENTS */}
-      <section className="bg-ink-3 border-t border-line">
-        <div className="mx-auto max-w-7xl grid md:grid-cols-2 gap-px bg-line">
-          <div id="wholesale" className="bg-ink-3 p-10 md:p-16">
-            <div className="eyebrow mb-6">Wholesale Supplier</div>
-            <h3 className="font-serif-display text-4xl md:text-5xl leading-tight mb-10">
-              For<br />
-              <span className="italic text-gold">Restaurants &</span><br />
-              <span className="italic text-gold">Cafés</span>
-            </h3>
-            <ul className="space-y-3 text-sm text-[color:var(--foreground)]/75 mb-10">
-              {[
-                "Recommended from 20 pieces per order",
-                "Under 15 pcs: subject to immediate stock availability",
-                "15+ pcs: preparation time may be required",
-                "Brisbane & 50 km — final availability confirmed after order request",
-                "Custom quotes — payment by invoice or bank transfer",
-                "Ready to plate and serve",
-              ].map((li) => (
-                <li key={li} className="flex gap-3">
-                  <span className="text-gold mt-2 h-px w-3 bg-gold shrink-0" />
-                  <span>{li}</span>
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              onClick={() => startOrderFlow({ orderType: "Restaurant" })}
-              className="border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-gold hover:text-ink transition"
-            >
-              Get wholesale quote
-            </button>
+      <section className="bg-ink border-t border-line">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32">
+          <div className="text-center mb-16">
+            <div className="eyebrow justify-center inline-flex mb-6">Two Dedicated Spaces</div>
+            <h2 className="font-serif-display text-4xl md:text-5xl leading-tight">
+              Choose your <span className="italic text-gold">pathway</span>
+            </h2>
           </div>
 
-          <div id="events" className="bg-ink-3 p-10 md:p-16">
-            <div className="eyebrow mb-6">Private Events</div>
-            <h3 className="font-serif-display text-4xl md:text-5xl leading-tight mb-10">
-              For Your<br />
-              <span className="italic text-gold">Celebrations</span>
-            </h3>
-            <ul className="space-y-3 text-sm text-[color:var(--foreground)]/75 mb-10">
-              {[
-                "Packs of 20, 40, 60 or custom qty",
-                "Birthdays, weddings, parties, corporate events",
-                "Fresh — prepared within 48h of your event",
-                "Choose one flavour or a mixed selection",
-                "Delivery or pick-up, Brisbane area",
-              ].map((li) => (
-                <li key={li} className="flex gap-3">
-                  <span className="text-gold mt-2 h-px w-3 bg-gold shrink-0" />
-                  <span>{li}</span>
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              onClick={() => startOrderFlow({ orderType: "Private event" })}
-              className="border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-gold hover:text-ink transition"
+          <div className="grid md:grid-cols-2 gap-8 items-stretch">
+            {/* Restaurants & Cafés — B2B */}
+            <article
+              id="wholesale"
+              className="group relative flex flex-col h-full p-10 md:p-12 border border-gold/30 bg-[color:var(--ink-2)]/60 backdrop-blur-xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)] transition-all duration-500 hover:border-gold/70 hover:shadow-[0_0_60px_-10px_rgba(201,161,74,0.35)]"
             >
-              Book my event
-            </button>
+              <div className="flex items-center justify-between mb-8">
+                <div className="eyebrow">Wholesale Supplier</div>
+                <div className="h-10 w-10 flex items-center justify-center border border-gold/40 rounded-full text-gold">
+                  <ChefHat size={18} strokeWidth={1.4} />
+                </div>
+              </div>
+              <h3 className="font-serif-display text-3xl md:text-4xl leading-tight mb-4">
+                For <span className="italic text-gold">Restaurants & Cafés</span>
+              </h3>
+              <div className="h-px w-16 bg-gold mb-8" />
+              <ul className="space-y-4 text-sm text-[color:var(--foreground)]/80 mb-10 flex-1">
+                {[
+                  "Recommended from 20 pieces per order",
+                  "Regular supply for restaurants, cafés and hotels",
+                  "Mixed flavours or single-flavour batches",
+                  "Preparation time may apply for 15+ pieces unless stock is available",
+                  "Custom quotes available",
+                  "Payment by invoice or bank transfer",
+                ].map((li) => (
+                  <li key={li} className="flex gap-3 items-start">
+                    <span className="mt-0.5 h-5 w-5 shrink-0 flex items-center justify-center border border-gold/50 rounded-full text-gold">
+                      <Check size={11} strokeWidth={2.4} />
+                    </span>
+                    <span>{li}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-auto space-y-4">
+                <button
+                  type="button"
+                  onClick={() => startOrderFlow({ orderType: "Restaurant" })}
+                  className="w-full bg-gold text-ink text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-[color:var(--gold-soft)] transition"
+                >
+                  Get Wholesale Quote
+                </button>
+                <button
+                  type="button"
+                  onClick={() => startOrderFlow({ orderType: "Restaurant" })}
+                  className="block w-full text-center text-[10px] tracking-[0.28em] uppercase text-gold/80 hover:text-gold transition"
+                >
+                  Discuss recurring supply →
+                </button>
+              </div>
+            </article>
+
+            {/* Private Events */}
+            <article
+              id="events"
+              className="group relative flex flex-col h-full p-10 md:p-12 border border-gold/30 bg-[color:var(--ink-2)]/60 backdrop-blur-xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)] transition-all duration-500 hover:border-gold/70 hover:shadow-[0_0_60px_-10px_rgba(201,161,74,0.35)]"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="eyebrow">Private Events</div>
+                <div className="h-10 w-10 flex items-center justify-center border border-gold/40 rounded-full text-gold">
+                  <Sparkles size={18} strokeWidth={1.4} />
+                </div>
+              </div>
+              <h3 className="font-serif-display text-3xl md:text-4xl leading-tight mb-4">
+                For Your <span className="italic text-gold">Celebrations</span>
+              </h3>
+              <div className="h-px w-16 bg-gold mb-8" />
+              <ul className="space-y-4 text-sm text-[color:var(--foreground)]/80 mb-10 flex-1">
+                {[
+                  "Birthdays, weddings, parties and corporate events",
+                  "Pick-up available with no minimum order",
+                  "Delivery available from 6 pieces",
+                  "Choose one flavour or a mixed selection",
+                  "Fresh products, subject to availability",
+                  "Final details confirmed after order request",
+                ].map((li) => (
+                  <li key={li} className="flex gap-3 items-start">
+                    <span className="mt-0.5 h-5 w-5 shrink-0 flex items-center justify-center border border-gold/50 rounded-full text-gold">
+                      <Check size={11} strokeWidth={2.4} />
+                    </span>
+                    <span>{li}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-auto space-y-4">
+                <button
+                  type="button"
+                  onClick={() => startOrderFlow({ orderType: "Private event" })}
+                  className="w-full bg-gold text-ink text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-[color:var(--gold-soft)] transition"
+                >
+                  Book My Event
+                </button>
+                <a
+                  href="#creations"
+                  className="block w-full text-center text-[10px] tracking-[0.28em] uppercase text-gold/80 hover:text-gold transition"
+                >
+                  Create my selection →
+                </a>
+              </div>
+            </article>
           </div>
         </div>
       </section>
