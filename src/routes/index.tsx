@@ -456,9 +456,8 @@ function Index() {
           {[
             { v: "4", l: "Flavours" },
             { v: "50 km", l: "Brisbane delivery" },
-            { v: "24–48h", l: "Preparation time" },
+            { v: "15+ pcs", l: "Preparation time may apply" },
             { v: "6 pcs", l: "Delivery minimum (pick-up: none)" },
-            { v: "$12–20", l: "Per piece" },
           ].map((s, i) => (
             <div
               key={s.l}
