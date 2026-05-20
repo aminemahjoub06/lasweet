@@ -181,6 +181,7 @@ function Index() {
   // ─── Account integration ───
   const hydrated = useHydrated();
   const currentUser = useCurrentUser();
+  const unread = useUnreadCounts();
 
   // Pre-fill the order form with saved details when the customer signs in.
   useEffect(() => {
