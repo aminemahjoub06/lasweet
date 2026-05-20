@@ -105,12 +105,12 @@ function Index() {
           <div
             key={fl.no}
             aria-hidden
-            className={`absolute inset-0 bg-center bg-no-repeat bg-contain md:bg-cover transition-[opacity,transform] duration-[1200ms] ease-out group-hover/hero:scale-[1.22] ${
+            className={`absolute inset-0 bg-center bg-no-repeat bg-contain transition-[opacity,transform] duration-[1200ms] ease-out group-hover/hero:scale-[1.04] ${
               i === idx ? "opacity-100" : "opacity-0"
             }`}
             style={{
               backgroundImage: `url(${fl.image})`,
-              transform: "scale(1.15)",
+              backgroundSize: "min(70vh, 560px) auto",
             }}
           />
         ))}
@@ -131,7 +131,17 @@ function Index() {
                 ←
               </button>
 
-              <div className="flex-1 max-w-xl mx-auto md:mx-0 md:ml-auto border border-gold/30 bg-ink/55 backdrop-blur-xl p-8 md:p-12 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]">
+              <div
+                className="flex-1 max-w-xl mx-auto md:mx-0 md:ml-auto p-8 md:p-12 rounded-sm"
+                style={{
+                  background: "rgba(10, 8, 4, 0.45)",
+                  backdropFilter: "blur(18px)",
+                  WebkitBackdropFilter: "blur(18px)",
+                  border: "1px solid rgba(200, 155, 60, 0.35)",
+                  boxShadow:
+                    "0 25px 80px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(201, 161, 74, 0.08)",
+                }}
+              >
                 <div className="eyebrow mb-6">{f.label}</div>
                 <h1 className="font-serif-display text-6xl md:text-7xl leading-[0.95] mb-6">
                   {f.prefix}
