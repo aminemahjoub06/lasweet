@@ -1026,6 +1026,9 @@ function Index() {
             <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
               Final price confirmed after quote.
             </p>
+            <p className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
+              Pick-up: no minimum · Delivery: 6 pcs minimum
+            </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
                 type="button"
