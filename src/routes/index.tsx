@@ -261,28 +261,25 @@ function Index() {
             {flavours.map((fl) => (
               <article
                 key={fl.no}
-                className="group/card relative overflow-hidden bg-ink-2 min-h-[420px] flex flex-col"
+                className="group/card relative overflow-hidden bg-ink-2 flex flex-col transition-transform duration-500 hover:-translate-y-1"
               >
-                {/* Background image */}
-                {fl.image && (
-                  <div
-                    aria-hidden
-                    className="absolute inset-0 bg-center bg-no-repeat bg-contain transition-transform duration-[1200ms] ease-out group-hover/card:scale-110"
-                    style={{ backgroundImage: `url(${fl.image})` }}
-                  />
-                )}
-                {/* Dark overlays for readability */}
-                <div className="absolute inset-0 bg-ink/70 pointer-events-none" />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-transparent pointer-events-none" />
-
-                {/* Top tag */}
-                <div className="relative p-6 md:p-8">
-                  <div className="text-[10px] tracking-[0.28em] uppercase text-gold">No. {fl.no}</div>
+                {/* Image on top, fully visible */}
+                <div className="relative aspect-square w-full overflow-hidden bg-ink">
+                  {fl.image && (
+                    <img
+                      src={fl.image}
+                      alt={`${fl.prefix}${fl.suffix}`}
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover/card:scale-110"
+                    />
+                  )}
+                  <div className="absolute top-4 left-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/60 backdrop-blur-md px-3 py-1.5 border border-gold/30">
+                    No. {fl.no}
+                  </div>
                 </div>
 
-                {/* Glass text panel pinned to bottom */}
-                <div className="relative mt-auto m-4 md:m-5 border border-gold/30 bg-ink/55 backdrop-blur-xl p-6 md:p-7 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)]">
-                  <h3 className="font-serif-display text-3xl md:text-4xl mb-3">
+                {/* Text panel below the image */}
+                <div className="relative bg-ink/80 backdrop-blur-xl border-t border-gold/30 p-6 md:p-7">
+                  <h3 className="font-serif-display text-3xl md:text-4xl mb-3 text-[color:var(--foreground)]">
                     {fl.prefix}<span className="italic text-gold">{fl.suffix}</span>
                   </h3>
                   <p className="text-sm text-[color:var(--foreground)]/75 leading-relaxed">
