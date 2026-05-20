@@ -1272,6 +1272,23 @@ function Index() {
 
                   {/* Account */}
                   <div className="border-t border-line pt-6 space-y-4">
+                    {currentUser ? (
+                      <div className="flex items-center justify-between gap-4 text-sm">
+                        <div>
+                          <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">Signed in</div>
+                          <p className="text-[color:var(--foreground)]/70">
+                            This order will be saved to <span className="text-gold">{currentUser.email}</span>.
+                          </p>
+                        </div>
+                        <Link
+                          to="/account"
+                          className="text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/40 px-4 py-2 hover:bg-gold hover:text-ink transition-colors shrink-0"
+                        >
+                          View account
+                        </Link>
+                      </div>
+                    ) : (
+                    <>
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
@@ -1324,6 +1341,8 @@ function Index() {
                           />
                         </FieldLA>
                       </div>
+                    )}
+                    </>
                     )}
                   </div>
 
