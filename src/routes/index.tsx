@@ -1,6 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { ShoppingBag, X, Minus, Plus, Trash2 } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ShoppingBag, X, Minus, Plus, Trash2, User } from "lucide-react";
+import {
+  consumePendingReorder,
+  saveOrder,
+  useCurrentUser,
+  useHydrated,
+  type CustomerType,
+} from "@/lib/account";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
 import vanillaImg from "@/assets/vanilla.png";
@@ -169,6 +176,43 @@ function Index() {
     password: "",
     confirmPassword: "",
   });
+
+  // ─── Account integration ───
+  const hydrated = useHydrated();
+  const currentUser = useCurrentUser();
+
+  // Pre-fill the order form with saved details when the customer signs in.
+  useEffect(() => {
+    if (!currentUser) return;
+    const d = currentUser.details;
+    setForm((f) => ({
+      ...f,
+      fullName: f.fullName || d.fullName,
+      email: f.email || d.email,
+      phone: f.phone || d.phone,
+      business: f.business || d.business || "",
+      orderType: f.orderType || d.customerType,
+      createAccount: false,
+    }));
+  }, [currentUser?.email]);
+
+  // Pick up a "reorder" request queued from /account.
+  useEffect(() => {
+    if (!hydrated) return;
+    const pending = consumePendingReorder();
+    if (pending && pending.length) {
+      setCart((c) => {
+        const next = { ...c };
+        for (const { no, qty } of pending) {
+          if (flavours.some((fl) => fl.no === no)) {
+            next[no] = Math.min(999, (next[no] ?? 0) + qty);
+          }
+        }
+        return next;
+      });
+      setCartOpen(true);
+    }
+  }, [hydrated]);
   const [formError, setFormError] = useState<string | null>(null);
   const [step, setStep] = useState<"form" | "payment" | "confirmed">("form");
   const [orderRef, setOrderRef] = useState<string | null>(null);
@@ -246,28 +290,29 @@ function Index() {
       const ref = generateOrderRef();
       setOrderRef(ref);
 
-      // Persist the order locally if the customer chose to create an account.
-      if (form.createAccount && typeof window !== "undefined") {
+      // Persist the order into the account store whenever the customer is
+      // signed in OR has chosen to create an account at checkout. Guests'
+      // orders are not saved — they only get the on-screen confirmation.
+      const shouldSave = !!currentUser || form.createAccount;
+      if (shouldSave) {
         try {
-          const key = `la_orders_${form.email.toLowerCase()}`;
-          const existing = JSON.parse(window.localStorage.getItem(key) || "[]");
-          existing.push({
+          saveOrder({
+            email: form.email,
             ref,
-            createdAt: new Date().toISOString(),
+            status: "Paid",
+            items: orderSnapshot,
+            estimate: { min: snapshotMin, max: snapshotMax },
             customer: {
               fullName: form.fullName,
               email: form.email,
               phone: form.phone,
-              business: form.business,
-              orderType: form.orderType,
-              date: form.date,
+              business: form.business || undefined,
+              customerType: (form.orderType as CustomerType) || "Other",
               delivery: form.delivery,
-              notes: form.notes,
+              date: form.date || undefined,
+              notes: form.notes || undefined,
             },
-            items: orderSnapshot,
-            estimate: { min: snapshotMin, max: snapshotMax },
           });
-          window.localStorage.setItem(key, JSON.stringify(existing));
         } catch {
           /* storage not available — silently skip */
         }
@@ -320,6 +365,16 @@ function Index() {
                 </span>
               )}
             </button>
+            <Link
+              to="/account"
+              aria-label={currentUser ? "Your account" : "Sign in"}
+              className="relative inline-flex items-center justify-center h-10 w-10 border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors"
+            >
+              <User className="h-4 w-4" strokeWidth={1.5} />
+              {hydrated && currentUser && (
+                <span className="absolute -bottom-1 -right-1 h-2.5 w-2.5 bg-gold rounded-full border border-ink" />
+              )}
+            </Link>
           </div>
         </div>
       </header>
@@ -1217,6 +1272,23 @@ function Index() {
 
                   {/* Account */}
                   <div className="border-t border-line pt-6 space-y-4">
+                    {currentUser ? (
+                      <div className="flex items-center justify-between gap-4 text-sm">
+                        <div>
+                          <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">Signed in</div>
+                          <p className="text-[color:var(--foreground)]/70">
+                            This order will be saved to <span className="text-gold">{currentUser.email}</span>.
+                          </p>
+                        </div>
+                        <Link
+                          to="/account"
+                          className="text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/40 px-4 py-2 hover:bg-gold hover:text-ink transition-colors shrink-0"
+                        >
+                          View account
+                        </Link>
+                      </div>
+                    ) : (
+                    <>
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
@@ -1269,6 +1341,8 @@ function Index() {
                           />
                         </FieldLA>
                       </div>
+                    )}
+                    </>
                     )}
                   </div>
 
