@@ -44,6 +44,30 @@ export type OrderMessage = {
   read?: boolean;
 };
 
+export const NOTIFICATION_TYPES = [
+  "order_received",
+  "quote_sent",
+  "payment_required",
+  "payment_confirmed",
+  "in_preparation",
+  "ready_pickup",
+  "out_for_delivery",
+  "completed",
+  "cancelled",
+  "new_message",
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export type Notification = {
+  id: string;
+  at: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  ref?: string; // related order
+  read?: boolean;
+};
+
 export type Order = {
   ref: string;
   createdAt: string;
@@ -74,13 +98,14 @@ export type User = {
 type DB = {
   users: Record<string, User>;
   orders: Record<string, Order[]>; // keyed by email
+  notifications: Record<string, Notification[]>; // keyed by email
   session: string | null; // email of logged-in user
 };
 
 const DB_KEY = "la_account_db_v1";
 const REORDER_KEY = "la_pending_reorder";
 
-const emptyDB: DB = { users: {}, orders: {}, session: null };
+const emptyDB: DB = { users: {}, orders: {}, notifications: {}, session: null };
 
 const isBrowser = () => typeof window !== "undefined";
 
@@ -93,6 +118,7 @@ function readDB(): DB {
     return {
       users: parsed.users ?? {},
       orders: parsed.orders ?? {},
+      notifications: parsed.notifications ?? {},
       session: parsed.session ?? null,
     };
   } catch {
