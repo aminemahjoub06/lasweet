@@ -116,13 +116,28 @@ function Index() {
           <a href="#" className="font-serif-display text-xl md:text-2xl leading-none">
             L<span className="text-gold">&</span>A <span className="italic">Sweet</span>
           </a>
-          <nav className="hidden md:flex items-center gap-8 text-[11px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/70">
-            <a href="#creations" className="hover:text-gold transition">Creations</a>
-            <a href="#wholesale" className="hover:text-gold transition">For Restaurants</a>
-            <a href="#events" className="hover:text-gold transition">Events</a>
-            <a href="#story" className="hover:text-gold transition">About</a>
-            <a href="#footer" className="hover:text-gold transition">Contact</a>
-          </nav>
+          <div className="flex items-center gap-6 md:gap-8">
+            <nav className="hidden md:flex items-center gap-8 text-[11px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/70">
+              <a href="#creations" className="hover:text-gold transition">Creations</a>
+              <a href="#wholesale" className="hover:text-gold transition">For Restaurants</a>
+              <a href="#events" className="hover:text-gold transition">Events</a>
+              <a href="#story" className="hover:text-gold transition">About</a>
+              <a href="#footer" className="hover:text-gold transition">Contact</a>
+            </nav>
+            <button
+              type="button"
+              aria-label="Open cart"
+              onClick={() => setCartOpen(true)}
+              className="relative inline-flex items-center justify-center h-10 w-10 border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors"
+            >
+              <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1 inline-flex items-center justify-center bg-gold text-ink text-[10px] font-medium rounded-full border border-ink">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
