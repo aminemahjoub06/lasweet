@@ -170,7 +170,16 @@ function Index() {
     confirmPassword: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [step, setStep] = useState<"form" | "payment" | "confirmed">("form");
+  const [orderRef, setOrderRef] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
+  // Snapshot of the cart at the moment the customer advances to payment,
+  // so quantities can't change mid-checkout.
+  const [orderSnapshot, setOrderSnapshot] = useState<
+    { no: string; name: string; prefix: string; suffix: string; image?: string; qty: number }[]
+  >([]);
+  const snapshotMin = orderSnapshot.reduce((s, i) => s + i.qty * PRICE_MIN, 0);
+  const snapshotMax = orderSnapshot.reduce((s, i) => s + i.qty * PRICE_MAX, 0);
   const updateForm = <K extends keyof OrderForm>(k: K, v: OrderForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
   const submitQuote = (e: React.FormEvent) => {
@@ -190,7 +199,92 @@ function Index() {
       if (form.password.length < 8) return setFormError("Password must be at least 8 characters.");
       if (form.password !== form.confirmPassword) return setFormError("Passwords do not match.");
     }
-    setSubmitted(true);
+    // Lock in a snapshot of the cart for the payment review step.
+    setOrderSnapshot(
+      cartItems.map((fl) => ({
+        no: fl.no,
+        name: fl.name,
+        prefix: fl.prefix,
+        suffix: fl.suffix,
+        image: fl.image,
+        qty: cart[fl.no]!,
+      })),
+    );
+    setStep("payment");
+    setTimeout(() => {
+      document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  };
+
+  const generateOrderRef = () => {
+    const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
+    const year = new Date().getFullYear().toString().slice(-2);
+    return `LA-${year}-${rand}`;
+  };
+
+  const payOrder = async () => {
+    if (paying || orderSnapshot.length === 0) return;
+    setPaying(true);
+    setFormError(null);
+    try {
+      // ─────────────────────────────────────────────────────────────
+      // TODO(stripe): Replace this block with a real Stripe Checkout flow.
+      //
+      //  1. Create a server function (e.g. src/lib/checkout.functions.ts)
+      //     that builds a Stripe Checkout Session from `orderSnapshot`
+      //     and the customer details in `form`, then returns { url }.
+      //  2. Call it here with useServerFn and redirect:
+      //         const { url } = await createCheckoutSession({ data: payload });
+      //         window.location.href = url;
+      //  3. Implement the success route + Stripe webhook to mark the
+      //     order as paid and persist it to the user's account.
+      //
+      //  Until Stripe is enabled, we simulate a successful authorisation
+      //  so the rest of the post-payment flow can be tested.
+      // ─────────────────────────────────────────────────────────────
+      await new Promise((r) => setTimeout(r, 900));
+      const ref = generateOrderRef();
+      setOrderRef(ref);
+
+      // Persist the order locally if the customer chose to create an account.
+      if (form.createAccount && typeof window !== "undefined") {
+        try {
+          const key = `la_orders_${form.email.toLowerCase()}`;
+          const existing = JSON.parse(window.localStorage.getItem(key) || "[]");
+          existing.push({
+            ref,
+            createdAt: new Date().toISOString(),
+            customer: {
+              fullName: form.fullName,
+              email: form.email,
+              phone: form.phone,
+              business: form.business,
+              orderType: form.orderType,
+              date: form.date,
+              delivery: form.delivery,
+              notes: form.notes,
+            },
+            items: orderSnapshot,
+            estimate: { min: snapshotMin, max: snapshotMax },
+          });
+          window.localStorage.setItem(key, JSON.stringify(existing));
+        } catch {
+          /* storage not available — silently skip */
+        }
+      }
+
+      setCart({});
+      setStep("confirmed");
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const resetOrder = () => {
+    setStep("form");
+    setOrderRef(null);
+    setOrderSnapshot([]);
+    setForm((f) => ({ ...f, password: "", confirmPassword: "" }));
   };
   const toggleExpand = (no: string) => {
     setShowDetails(false);
