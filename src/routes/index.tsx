@@ -1245,7 +1245,7 @@ function Index() {
               <button
                 type="button"
                 disabled={cartItems.length === 0}
-                onClick={() => setCartOpen(false)}
+                onClick={() => startOrderFlow()}
                 className="w-full bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-3 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Request Quote
