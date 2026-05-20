@@ -118,6 +118,21 @@ function Index() {
     setCart((c) => ({ ...c, [no]: Math.min(999, (c[no] ?? 0) + n) }));
     setCartOpen(true);
   };
+  const scrollToOrder = () => {
+    if (typeof document !== "undefined") {
+      document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+  const startOrderFlow = (opts?: { no?: string; qty?: number; orderType?: string }) => {
+    if (opts?.no) {
+      setCart((c) => ({ ...c, [opts.no!]: Math.min(999, (c[opts.no!] ?? 0) + (opts.qty ?? 1)) }));
+    }
+    if (opts?.orderType) {
+      setForm((f) => ({ ...f, orderType: opts.orderType! }));
+    }
+    setCartOpen(false);
+    setTimeout(scrollToOrder, 60);
+  };
   const setCartQty = (no: string, n: number) => {
     setCart((c) => {
       const next = { ...c };
@@ -281,7 +296,11 @@ function Index() {
                   ))}
                 </div>
 
-                <button className="w-full border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold hover:text-ink transition">
+                <button
+                  type="button"
+                  onClick={() => startOrderFlow({ no: f.no, qty: 1 })}
+                  className="w-full border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold hover:text-ink transition"
+                >
                   Order this flavour
                 </button>
               </div>
@@ -652,7 +671,11 @@ function Index() {
                 </li>
               ))}
             </ul>
-            <button className="border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-gold hover:text-ink transition">
+            <button
+              type="button"
+              onClick={() => startOrderFlow({ orderType: "Restaurant" })}
+              className="border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-gold hover:text-ink transition"
+            >
               Get wholesale quote
             </button>
           </div>
@@ -677,7 +700,11 @@ function Index() {
                 </li>
               ))}
             </ul>
-            <button className="border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-gold hover:text-ink transition">
+            <button
+              type="button"
+              onClick={() => startOrderFlow({ orderType: "Private event" })}
+              className="border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-gold hover:text-ink transition"
+            >
               Book my event
             </button>
           </div>
@@ -1218,7 +1245,7 @@ function Index() {
               <button
                 type="button"
                 disabled={cartItems.length === 0}
-                onClick={() => setCartOpen(false)}
+                onClick={() => startOrderFlow()}
                 className="w-full bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-3 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Request Quote
