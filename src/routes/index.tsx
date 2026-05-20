@@ -365,6 +365,16 @@ function Index() {
                 </span>
               )}
             </button>
+            <Link
+              to="/account"
+              aria-label={currentUser ? "Your account" : "Sign in"}
+              className="relative inline-flex items-center justify-center h-10 w-10 border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors"
+            >
+              <User className="h-4 w-4" strokeWidth={1.5} />
+              {hydrated && currentUser && (
+                <span className="absolute -bottom-1 -right-1 h-2.5 w-2.5 bg-gold rounded-full border border-ink" />
+              )}
+            </Link>
           </div>
         </div>
       </header>
