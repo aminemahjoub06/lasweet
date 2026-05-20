@@ -8,19 +8,41 @@ import {
   login,
   logout,
   markAllMessagesRead,
+  markAllNotificationsRead,
+  clearNotifications,
   queueReorder,
+  sendCustomerMessage,
   setOrderStatus,
   signup,
   updateDetails,
-  useAccountDB,
   useCurrentUser,
   useHydrated,
+  useUnreadCounts,
+  useUserNotifications,
   useUserOrders,
   type CustomerType,
+  type NotificationType,
   type Order,
   type OrderStatus,
 } from "@/lib/account";
-import { LogOut, Package, Bell, MessageSquare, User as UserIcon, RotateCcw, X } from "lucide-react";
+import {
+  LogOut,
+  Package,
+  Bell,
+  MessageSquare,
+  User as UserIcon,
+  RotateCcw,
+  Send,
+  CheckCheck,
+  CheckCircle2,
+  Truck,
+  CreditCard,
+  AlertCircle,
+  PackageCheck,
+  Mail,
+  XCircle,
+  Sparkles,
+} from "lucide-react";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
