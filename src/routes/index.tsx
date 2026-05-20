@@ -103,6 +103,57 @@ function Index() {
       return next;
     });
   };
+
+  // Order form state
+  type OrderForm = {
+    fullName: string;
+    email: string;
+    phone: string;
+    business: string;
+    orderType: string;
+    date: string;
+    delivery: "delivery" | "pickup";
+    notes: string;
+    createAccount: boolean;
+    password: string;
+    confirmPassword: string;
+  };
+  const [form, setForm] = useState<OrderForm>({
+    fullName: "",
+    email: "",
+    phone: "",
+    business: "",
+    orderType: "Restaurant",
+    date: "",
+    delivery: "delivery",
+    notes: "",
+    createAccount: false,
+    password: "",
+    confirmPassword: "",
+  });
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const updateForm = <K extends keyof OrderForm>(k: K, v: OrderForm[K]) =>
+    setForm((f) => ({ ...f, [k]: v }));
+  const submitQuote = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    const name = form.fullName.trim();
+    const email = form.email.trim();
+    const phone = form.phone.trim();
+    if (!name || name.length > 100) return setFormError("Please enter your full name.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 255)
+      return setFormError("Please enter a valid email address.");
+    if (!/^[+\d\s\-()]{6,20}$/.test(phone)) return setFormError("Please enter a valid phone number.");
+    if (form.business.length > 120) return setFormError("Business name is too long.");
+    if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
+    if (cartItems.length === 0) return setFormError("Your selection is empty — add a flavour first.");
+    if (form.createAccount) {
+      if (form.password.length < 8) return setFormError("Password must be at least 8 characters.");
+      if (form.password !== form.confirmPassword) return setFormError("Passwords do not match.");
+    }
+    setSubmitted(true);
+  };
   const toggleExpand = (no: string) => {
     setShowDetails(false);
     setExpandedNo((cur) => (cur === no ? null : no));
