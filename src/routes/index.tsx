@@ -1553,6 +1553,27 @@ function CheckoutModal({
                     <span className="text-gold">${snapshotMax}</span>
                   </span>
                 </div>
+                <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/60">
+                  <span>Delivery fee</span>
+                  <span className="text-gold normal-case tracking-normal font-serif-display text-base">
+                    {form.delivery === "pickup"
+                      ? "Free (pick-up)"
+                      : "Confirmed after order details"}
+                  </span>
+                </div>
+                <div className="mt-3 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
+                  {form.delivery === "pickup"
+                    ? "Pick-up · No minimum order"
+                    : `Delivery · Minimum 6 pcs ${
+                        orderSnapshot.reduce((s, i) => s + i.qty, 0) >= 6 ? "✓ met" : "— not met"
+                      }`}
+                </div>
+                {form.delivery === "delivery" && (
+                  <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
+                    Delivery available from 6 pieces across Brisbane and surrounding area.
+                    Delivery fee confirmed based on distance — longer distances may require a higher minimum.
+                  </p>
+                )}
                 <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55">
                   Final price confirmed after quote.
                 </p>
@@ -1646,6 +1667,12 @@ function CheckoutModal({
                     <span className="text-gold">${snapshotMin}</span>
                     <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
                     <span className="text-gold">${snapshotMax}</span>
+                  </span>
+                </div>
+                <div className="mt-2 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
+                  <span>Delivery fee</span>
+                  <span className="text-gold">
+                    {form.delivery === "pickup" ? "Free" : "Confirmed after order details"}
                   </span>
                 </div>
               </div>
