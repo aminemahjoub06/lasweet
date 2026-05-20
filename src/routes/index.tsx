@@ -118,11 +118,6 @@ function Index() {
     setCart((c) => ({ ...c, [no]: Math.min(999, (c[no] ?? 0) + n) }));
     setCartOpen(true);
   };
-  const scrollToOrder = () => {
-    if (typeof document !== "undefined") {
-      document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
   const startOrderFlow = (opts?: { no?: string; qty?: number; orderType?: string }) => {
     if (opts?.no) {
       setCart((c) => ({ ...c, [opts.no!]: Math.min(999, (c[opts.no!] ?? 0) + (opts.qty ?? 1)) }));
@@ -130,8 +125,11 @@ function Index() {
     if (opts?.orderType) {
       setForm((f) => ({ ...f, orderType: opts.orderType! }));
     }
-    setCartOpen(false);
-    setTimeout(scrollToOrder, 60);
+    // Always open the cart first — the customer must validate the cart
+    // before the checkout flow begins.
+    setCheckoutOpen(false);
+    setCheckoutStep("account");
+    setCartOpen(true);
   };
   const setCartQty = (no: string, n: number) => {
     setCart((c) => {
@@ -151,6 +149,7 @@ function Index() {
     orderType: string;
     date: string;
     delivery: "delivery" | "pickup";
+    address: string;
     notes: string;
     createAccount: boolean;
     password: string;
@@ -164,13 +163,19 @@ function Index() {
     orderType: "Restaurant",
     date: "",
     delivery: "delivery",
+    address: "",
     notes: "",
     createAccount: false,
     password: "",
     confirmPassword: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
-  const [step, setStep] = useState<"form" | "payment" | "confirmed">("form");
+  // Step-by-step checkout modal — only opens after the customer validates
+  // the cart. Account choice → details → review → payment → confirmed.
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  type CheckoutStep = "account" | "details" | "review" | "payment" | "confirmed";
+  const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>("account");
+  const [accountMode, setAccountMode] = useState<"create" | "login" | "guest" | null>(null);
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
   // Snapshot of the cart at the moment the customer advances to payment,
@@ -182,7 +187,7 @@ function Index() {
   const snapshotMax = orderSnapshot.reduce((s, i) => s + i.qty * PRICE_MAX, 0);
   const updateForm = <K extends keyof OrderForm>(k: K, v: OrderForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
-  const submitQuote = (e: React.FormEvent) => {
+  const validateDetails = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
     const name = form.fullName.trim();
@@ -193,13 +198,15 @@ function Index() {
       return setFormError("Please enter a valid email address.");
     if (!/^[+\d\s\-()]{6,20}$/.test(phone)) return setFormError("Please enter a valid phone number.");
     if (form.business.length > 120) return setFormError("Business name is too long.");
+    if (form.delivery === "delivery" && form.address.trim().length < 5)
+      return setFormError("Please enter a delivery address.");
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartItems.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     if (form.createAccount) {
       if (form.password.length < 8) return setFormError("Password must be at least 8 characters.");
       if (form.password !== form.confirmPassword) return setFormError("Passwords do not match.");
     }
-    // Lock in a snapshot of the cart for the payment review step.
+    // Lock in a snapshot of the cart so quantities can't change mid-review.
     setOrderSnapshot(
       cartItems.map((fl) => ({
         no: fl.no,
@@ -210,10 +217,7 @@ function Index() {
         qty: cart[fl.no]!,
       })),
     );
-    setStep("payment");
-    setTimeout(() => {
-      document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 60);
+    setCheckoutStep("review");
   };
 
   const generateOrderRef = () => {
@@ -274,17 +278,27 @@ function Index() {
       }
 
       setCart({});
-      setStep("confirmed");
+      setCheckoutStep("confirmed");
     } finally {
       setPaying(false);
     }
   };
 
   const resetOrder = () => {
-    setStep("form");
+    setCheckoutOpen(false);
+    setCheckoutStep("account");
+    setAccountMode(null);
     setOrderRef(null);
     setOrderSnapshot([]);
     setForm((f) => ({ ...f, password: "", confirmPassword: "" }));
+  };
+  const openCheckout = () => {
+    if (cartItems.length === 0) return;
+    setCartOpen(false);
+    setFormError(null);
+    setAccountMode(null);
+    setCheckoutStep("account");
+    setCheckoutOpen(true);
   };
   const toggleExpand = (no: string) => {
     setShowDetails(false);
@@ -805,505 +819,6 @@ function Index() {
         </div>
       </section>
 
-      {/* QUOTE */}
-      {/* CREATE YOUR ORDER */}
-      <section id="order" className="relative bg-ink border-t border-line diamond-bg">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32">
-          <div className="text-center mb-14 md:mb-20">
-            <div className="eyebrow justify-center mb-6 inline-flex">Order &amp; Account</div>
-            <h2 className="font-serif-display text-5xl md:text-6xl leading-tight mb-5">
-              Create your <span className="italic text-gold">Order</span>
-            </h2>
-            <p className="max-w-2xl mx-auto text-sm md:text-base text-[color:var(--foreground)]/70 leading-relaxed">
-              Build your selection, share your details, and we'll confirm availability and final pricing.
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-12 gap-6 lg:gap-8">
-            {/* LEFT — Cart summary */}
-            <aside
-              className="lg:col-span-5 border border-gold/30 bg-ink-2/60 backdrop-blur-xl p-6 md:p-8 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.9)] self-start"
-              aria-label="Cart summary"
-            >
-              <div className="flex items-baseline justify-between mb-6">
-                <div>
-                  <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Cart</div>
-                  <h3 className="font-serif-display text-2xl md:text-3xl">
-                    Your <span className="italic text-gold">Selection</span>
-                  </h3>
-                </div>
-                <span className="text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/55">
-                  {cartCount} {cartCount === 1 ? "piece" : "pieces"}
-                </span>
-              </div>
-
-              {cartItems.length === 0 ? (
-                <div className="border border-dashed border-line py-10 text-center text-sm text-[color:var(--foreground)]/55">
-                  <p>No flavours selected yet.</p>
-                  <a
-                    href="#products"
-                    className="mt-3 inline-block text-[10px] tracking-[0.24em] uppercase text-gold border-b border-gold/40 hover:border-gold transition"
-                  >
-                    Explore the collection
-                  </a>
-                </div>
-              ) : (
-                <ul className="divide-y divide-line">
-                  {cartItems.map((fl) => {
-                    const q = cart[fl.no];
-                    return (
-                      <li key={fl.no} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
-                        <div className="h-14 w-14 shrink-0 border border-gold/40 bg-ink-3 p-1 flex items-center justify-center">
-                          {fl.image && (
-                            <img
-                              src={fl.image}
-                              alt={fl.name}
-                              className="max-h-full max-w-full object-contain"
-                              loading="lazy"
-                            />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
-                            No. {fl.no}
-                          </div>
-                          <div className="font-serif-display text-lg leading-tight">
-                            {fl.prefix}
-                            <span className="italic text-gold">{fl.suffix}</span>
-                          </div>
-                        </div>
-                        <div className="inline-flex items-center border border-gold/40 text-gold">
-                          <button
-                            type="button"
-                            aria-label="Decrease quantity"
-                            onClick={() => setCartQty(fl.no, q - 1)}
-                            className="h-8 w-8 inline-flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"
-                          >
-                            <Minus className="h-3 w-3" strokeWidth={1.8} />
-                          </button>
-                          <span className="min-w-[2ch] text-center text-xs tracking-[0.2em] text-[color:var(--foreground)]/85">
-                            {q}
-                          </span>
-                          <button
-                            type="button"
-                            aria-label="Increase quantity"
-                            onClick={() => setCartQty(fl.no, q + 1)}
-                            className="h-8 w-8 inline-flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"
-                          >
-                            <Plus className="h-3 w-3" strokeWidth={1.8} />
-                          </button>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-
-              <div className="mt-6 pt-5 border-t border-line space-y-3">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/60">
-                    Estimated subtotal
-                  </span>
-                  <span className="font-serif-display text-xl">
-                    <span className="text-gold">${subtotalMin}</span>
-                    <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
-                    <span className="text-gold">${subtotalMax}</span>
-                  </span>
-                </div>
-                <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
-                  Range based on $12–20 per piece. Final price confirmed after quote.
-                </p>
-              </div>
-            </aside>
-
-            {/* RIGHT — Form */}
-            <div className="lg:col-span-7 border border-gold/30 bg-ink-2/60 backdrop-blur-xl p-6 md:p-8 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.9)]">
-              {/* Step indicator */}
-              <div className="flex items-center gap-2 mb-8 text-[9px] tracking-[0.22em] uppercase">
-                {[
-                  { k: "form", l: "1 · Details" },
-                  { k: "payment", l: "2 · Payment" },
-                  { k: "confirmed", l: "3 · Confirmation" },
-                ].map((s, i, arr) => {
-                  const order = ["form", "payment", "confirmed"];
-                  const active = order.indexOf(step) >= order.indexOf(s.k);
-                  return (
-                    <div key={s.k} className="flex items-center gap-2">
-                      <span className={active ? "text-gold" : "text-[color:var(--foreground)]/35"}>
-                        {s.l}
-                      </span>
-                      {i < arr.length - 1 && (
-                        <span className={`h-px w-6 ${active ? "bg-gold/60" : "bg-line"}`} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {step === "confirmed" ? (
-                <div className="py-8 text-center">
-                  <div className="mx-auto mb-6 inline-flex h-14 w-14 items-center justify-center border border-gold/50 text-gold">
-                    ✓
-                  </div>
-                  <div className="eyebrow justify-center mb-4 inline-flex">Order Confirmed</div>
-                  <h3 className="font-serif-display text-3xl md:text-4xl mb-4">
-                    Thank you,{" "}
-                    <span className="italic text-gold">
-                      {form.fullName.split(" ")[0] || "friend"}
-                    </span>
-                  </h3>
-                  <p className="text-sm text-[color:var(--foreground)]/75 max-w-md mx-auto leading-relaxed">
-                    Your order has been received. You will receive a confirmation shortly at{" "}
-                    <span className="text-gold">{form.email}</span>.
-                  </p>
-                  <div className="mt-8 inline-block border border-gold/40 bg-ink-3/60 px-6 py-4">
-                    <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-1">
-                      Order reference
-                    </div>
-                    <div className="font-serif-display text-2xl text-gold tracking-wider">
-                      {orderRef}
-                    </div>
-                  </div>
-                  {form.createAccount && (
-                    <p className="mt-6 text-[11px] italic text-[color:var(--foreground)]/55">
-                      Saved to your account · {form.email}
-                    </p>
-                  )}
-                  <div className="mt-8">
-                    <button
-                      type="button"
-                      onClick={resetOrder}
-                      className="inline-flex items-center text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-5 py-3 hover:bg-gold hover:text-ink transition-colors"
-                    >
-                      Start a new order
-                    </button>
-                  </div>
-                </div>
-              ) : step === "payment" ? (
-                <div className="space-y-6">
-                  <div>
-                    <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">
-                      Payment
-                    </div>
-                    <h3 className="font-serif-display text-2xl md:text-3xl">
-                      Confirm &amp; <span className="italic text-gold">Pay</span>
-                    </h3>
-                    <p className="mt-3 text-sm text-[color:var(--foreground)]/65 leading-relaxed">
-                      Review your order summary before completing payment.
-                    </p>
-                  </div>
-
-                  {/* Order summary */}
-                  <div className="border border-line bg-ink-3/40 p-5 space-y-4">
-                    <ul className="divide-y divide-line">
-                      {orderSnapshot.map((i) => (
-                        <li key={i.no} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
-                          <div className="h-12 w-12 shrink-0 border border-gold/40 bg-ink-3 p-1 flex items-center justify-center">
-                            {i.image && (
-                              <img
-                                src={i.image}
-                                alt={i.name}
-                                className="max-h-full max-w-full object-contain"
-                              />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
-                              No. {i.no}
-                            </div>
-                            <div className="font-serif-display text-base leading-tight">
-                              {i.prefix}
-                              <span className="italic text-gold">{i.suffix}</span>
-                            </div>
-                          </div>
-                          <div className="text-xs tracking-[0.18em] text-[color:var(--foreground)]/75">
-                            × {i.qty}
-                          </div>
-                          <div className="text-xs text-[color:var(--foreground)]/70 min-w-[80px] text-right">
-                            <span className="text-gold">${i.qty * PRICE_MIN}</span>
-                            <span className="mx-1">–</span>
-                            <span className="text-gold">${i.qty * PRICE_MAX}</span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="border-t border-line pt-4 flex items-baseline justify-between">
-                      <span className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/60">
-                        Estimated total
-                      </span>
-                      <span className="font-serif-display text-xl">
-                        <span className="text-gold">${snapshotMin}</span>
-                        <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
-                        <span className="text-gold">${snapshotMax}</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Customer recap */}
-                  <div className="border border-line bg-ink-3/40 p-5 text-sm space-y-2">
-                    <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
-                      Delivering to
-                    </div>
-                    <div className="font-serif-display text-lg">{form.fullName}</div>
-                    <div className="text-[color:var(--foreground)]/70">{form.email}</div>
-                    <div className="text-[color:var(--foreground)]/70">{form.phone}</div>
-                    <div className="text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 pt-2">
-                      {form.orderType} · {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
-                      {form.date ? ` · ${form.date}` : ""}
-                    </div>
-                  </div>
-
-                  {/* Payment method placeholder */}
-                  <div className="border border-gold/30 bg-ink-3/40 p-5">
-                    <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-3">
-                      Payment method
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-[color:var(--foreground)]/75">
-                      <span className="inline-flex h-9 w-12 items-center justify-center border border-gold/40 text-[10px] tracking-[0.18em] uppercase text-gold">
-                        Card
-                      </span>
-                      <span>Secure card payment via Stripe Checkout</span>
-                    </div>
-                    <p className="mt-3 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
-                      You'll be redirected to a secure Stripe-hosted page once connected.
-                      No card details are stored on this site.
-                    </p>
-                  </div>
-
-                  {formError && (
-                    <p className="text-xs tracking-wide text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-4 py-3">
-                      {formError}
-                    </p>
-                  )}
-
-                  <div className="flex items-center gap-2 text-[11px] text-[color:var(--foreground)]/65">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      className="text-gold"
-                    >
-                      <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" />
-                    </svg>
-                    Secure payment — your details are protected.
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setStep("form")}
-                      className="sm:w-1/3 border border-gold/40 text-gold text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-gold hover:text-ink transition-colors"
-                    >
-                      ← Back
-                    </button>
-                    <button
-                      type="button"
-                      disabled={paying}
-                      onClick={payOrder}
-                      className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-50 disabled:cursor-wait"
-                    >
-                      {paying ? "Processing…" : "Pay Securely"}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={submitQuote} className="space-y-6" noValidate>
-                  <div>
-                    <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Contact</div>
-                    <h3 className="font-serif-display text-2xl md:text-3xl">
-                      Your <span className="italic text-gold">Details</span>
-                    </h3>
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-5">
-                    <FieldLA label="Full name" required>
-                      <input
-                        type="text"
-                        required
-                        maxLength={100}
-                        autoComplete="name"
-                        value={form.fullName}
-                        onChange={(e) => updateForm("fullName", e.target.value)}
-                        className={inputCls}
-                      />
-                    </FieldLA>
-                    <FieldLA label="Email" required>
-                      <input
-                        type="email"
-                        required
-                        maxLength={255}
-                        autoComplete="email"
-                        value={form.email}
-                        onChange={(e) => updateForm("email", e.target.value)}
-                        className={inputCls}
-                      />
-                    </FieldLA>
-                    <FieldLA label="Phone" required>
-                      <input
-                        type="tel"
-                        required
-                        maxLength={20}
-                        autoComplete="tel"
-                        value={form.phone}
-                        onChange={(e) => updateForm("phone", e.target.value)}
-                        className={inputCls}
-                      />
-                    </FieldLA>
-                    <FieldLA label="Business name (optional)">
-                      <input
-                        type="text"
-                        maxLength={120}
-                        autoComplete="organization"
-                        value={form.business}
-                        onChange={(e) => updateForm("business", e.target.value)}
-                        className={inputCls}
-                      />
-                    </FieldLA>
-                    <FieldLA label="Order type">
-                      <select
-                        value={form.orderType}
-                        onChange={(e) => updateForm("orderType", e.target.value)}
-                        className={inputCls}
-                      >
-                        <option className="bg-ink-2">Restaurant</option>
-                        <option className="bg-ink-2">Café</option>
-                        <option className="bg-ink-2">Private event</option>
-                        <option className="bg-ink-2">Other</option>
-                      </select>
-                    </FieldLA>
-                    <FieldLA label="Preferred date">
-                      <input
-                        type="date"
-                        value={form.date}
-                        onChange={(e) => updateForm("date", e.target.value)}
-                        className={inputCls}
-                      />
-                    </FieldLA>
-                  </div>
-
-                  <FieldLA label="Delivery or pick-up">
-                    <div className="grid grid-cols-2 gap-3">
-                      {(["delivery", "pickup"] as const).map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => updateForm("delivery", opt)}
-                          className={`text-[10px] tracking-[0.24em] uppercase py-3 border transition-colors ${
-                            form.delivery === opt
-                              ? "bg-gold text-ink border-gold"
-                              : "text-gold border-gold/40 hover:border-gold"
-                          }`}
-                        >
-                          {opt === "delivery" ? "Delivery" : "Pick-up"}
-                        </button>
-                      ))}
-                    </div>
-                  </FieldLA>
-
-                  <FieldLA label="Notes (optional)">
-                    <textarea
-                      rows={4}
-                      maxLength={1000}
-                      value={form.notes}
-                      onChange={(e) => updateForm("notes", e.target.value)}
-                      className={`${inputCls} resize-none`}
-                      placeholder="Allergens, presentation, event size…"
-                    />
-                  </FieldLA>
-
-                  {/* Account */}
-                  <div className="border-t border-line pt-6 space-y-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
-                          Account
-                        </div>
-                        <p className="text-sm text-[color:var(--foreground)]/70 leading-relaxed">
-                          Create an account to track orders and save your details.
-                        </p>
-                      </div>
-                      <label className="inline-flex items-center gap-3 shrink-0 cursor-pointer select-none">
-                        <span className="text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/70">
-                          Create
-                        </span>
-                        <span className="relative inline-block w-10 h-5 align-middle">
-                          <input
-                            type="checkbox"
-                            checked={form.createAccount}
-                            onChange={(e) => updateForm("createAccount", e.target.checked)}
-                            className="peer sr-only"
-                          />
-                          <span className="absolute inset-0 border border-gold/40 bg-ink-3 peer-checked:bg-gold/30 peer-checked:border-gold transition-colors" />
-                          <span className="absolute top-0.5 left-0.5 h-4 w-4 bg-gold transition-transform peer-checked:translate-x-5" />
-                        </span>
-                      </label>
-                    </div>
-                    {form.createAccount && (
-                      <div className="grid sm:grid-cols-2 gap-5 animate-fade-in">
-                        <FieldLA label="Password" required>
-                          <input
-                            type="password"
-                            required
-                            minLength={8}
-                            maxLength={128}
-                            autoComplete="new-password"
-                            value={form.password}
-                            onChange={(e) => updateForm("password", e.target.value)}
-                            className={inputCls}
-                          />
-                        </FieldLA>
-                        <FieldLA label="Confirm password" required>
-                          <input
-                            type="password"
-                            required
-                            minLength={8}
-                            maxLength={128}
-                            autoComplete="new-password"
-                            value={form.confirmPassword}
-                            onChange={(e) => updateForm("confirmPassword", e.target.value)}
-                            className={inputCls}
-                          />
-                        </FieldLA>
-                      </div>
-                    )}
-                  </div>
-
-                  {formError && (
-                    <p className="text-xs tracking-wide text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-4 py-3">
-                      {formError}
-                    </p>
-                  )}
-
-                  <div className="border-t border-line pt-6 space-y-3">
-                    <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
-                      Review your order on the next step before completing secure payment.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <button
-                        type="submit"
-                        className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors"
-                      >
-                        Continue to Payment →
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => updateForm("createAccount", false)}
-                        className="sm:flex-1 border border-gold/50 text-gold text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-gold hover:text-ink transition-colors"
-                      >
-                        Continue as Guest
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="bg-ink">
         <div className="mx-auto max-w-3xl px-6 md:px-10 py-24 md:py-32 text-center">
@@ -1510,10 +1025,10 @@ function Index() {
               <button
                 type="button"
                 disabled={cartItems.length === 0}
-                onClick={() => startOrderFlow()}
+                onClick={openCheckout}
                 className="w-full bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-3 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Request Quote
+                Continue to Checkout →
               </button>
               <button
                 type="button"
@@ -1526,6 +1041,597 @@ function Index() {
           </div>
         </aside>
       </div>
+
+      {/* CHECKOUT MODAL — step-by-step, opens only after cart validation */}
+      <CheckoutModal
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        step={checkoutStep}
+        setStep={setCheckoutStep}
+        accountMode={accountMode}
+        setAccountMode={setAccountMode}
+        form={form}
+        updateForm={updateForm}
+        formError={formError}
+        setFormError={setFormError}
+        validateDetails={validateDetails}
+        orderSnapshot={orderSnapshot}
+        snapshotMin={snapshotMin}
+        snapshotMax={snapshotMax}
+        PRICE_MIN={PRICE_MIN}
+        PRICE_MAX={PRICE_MAX}
+        paying={paying}
+        payOrder={payOrder}
+        orderRef={orderRef}
+        resetOrder={resetOrder}
+      />
     </main>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHECKOUT MODAL
+// ─────────────────────────────────────────────────────────────────────────────
+type CheckoutStep = "account" | "details" | "review" | "payment" | "confirmed";
+type OrderForm = {
+  fullName: string;
+  email: string;
+  phone: string;
+  business: string;
+  orderType: string;
+  date: string;
+  delivery: "delivery" | "pickup";
+  address: string;
+  notes: string;
+  createAccount: boolean;
+  password: string;
+  confirmPassword: string;
+};
+type SnapshotItem = {
+  no: string;
+  name: string;
+  prefix: string;
+  suffix: string;
+  image?: string;
+  qty: number;
+};
+
+function CheckoutModal({
+  open,
+  onClose,
+  step,
+  setStep,
+  accountMode,
+  setAccountMode,
+  form,
+  updateForm,
+  formError,
+  setFormError,
+  validateDetails,
+  orderSnapshot,
+  snapshotMin,
+  snapshotMax,
+  PRICE_MIN,
+  PRICE_MAX,
+  paying,
+  payOrder,
+  orderRef,
+  resetOrder,
+}: {
+  open: boolean;
+  onClose: () => void;
+  step: CheckoutStep;
+  setStep: (s: CheckoutStep) => void;
+  accountMode: "create" | "login" | "guest" | null;
+  setAccountMode: (m: "create" | "login" | "guest" | null) => void;
+  form: OrderForm;
+  updateForm: <K extends keyof OrderForm>(k: K, v: OrderForm[K]) => void;
+  formError: string | null;
+  setFormError: (v: string | null) => void;
+  validateDetails: (e: React.FormEvent) => void;
+  orderSnapshot: SnapshotItem[];
+  snapshotMin: number;
+  snapshotMax: number;
+  PRICE_MIN: number;
+  PRICE_MAX: number;
+  paying: boolean;
+  payOrder: () => void;
+  orderRef: string | null;
+  resetOrder: () => void;
+}) {
+  const steps: { k: CheckoutStep; l: string }[] = [
+    { k: "account", l: "1 · Account" },
+    { k: "details", l: "2 · Details" },
+    { k: "review", l: "3 · Review" },
+    { k: "payment", l: "4 · Payment" },
+  ];
+  const order: CheckoutStep[] = ["account", "details", "review", "payment", "confirmed"];
+
+  const chooseAccount = (m: "create" | "login" | "guest") => {
+    setAccountMode(m);
+    updateForm("createAccount", m === "create");
+    setStep("details");
+  };
+
+  return (
+    <div
+      className={`fixed inset-0 z-[70] transition-opacity duration-300 ${
+        open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+      }`}
+      aria-hidden={!open}
+    >
+      <div className="absolute inset-0 bg-ink/80 backdrop-blur-md" onClick={onClose} />
+      <aside
+        role="dialog"
+        aria-label="Checkout"
+        className={`absolute right-0 top-0 h-full w-full sm:w-[560px] bg-ink-2 border-l border-gold/30 shadow-[0_0_60px_-10px_rgba(0,0,0,0.9)] flex flex-col transform transition-transform duration-500 ease-out ${
+          open ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-line">
+          <div>
+            <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">Checkout</div>
+            <h2 className="font-serif-display text-2xl">
+              Complete your <span className="italic text-gold">Order</span>
+            </h2>
+          </div>
+          <button
+            type="button"
+            aria-label="Close checkout"
+            onClick={onClose}
+            className="h-9 w-9 inline-flex items-center justify-center border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors"
+          >
+            <X className="h-4 w-4" strokeWidth={1.5} />
+          </button>
+        </div>
+
+        {/* Step indicator */}
+        {step !== "confirmed" && (
+          <div className="flex items-center gap-2 px-6 py-4 border-b border-line text-[9px] tracking-[0.22em] uppercase overflow-x-auto">
+            {steps.map((s, i) => {
+              const active = order.indexOf(step) >= order.indexOf(s.k);
+              return (
+                <div key={s.k} className="flex items-center gap-2 shrink-0">
+                  <span className={active ? "text-gold" : "text-[color:var(--foreground)]/35"}>
+                    {s.l}
+                  </span>
+                  {i < steps.length - 1 && (
+                    <span className={`h-px w-5 ${active ? "bg-gold/60" : "bg-line"}`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          {/* STEP: ACCOUNT */}
+          {step === "account" && (
+            <div className="space-y-5">
+              <div>
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Account</div>
+                <h3 className="font-serif-display text-2xl">
+                  How would you like to <span className="italic text-gold">continue</span>?
+                </h3>
+                <p className="mt-3 text-sm text-[color:var(--foreground)]/70 leading-relaxed">
+                  Create an account to track future orders, log in if you already have one, or
+                  continue as a guest.
+                </p>
+              </div>
+              <div className="grid gap-3">
+                {(
+                  [
+                    { k: "create", l: "Create an account", d: "Save your details for next time." },
+                    { k: "login", l: "Log in", d: "Returning customer." },
+                    { k: "guest", l: "Continue as guest", d: "No account, no password." },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.k}
+                    type="button"
+                    onClick={() => chooseAccount(opt.k)}
+                    className="text-left border border-gold/40 bg-ink-3/40 px-5 py-4 hover:border-gold hover:bg-ink-3/70 transition-colors"
+                  >
+                    <div className="text-[11px] tracking-[0.24em] uppercase text-gold">{opt.l}</div>
+                    <div className="mt-1 text-sm text-[color:var(--foreground)]/70">{opt.d}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* STEP: DETAILS */}
+          {step === "details" && (
+            <form onSubmit={validateDetails} className="space-y-5" noValidate>
+              <div>
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">
+                  {accountMode === "login" ? "Log in" : "Your details"}
+                </div>
+                <h3 className="font-serif-display text-2xl">
+                  {accountMode === "login" ? (
+                    <>
+                      Welcome <span className="italic text-gold">back</span>
+                    </>
+                  ) : (
+                    <>
+                      Your <span className="italic text-gold">information</span>
+                    </>
+                  )}
+                </h3>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <FieldLA label="Full name" required>
+                  <input
+                    type="text"
+                    required
+                    maxLength={100}
+                    autoComplete="name"
+                    value={form.fullName}
+                    onChange={(e) => updateForm("fullName", e.target.value)}
+                    className={inputCls}
+                  />
+                </FieldLA>
+                <FieldLA label="Email" required>
+                  <input
+                    type="email"
+                    required
+                    maxLength={255}
+                    autoComplete="email"
+                    value={form.email}
+                    onChange={(e) => updateForm("email", e.target.value)}
+                    className={inputCls}
+                  />
+                </FieldLA>
+                <FieldLA label="Phone" required>
+                  <input
+                    type="tel"
+                    required
+                    maxLength={20}
+                    autoComplete="tel"
+                    value={form.phone}
+                    onChange={(e) => updateForm("phone", e.target.value)}
+                    className={inputCls}
+                  />
+                </FieldLA>
+                <FieldLA label="Business name (optional)">
+                  <input
+                    type="text"
+                    maxLength={120}
+                    autoComplete="organization"
+                    value={form.business}
+                    onChange={(e) => updateForm("business", e.target.value)}
+                    className={inputCls}
+                  />
+                </FieldLA>
+                <FieldLA label="Customer type">
+                  <select
+                    value={form.orderType}
+                    onChange={(e) => updateForm("orderType", e.target.value)}
+                    className={inputCls}
+                  >
+                    <option className="bg-ink-2">Restaurant</option>
+                    <option className="bg-ink-2">Café</option>
+                    <option className="bg-ink-2">Private event</option>
+                    <option className="bg-ink-2">Other</option>
+                  </select>
+                </FieldLA>
+                <FieldLA label="Preferred date">
+                  <input
+                    type="date"
+                    value={form.date}
+                    onChange={(e) => updateForm("date", e.target.value)}
+                    className={inputCls}
+                  />
+                </FieldLA>
+              </div>
+
+              <FieldLA label="Delivery or pick-up">
+                <div className="grid grid-cols-2 gap-3">
+                  {(["delivery", "pickup"] as const).map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => updateForm("delivery", opt)}
+                      className={`text-[10px] tracking-[0.24em] uppercase py-3 border transition-colors ${
+                        form.delivery === opt
+                          ? "bg-gold text-ink border-gold"
+                          : "text-gold border-gold/40 hover:border-gold"
+                      }`}
+                    >
+                      {opt === "delivery" ? "Delivery" : "Pick-up"}
+                    </button>
+                  ))}
+                </div>
+              </FieldLA>
+
+              {form.delivery === "delivery" && (
+                <FieldLA label="Delivery address" required>
+                  <input
+                    type="text"
+                    maxLength={200}
+                    autoComplete="street-address"
+                    value={form.address}
+                    onChange={(e) => updateForm("address", e.target.value)}
+                    className={inputCls}
+                    placeholder="Street, suburb, postcode"
+                  />
+                </FieldLA>
+              )}
+
+              <FieldLA label="Notes / allergens / special requests">
+                <textarea
+                  rows={3}
+                  maxLength={1000}
+                  value={form.notes}
+                  onChange={(e) => updateForm("notes", e.target.value)}
+                  className={`${inputCls} resize-none`}
+                  placeholder="Allergens, presentation, event size…"
+                />
+              </FieldLA>
+
+              {(accountMode === "create" || accountMode === "login") && (
+                <div className="grid sm:grid-cols-2 gap-4 border-t border-line pt-5">
+                  <FieldLA label="Password" required>
+                    <input
+                      type="password"
+                      required
+                      minLength={8}
+                      maxLength={128}
+                      autoComplete={accountMode === "create" ? "new-password" : "current-password"}
+                      value={form.password}
+                      onChange={(e) => updateForm("password", e.target.value)}
+                      className={inputCls}
+                    />
+                  </FieldLA>
+                  {accountMode === "create" && (
+                    <FieldLA label="Confirm password" required>
+                      <input
+                        type="password"
+                        required
+                        minLength={8}
+                        maxLength={128}
+                        autoComplete="new-password"
+                        value={form.confirmPassword}
+                        onChange={(e) => updateForm("confirmPassword", e.target.value)}
+                        className={inputCls}
+                      />
+                    </FieldLA>
+                  )}
+                </div>
+              )}
+
+              {formError && (
+                <p className="text-xs tracking-wide text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-4 py-3">
+                  {formError}
+                </p>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormError(null);
+                    setStep("account");
+                  }}
+                  className="sm:w-1/3 border border-gold/40 text-gold text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-gold hover:text-ink transition-colors"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors"
+                >
+                  Continue to Review →
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* STEP: REVIEW */}
+          {step === "review" && (
+            <div className="space-y-5">
+              <div>
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Review</div>
+                <h3 className="font-serif-display text-2xl">
+                  Confirm your <span className="italic text-gold">order</span>
+                </h3>
+              </div>
+
+              <div className="border border-line bg-ink-3/40 p-5">
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-3">Items</div>
+                <ul className="divide-y divide-line">
+                  {orderSnapshot.map((i) => (
+                    <li key={i.no} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+                      <div className="h-12 w-12 shrink-0 border border-gold/40 bg-ink-3 p-1 flex items-center justify-center">
+                        {i.image && (
+                          <img
+                            src={i.image}
+                            alt={i.name}
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
+                          No. {i.no}
+                        </div>
+                        <div className="font-serif-display text-base leading-tight">
+                          {i.prefix}
+                          <span className="italic text-gold">{i.suffix}</span>
+                        </div>
+                      </div>
+                      <div className="text-xs tracking-[0.18em] text-[color:var(--foreground)]/75">
+                        × {i.qty}
+                      </div>
+                      <div className="text-xs text-[color:var(--foreground)]/70 min-w-[80px] text-right">
+                        <span className="text-gold">${i.qty * PRICE_MIN}</span>
+                        <span className="mx-1">–</span>
+                        <span className="text-gold">${i.qty * PRICE_MAX}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <div className="border-t border-line mt-4 pt-4 flex items-baseline justify-between">
+                  <span className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/60">
+                    Estimated subtotal
+                  </span>
+                  <span className="font-serif-display text-xl">
+                    <span className="text-gold">${snapshotMin}</span>
+                    <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
+                    <span className="text-gold">${snapshotMax}</span>
+                  </span>
+                </div>
+                <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55">
+                  Final price confirmed after quote.
+                </p>
+              </div>
+
+              <div className="border border-line bg-ink-3/40 p-5 text-sm space-y-2">
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
+                  Customer
+                </div>
+                <div className="font-serif-display text-lg">{form.fullName}</div>
+                <div className="text-[color:var(--foreground)]/70">{form.email}</div>
+                <div className="text-[color:var(--foreground)]/70">{form.phone}</div>
+                {form.business && (
+                  <div className="text-[color:var(--foreground)]/70">{form.business}</div>
+                )}
+                <div className="text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 pt-2">
+                  {form.orderType} · {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
+                  {form.date ? ` · ${form.date}` : ""}
+                </div>
+                {form.delivery === "delivery" && form.address && (
+                  <div className="text-[color:var(--foreground)]/70 pt-1">{form.address}</div>
+                )}
+                {form.notes && (
+                  <p className="text-[color:var(--foreground)]/65 italic pt-2 border-t border-line mt-2">
+                    “{form.notes}”
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStep("details")}
+                  className="sm:w-1/3 border border-gold/40 text-gold text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-gold hover:text-ink transition-colors"
+                >
+                  ← Edit details
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep("payment")}
+                  className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors"
+                >
+                  Validate &amp; Continue to Payment →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP: PAYMENT */}
+          {step === "payment" && (
+            <div className="space-y-5">
+              <div>
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Payment</div>
+                <h3 className="font-serif-display text-2xl">
+                  Secure <span className="italic text-gold">payment</span>
+                </h3>
+                <p className="mt-3 text-sm text-[color:var(--foreground)]/65 leading-relaxed">
+                  Estimated total{" "}
+                  <span className="text-gold">${snapshotMin}</span> –{" "}
+                  <span className="text-gold">${snapshotMax}</span>. Final amount confirmed after quote.
+                </p>
+              </div>
+
+              <div className="border border-gold/30 bg-ink-3/40 p-5">
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-3">
+                  Payment method
+                </div>
+                <div className="flex items-center gap-3 text-sm text-[color:var(--foreground)]/75">
+                  <span className="inline-flex h-9 w-12 items-center justify-center border border-gold/40 text-[10px] tracking-[0.18em] uppercase text-gold">
+                    Card
+                  </span>
+                  <span>Secure card payment via Stripe Checkout</span>
+                </div>
+                <p className="mt-3 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
+                  You'll be redirected to a secure Stripe-hosted page once connected. No card
+                  details are stored on this site.
+                </p>
+              </div>
+
+              {formError && (
+                <p className="text-xs tracking-wide text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-4 py-3">
+                  {formError}
+                </p>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStep("review")}
+                  className="sm:w-1/3 border border-gold/40 text-gold text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-gold hover:text-ink transition-colors"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  disabled={paying}
+                  onClick={payOrder}
+                  className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-50 disabled:cursor-wait"
+                >
+                  {paying ? "Processing…" : "Pay Securely"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP: CONFIRMED */}
+          {step === "confirmed" && (
+            <div className="py-8 text-center">
+              <div className="mx-auto mb-6 inline-flex h-14 w-14 items-center justify-center border border-gold/50 text-gold text-xl">
+                ✓
+              </div>
+              <div className="eyebrow justify-center mb-4 inline-flex">Order Confirmed</div>
+              <h3 className="font-serif-display text-3xl mb-4">
+                Thank you,{" "}
+                <span className="italic text-gold">
+                  {form.fullName.split(" ")[0] || "friend"}
+                </span>
+              </h3>
+              <p className="text-sm text-[color:var(--foreground)]/75 max-w-md mx-auto leading-relaxed">
+                Your order has been received. You will receive a confirmation shortly at{" "}
+                <span className="text-gold">{form.email}</span>.
+              </p>
+              <div className="mt-8 inline-block border border-gold/40 bg-ink-3/60 px-6 py-4">
+                <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-1">
+                  Order reference
+                </div>
+                <div className="font-serif-display text-2xl text-gold tracking-wider">
+                  {orderRef}
+                </div>
+              </div>
+              {form.createAccount && (
+                <p className="mt-6 text-[11px] italic text-[color:var(--foreground)]/55">
+                  Saved to your account · {form.email}
+                </p>
+              )}
+              <div className="mt-8">
+                <button
+                  type="button"
+                  onClick={resetOrder}
+                  className="inline-flex items-center text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-5 py-3 hover:bg-gold hover:text-ink transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
   );
 }
