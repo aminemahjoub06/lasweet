@@ -290,28 +290,29 @@ function Index() {
       const ref = generateOrderRef();
       setOrderRef(ref);
 
-      // Persist the order locally if the customer chose to create an account.
-      if (form.createAccount && typeof window !== "undefined") {
+      // Persist the order into the account store whenever the customer is
+      // signed in OR has chosen to create an account at checkout. Guests'
+      // orders are not saved — they only get the on-screen confirmation.
+      const shouldSave = !!currentUser || form.createAccount;
+      if (shouldSave) {
         try {
-          const key = `la_orders_${form.email.toLowerCase()}`;
-          const existing = JSON.parse(window.localStorage.getItem(key) || "[]");
-          existing.push({
+          saveOrder({
+            email: form.email,
             ref,
-            createdAt: new Date().toISOString(),
+            status: "Paid",
+            items: orderSnapshot,
+            estimate: { min: snapshotMin, max: snapshotMax },
             customer: {
               fullName: form.fullName,
               email: form.email,
               phone: form.phone,
-              business: form.business,
-              orderType: form.orderType,
-              date: form.date,
+              business: form.business || undefined,
+              customerType: (form.orderType as CustomerType) || "Other",
               delivery: form.delivery,
-              notes: form.notes,
+              date: form.date || undefined,
+              notes: form.notes || undefined,
             },
-            items: orderSnapshot,
-            estimate: { min: snapshotMin, max: snapshotMax },
           });
-          window.localStorage.setItem(key, JSON.stringify(existing));
         } catch {
           /* storage not available — silently skip */
         }
