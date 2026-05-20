@@ -10,6 +10,29 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+const inputCls =
+  "w-full bg-ink-3/60 border border-line focus:border-gold/70 focus:outline-none px-4 py-3 text-sm text-[color:var(--foreground)] placeholder:text-[color:var(--foreground)]/35 transition-colors";
+
+function FieldLA({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="block text-[10px] tracking-[0.24em] uppercase text-[color:var(--foreground)]/65 mb-2">
+        {label}
+        {required && <span className="text-gold ml-1">*</span>}
+      </span>
+      {children}
+    </label>
+  );
+}
+
 type Flavour = {
   no: string;
   name: string;
