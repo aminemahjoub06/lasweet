@@ -1139,6 +1139,7 @@ function CheckoutModal({
   snapshotMax: number;
   PRICE_MIN: number;
   PRICE_MAX: number;
+  cartCount: number;
   paying: boolean;
   payOrder: () => void;
   orderRef: string | null;
