@@ -319,15 +319,7 @@ function Dashboard() {
   const user = useCurrentUser()!;
   const orders = useUserOrders();
   const [tab, setTab] = useState<Tab>("orders");
-
-  const unreadMessages = useMemo(
-    () => orders.reduce((n, o) => n + o.messages.filter((m) => !m.read).length, 0),
-    [orders],
-  );
-  const activeNotifications = useMemo(
-    () => orders.filter((o) => o.status !== "Completed" && o.status !== "Cancelled").length,
-    [orders],
-  );
+  const counts = useUnreadCounts();
 
   const tabs: {
     id: Tab;
@@ -337,8 +329,8 @@ function Dashboard() {
   }[] = [
     { id: "orders", label: "My Orders", icon: Package, badge: orders.length || undefined },
     { id: "details", label: "Saved Details", icon: UserIcon },
-    { id: "messages", label: "Messages", icon: MessageSquare, badge: unreadMessages || undefined },
-    { id: "notifications", label: "Notifications", icon: Bell, badge: activeNotifications || undefined },
+    { id: "messages", label: "Messages", icon: MessageSquare, badge: counts.messages || undefined },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: counts.notifications || undefined },
     { id: "reorder", label: "Reorder", icon: RotateCcw },
   ];
 
@@ -375,6 +367,7 @@ function Dashboard() {
                     onClick={() => {
                       setTab(t.id);
                       if (t.id === "messages") markAllMessagesRead(user.email);
+                      if (t.id === "notifications") markAllNotificationsRead(user.email);
                     }}
                     className={`w-full flex items-center justify-between gap-3 px-4 py-3 text-[11px] tracking-[0.22em] uppercase border transition-colors whitespace-nowrap ${
                       active
