@@ -675,6 +675,158 @@ function Index() {
           </nav>
         </div>
       </footer>
+
+      {/* CART DRAWER */}
+      <div
+        className={`fixed inset-0 z-[60] transition-opacity duration-300 ${
+          cartOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        aria-hidden={!cartOpen}
+      >
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-ink/70 backdrop-blur-sm"
+          onClick={() => setCartOpen(false)}
+        />
+
+        {/* Drawer */}
+        <aside
+          role="dialog"
+          aria-label="Your Selection"
+          className={`absolute right-0 top-0 h-full w-full sm:w-[420px] bg-ink-2 border-l border-gold/30 shadow-[0_0_60px_-10px_rgba(0,0,0,0.9)] flex flex-col transform transition-transform duration-500 ease-out ${
+            cartOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-5 border-b border-line">
+            <div>
+              <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">Cart</div>
+              <h2 className="font-serif-display text-2xl">
+                Your <span className="italic text-gold">Selection</span>
+              </h2>
+            </div>
+            <button
+              type="button"
+              aria-label="Close cart"
+              onClick={() => setCartOpen(false)}
+              className="h-9 w-9 inline-flex items-center justify-center border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors"
+            >
+              <X className="h-4 w-4" strokeWidth={1.5} />
+            </button>
+          </div>
+
+          {/* Items */}
+          <div className="flex-1 overflow-y-auto px-6 py-5">
+            {cartItems.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center text-sm text-[color:var(--foreground)]/60">
+                <ShoppingBag className="h-8 w-8 text-gold/60 mb-4" strokeWidth={1.2} />
+                <p>Your selection is empty.</p>
+                <p className="mt-1 text-xs tracking-[0.18em] uppercase text-[color:var(--foreground)]/40">
+                  Add a flavour to begin
+                </p>
+              </div>
+            ) : (
+              <ul className="space-y-5">
+                {cartItems.map((fl) => {
+                  const q = cart[fl.no];
+                  return (
+                    <li key={fl.no} className="flex gap-4 border-b border-line pb-5 last:border-b-0">
+                      <div
+                        className="h-16 w-16 shrink-0 border border-line bg-ink-3 bg-center bg-no-repeat bg-contain"
+                        style={{ backgroundImage: fl.image ? `url(${fl.image})` : undefined }}
+                        aria-hidden
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
+                              No. {fl.no}
+                            </div>
+                            <div className="font-serif-display text-lg leading-tight">
+                              {fl.prefix}
+                              <span className="italic text-gold">{fl.suffix}</span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            aria-label={`Remove ${fl.name}`}
+                            onClick={() => setCartQty(fl.no, 0)}
+                            className="text-[color:var(--foreground)]/50 hover:text-gold transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                          </button>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between">
+                          <div className="inline-flex items-center border border-gold/40 text-gold">
+                            <button
+                              type="button"
+                              aria-label="Decrease quantity"
+                              onClick={() => setCartQty(fl.no, q - 1)}
+                              className="h-8 w-8 inline-flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"
+                            >
+                              <Minus className="h-3 w-3" strokeWidth={1.8} />
+                            </button>
+                            <span className="min-w-[2ch] text-center text-xs tracking-[0.2em] text-[color:var(--foreground)]/85">
+                              {q}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label="Increase quantity"
+                              onClick={() => setCartQty(fl.no, q + 1)}
+                              className="h-8 w-8 inline-flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"
+                            >
+                              <Plus className="h-3 w-3" strokeWidth={1.8} />
+                            </button>
+                          </div>
+                          <div className="text-xs text-[color:var(--foreground)]/60">
+                            <span className="text-gold">${q * PRICE_MIN}</span>
+                            <span className="mx-1">–</span>
+                            <span className="text-gold">${q * PRICE_MAX}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-line px-6 py-5 space-y-4 bg-ink">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/60">
+                Estimated subtotal
+              </span>
+              <span className="font-serif-display text-xl">
+                <span className="text-gold">${subtotalMin}</span>
+                <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
+                <span className="text-gold">${subtotalMax}</span>
+              </span>
+            </div>
+            <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
+              Final price confirmed after quote.
+            </p>
+            <div className="flex flex-col gap-2 pt-1">
+              <button
+                type="button"
+                disabled={cartItems.length === 0}
+                onClick={() => setCartOpen(false)}
+                className="w-full bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-3 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Request Quote
+              </button>
+              <button
+                type="button"
+                onClick={() => setCartOpen(false)}
+                className="w-full border border-gold/50 text-gold text-[11px] tracking-[0.24em] uppercase py-3 hover:bg-gold hover:text-ink transition-colors"
+              >
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
     </main>
   );
 }
