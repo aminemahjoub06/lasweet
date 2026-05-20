@@ -201,6 +201,10 @@ function Index() {
     if (form.business.length > 120) return setFormError("Business name is too long.");
     if (form.delivery === "delivery" && form.address.trim().length < 5)
       return setFormError("Please enter a delivery address.");
+    if (form.delivery === "delivery" && cartCount < 6)
+      return setFormError(
+        "Delivery requires a minimum of 6 pieces. Please add more items or choose pick-up.",
+      );
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartItems.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     if (form.createAccount) {
