@@ -863,7 +863,7 @@ function Index() {
                   Book My Event
                 </button>
                 <a
-                  href="#creations"
+                  href="#products"
                   className="block w-full text-center text-[10px] tracking-[0.28em] uppercase text-gold/80 hover:text-gold transition"
                 >
                   Create my selection →
