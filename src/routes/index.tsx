@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import * as React from "react";
 import { ShoppingBag, X, Minus, Plus, Trash2 } from "lucide-react";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
@@ -1153,6 +1154,35 @@ function CheckoutModal({
     setStep("details");
   };
 
+  // Local-only card state — never persisted, never sent anywhere until Stripe is wired.
+  const [card, setCard] = React.useState({
+    number: "",
+    expiry: "",
+    cvc: "",
+    name: "",
+    sameAsDelivery: true,
+    billingAddress: "",
+  });
+  const formatCardNumber = (v: string) =>
+    v.replace(/\D/g, "").slice(0, 19).replace(/(.{4})/g, "$1 ").trim();
+  const formatExpiry = (v: string) => {
+    const d = v.replace(/\D/g, "").slice(0, 4);
+    return d.length <= 2 ? d : `${d.slice(0, 2)}/${d.slice(2)}`;
+  };
+  const handlePay = () => {
+    setFormError(null);
+    const digits = card.number.replace(/\s/g, "");
+    if (digits.length < 12) return setFormError("Enter a valid card number.");
+    if (!/^\d{2}\/\d{2}$/.test(card.expiry)) return setFormError("Enter expiry as MM/YY.");
+    if (card.cvc.length < 3) return setFormError("Enter the 3-digit CVC.");
+    if (!card.name.trim()) return setFormError("Enter the cardholder name.");
+    if (!card.sameAsDelivery && !card.billingAddress.trim())
+      return setFormError("Enter the billing address.");
+    // TODO(stripe): submit `card` + order via a server function that creates a
+    // Stripe PaymentIntent and confirms it. For now we simulate success.
+    payOrder();
+  };
+
   return (
     <div
       className={`fixed inset-0 z-[70] transition-opacity duration-300 ${
@@ -1538,30 +1568,127 @@ function CheckoutModal({
               <div>
                 <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Payment</div>
                 <h3 className="font-serif-display text-2xl">
-                  Secure <span className="italic text-gold">payment</span>
+                  <span className="italic text-gold">Payment</span>
                 </h3>
-                <p className="mt-3 text-sm text-[color:var(--foreground)]/65 leading-relaxed">
-                  Estimated total{" "}
-                  <span className="text-gold">${snapshotMin}</span> –{" "}
-                  <span className="text-gold">${snapshotMax}</span>. Final amount confirmed after quote.
+                <p className="mt-2 text-sm text-[color:var(--foreground)]/70">
+                  Complete your order securely.
                 </p>
               </div>
 
-              <div className="border border-gold/30 bg-ink-3/40 p-5">
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-3">
-                  Payment method
+              {/* Final order summary */}
+              <div className="border border-gold/30 bg-ink-3/40 p-5 space-y-3">
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold">
+                  Order summary
                 </div>
-                <div className="flex items-center gap-3 text-sm text-[color:var(--foreground)]/75">
-                  <span className="inline-flex h-9 w-12 items-center justify-center border border-gold/40 text-[10px] tracking-[0.18em] uppercase text-gold">
-                    Card
+                <ul className="divide-y divide-line">
+                  {orderSnapshot.map((i) => (
+                    <li key={i.no} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
+                      <div className="h-10 w-10 shrink-0 border border-gold/40 bg-ink-3 p-1 flex items-center justify-center">
+                        {i.image && (
+                          <img src={i.image} alt={i.name} className="max-h-full max-w-full object-contain" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 text-sm">
+                        <span className="font-serif-display">
+                          {i.prefix}
+                          <span className="italic text-gold">{i.suffix}</span>
+                        </span>
+                      </div>
+                      <div className="text-xs text-[color:var(--foreground)]/70">× {i.qty}</div>
+                    </li>
+                  ))}
+                </ul>
+                <div className="border-t border-line pt-3 flex flex-wrap items-baseline justify-between gap-2 text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/60">
+                  <span>
+                    {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
+                    {form.date ? ` · ${form.date}` : ""}
                   </span>
-                  <span>Secure card payment via Stripe Checkout</span>
+                  <span className="font-serif-display normal-case tracking-normal text-base">
+                    <span className="text-gold">${snapshotMin}</span>
+                    <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
+                    <span className="text-gold">${snapshotMax}</span>
+                  </span>
                 </div>
-                <p className="mt-3 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
-                  You'll be redirected to a secure Stripe-hosted page once connected. No card
-                  details are stored on this site.
-                </p>
               </div>
+
+              {/* Card details */}
+              <div className="border border-gold/30 bg-ink-3/40 p-5 space-y-4">
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold">
+                  Card details
+                </div>
+                <FieldLA label="Card number">
+                  <input
+                    inputMode="numeric"
+                    autoComplete="cc-number"
+                    value={card.number}
+                    onChange={(e) => setCard((c) => ({ ...c, number: formatCardNumber(e.target.value) }))}
+                    placeholder="1234 5678 9012 3456"
+                    className="w-full bg-ink-3 border border-line focus:border-gold/60 outline-none px-3 py-3 text-sm tracking-[0.15em] placeholder:text-[color:var(--foreground)]/30"
+                  />
+                </FieldLA>
+                <div className="grid grid-cols-2 gap-3">
+                  <FieldLA label="Expiry">
+                    <input
+                      inputMode="numeric"
+                      autoComplete="cc-exp"
+                      value={card.expiry}
+                      onChange={(e) => setCard((c) => ({ ...c, expiry: formatExpiry(e.target.value) }))}
+                      placeholder="MM/YY"
+                      className="w-full bg-ink-3 border border-line focus:border-gold/60 outline-none px-3 py-3 text-sm placeholder:text-[color:var(--foreground)]/30"
+                    />
+                  </FieldLA>
+                  <FieldLA label="CVC">
+                    <input
+                      inputMode="numeric"
+                      autoComplete="cc-csc"
+                      value={card.cvc}
+                      onChange={(e) =>
+                        setCard((c) => ({ ...c, cvc: e.target.value.replace(/\D/g, "").slice(0, 4) }))
+                      }
+                      placeholder="123"
+                      className="w-full bg-ink-3 border border-line focus:border-gold/60 outline-none px-3 py-3 text-sm placeholder:text-[color:var(--foreground)]/30"
+                    />
+                  </FieldLA>
+                </div>
+                <FieldLA label="Cardholder name">
+                  <input
+                    autoComplete="cc-name"
+                    value={card.name}
+                    onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))}
+                    placeholder="Full name on card"
+                    className="w-full bg-ink-3 border border-line focus:border-gold/60 outline-none px-3 py-3 text-sm placeholder:text-[color:var(--foreground)]/30"
+                  />
+                </FieldLA>
+
+                <label className="flex items-start gap-3 text-xs text-[color:var(--foreground)]/75 cursor-pointer select-none pt-1">
+                  <input
+                    type="checkbox"
+                    checked={card.sameAsDelivery}
+                    onChange={(e) => setCard((c) => ({ ...c, sameAsDelivery: e.target.checked }))}
+                    className="mt-[2px] accent-[color:var(--gold)]"
+                  />
+                  <span>Same as delivery address</span>
+                </label>
+
+                {!card.sameAsDelivery && (
+                  <FieldLA label="Billing address">
+                    <textarea
+                      rows={2}
+                      value={card.billingAddress}
+                      onChange={(e) => setCard((c) => ({ ...c, billingAddress: e.target.value }))}
+                      placeholder="Street, city, postal code, country"
+                      className="w-full bg-ink-3 border border-line focus:border-gold/60 outline-none px-3 py-3 text-sm placeholder:text-[color:var(--foreground)]/30"
+                    />
+                  </FieldLA>
+                )}
+              </div>
+
+              <p className="text-[11px] tracking-[0.14em] uppercase text-[color:var(--foreground)]/55 text-center">
+                🔒 Secure payment — your details are protected.
+              </p>
+              <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed text-center">
+                Final pricing may be adjusted after confirmation if this is a quote-based order.
+              </p>
 
               {formError && (
                 <p className="text-xs tracking-wide text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-4 py-3">
@@ -1580,7 +1707,7 @@ function CheckoutModal({
                 <button
                   type="button"
                   disabled={paying}
-                  onClick={payOrder}
+                  onClick={handlePay}
                   className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-50 disabled:cursor-wait"
                 >
                   {paying ? "Processing…" : "Pay Securely"}
@@ -1597,13 +1724,10 @@ function CheckoutModal({
               </div>
               <div className="eyebrow justify-center mb-4 inline-flex">Order Confirmed</div>
               <h3 className="font-serif-display text-3xl mb-4">
-                Thank you,{" "}
-                <span className="italic text-gold">
-                  {form.fullName.split(" ")[0] || "friend"}
-                </span>
+                Thank you — your <span className="italic text-gold">order</span> has been received.
               </h3>
               <p className="text-sm text-[color:var(--foreground)]/75 max-w-md mx-auto leading-relaxed">
-                Your order has been received. You will receive a confirmation shortly at{" "}
+                A confirmation will be sent shortly to{" "}
                 <span className="text-gold">{form.email}</span>.
               </p>
               <div className="mt-8 inline-block border border-gold/40 bg-ink-3/60 px-6 py-4">
@@ -1625,7 +1749,7 @@ function CheckoutModal({
                   onClick={resetOrder}
                   className="inline-flex items-center text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-5 py-3 hover:bg-gold hover:text-ink transition-colors"
                 >
-                  Close
+                  Return Home
                 </button>
               </div>
             </div>
