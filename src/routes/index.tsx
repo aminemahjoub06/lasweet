@@ -453,7 +453,7 @@ function Index() {
             { v: "4", l: "Flavours" },
             { v: "50 km", l: "Brisbane delivery" },
             { v: "24–48h", l: "Preparation time" },
-            { v: "20 pcs", l: "Minimum order" },
+            { v: "6 pcs", l: "Delivery minimum (pick-up: none)" },
             { v: "$12–20", l: "Per piece" },
           ].map((s, i) => (
             <div
