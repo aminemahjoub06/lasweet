@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { ShoppingBag, X, Minus, Plus, Trash2 } from "lucide-react";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
 import vanillaImg from "@/assets/vanilla.png";
@@ -80,6 +81,28 @@ function Index() {
   const getQty = (no: string) => qty[no] ?? 1;
   const setQ = (no: string, n: number) =>
     setQty((q) => ({ ...q, [no]: Math.max(1, Math.min(99, n)) }));
+
+  // Cart state
+  const [cart, setCart] = useState<Record<string, number>>({});
+  const [cartOpen, setCartOpen] = useState(false);
+  const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
+  const cartItems = flavours.filter((fl) => (cart[fl.no] ?? 0) > 0);
+  const PRICE_MIN = 12;
+  const PRICE_MAX = 20;
+  const subtotalMin = cartCount * PRICE_MIN;
+  const subtotalMax = cartCount * PRICE_MAX;
+  const addToCart = (no: string, n: number) => {
+    setCart((c) => ({ ...c, [no]: Math.min(999, (c[no] ?? 0) + n) }));
+    setCartOpen(true);
+  };
+  const setCartQty = (no: string, n: number) => {
+    setCart((c) => {
+      const next = { ...c };
+      if (n <= 0) delete next[no];
+      else next[no] = Math.min(999, n);
+      return next;
+    });
+  };
   const toggleExpand = (no: string) => {
     setShowDetails(false);
     setExpandedNo((cur) => (cur === no ? null : no));
