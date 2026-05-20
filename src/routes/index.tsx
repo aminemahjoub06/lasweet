@@ -425,6 +425,87 @@ function Index() {
                         aria-hidden
                       />
                     </div>
+
+                    {/* Cart controls */}
+                    <div
+                      className="flex items-center justify-between gap-3 border-t border-line bg-ink-2 px-4 py-3 md:px-5 md:py-4"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-serif-display text-base md:text-lg leading-none">
+                          <span className="text-gold">$12–20</span>
+                        </span>
+                        <span className="text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/55 mt-1">
+                          per piece
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="inline-flex items-center border border-gold/40 text-gold">
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Decrease ${fl.name} quantity`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setQ(fl.no, getQty(fl.no) - 1);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setQ(fl.no, getQty(fl.no) - 1);
+                              }
+                            }}
+                            className="cursor-pointer h-8 w-8 inline-flex items-center justify-center text-sm hover:bg-gold hover:text-ink transition-colors"
+                          >
+                            −
+                          </span>
+                          <span className="min-w-[2ch] text-center text-xs tracking-[0.2em] px-1 text-[color:var(--foreground)]/85">
+                            {getQty(fl.no)}
+                          </span>
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Increase ${fl.name} quantity`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setQ(fl.no, getQty(fl.no) + 1);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setQ(fl.no, getQty(fl.no) + 1);
+                              }
+                            }}
+                            className="cursor-pointer h-8 w-8 inline-flex items-center justify-center text-sm hover:bg-gold hover:text-ink transition-colors"
+                          >
+                            +
+                          </span>
+                        </div>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAdded(fl.no);
+                            window.setTimeout(() => setAdded((c) => (c === fl.no ? null : c)), 1400);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setAdded(fl.no);
+                              window.setTimeout(() => setAdded((c) => (c === fl.no ? null : c)), 1400);
+                            }
+                          }}
+                          className="cursor-pointer text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-4 py-2 hover:bg-gold hover:text-ink transition-colors"
+                        >
+                          {added === fl.no ? "Added ✓" : "Add to cart"}
+                        </span>
+                      </div>
+                    </div>
                   </button>
                 );
               })}
