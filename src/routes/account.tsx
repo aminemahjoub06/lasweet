@@ -307,7 +307,12 @@ function Dashboard() {
     [orders],
   );
 
-  const tabs: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }>; badge?: number }[] = [
+  const tabs: {
+    id: Tab;
+    label: string;
+    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+    badge?: number;
+  }[] = [
     { id: "orders", label: "My Orders", icon: Package, badge: orders.length || undefined },
     { id: "details", label: "Saved Details", icon: UserIcon },
     { id: "messages", label: "Messages", icon: MessageSquare, badge: unreadMessages || undefined },
