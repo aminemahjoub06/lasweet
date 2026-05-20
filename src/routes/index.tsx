@@ -527,6 +527,7 @@ function Index() {
                           tabIndex={0}
                           onClick={(e) => {
                             e.stopPropagation();
+                            addToCart(fl.no, getQty(fl.no));
                             setAdded(fl.no);
                             window.setTimeout(() => setAdded((c) => (c === fl.no ? null : c)), 1400);
                           }}
@@ -534,6 +535,7 @@ function Index() {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
                               e.stopPropagation();
+                              addToCart(fl.no, getQty(fl.no));
                               setAdded(fl.no);
                               window.setTimeout(() => setAdded((c) => (c === fl.no ? null : c)), 1400);
                             }
