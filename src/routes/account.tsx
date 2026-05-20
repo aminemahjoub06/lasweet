@@ -740,7 +740,3 @@ function ReorderTab() {
     </div>
   );
 }
-
-// avoid unused-import warning when X stays referenced for future use
-void X;
-void useAccountDB;
