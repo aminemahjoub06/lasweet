@@ -114,9 +114,9 @@ function Index() {
             }}
           />
         ))}
-        {/* Darkening + vignette layers for readability */}
-        <div className="absolute inset-0 bg-ink/70 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,8,6,0.55)_55%,var(--ink)_100%)] pointer-events-none" />
+        {/* Darkening + vignette layers for readability — reduced for glass showcase */}
+        <div className="absolute inset-0 bg-ink/30 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,8,6,0.25)_55%,var(--ink)_100%)] pointer-events-none" />
         <div className="absolute inset-0 diamond-bg opacity-40 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-ink pointer-events-none" />
 
@@ -134,12 +134,12 @@ function Index() {
               <div
                 className="flex-1 max-w-xl mx-auto md:mx-0 md:ml-auto p-8 md:p-12 rounded-sm"
                 style={{
-                  background: "rgba(10, 8, 4, 0.45)",
-                  backdropFilter: "blur(18px)",
-                  WebkitBackdropFilter: "blur(18px)",
+                  background: "rgba(8, 6, 3, 0.28)",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
                   border: "1px solid rgba(200, 155, 60, 0.35)",
-                  boxShadow:
-                    "0 25px 80px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(201, 161, 74, 0.08)",
+                  boxShadow: "0 25px 80px rgba(0, 0, 0, 0.35)",
+                  backgroundBlendMode: "screen",
                 }}
               >
                 <div className="eyebrow mb-6">{f.label}</div>
