@@ -44,6 +44,30 @@ export type OrderMessage = {
   read?: boolean;
 };
 
+export const NOTIFICATION_TYPES = [
+  "order_received",
+  "quote_sent",
+  "payment_required",
+  "payment_confirmed",
+  "in_preparation",
+  "ready_pickup",
+  "out_for_delivery",
+  "completed",
+  "cancelled",
+  "new_message",
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export type Notification = {
+  id: string;
+  at: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  ref?: string; // related order
+  read?: boolean;
+};
+
 export type Order = {
   ref: string;
   createdAt: string;
@@ -74,13 +98,14 @@ export type User = {
 type DB = {
   users: Record<string, User>;
   orders: Record<string, Order[]>; // keyed by email
+  notifications: Record<string, Notification[]>; // keyed by email
   session: string | null; // email of logged-in user
 };
 
 const DB_KEY = "la_account_db_v1";
 const REORDER_KEY = "la_pending_reorder";
 
-const emptyDB: DB = { users: {}, orders: {}, session: null };
+const emptyDB: DB = { users: {}, orders: {}, notifications: {}, session: null };
 
 const isBrowser = () => typeof window !== "undefined";
 
@@ -93,6 +118,7 @@ function readDB(): DB {
     return {
       users: parsed.users ?? {},
       orders: parsed.orders ?? {},
+      notifications: parsed.notifications ?? {},
       session: parsed.session ?? null,
     };
   } catch {
@@ -252,9 +278,77 @@ export function saveOrder(input: {
     ],
   };
   db.orders[email] = [order, ...(db.orders[email] ?? [])];
+  // Welcome notification + status notification
+  pushNotification(db, email, {
+    type: "order_received",
+    title: "Order received",
+    body: `We've received order ${ref}. We'll confirm availability and final pricing shortly.`,
+    ref,
+  });
+  if (status === "Paid") {
+    pushNotification(db, email, {
+      type: "payment_confirmed",
+      title: "Payment confirmed",
+      body: `Thank you — payment for ${ref} has been received.`,
+      ref,
+    });
+    queueEmail({
+      to: email,
+      subject: `Payment confirmed — ${ref}`,
+      body: `Thank you. We've received your payment for order ${ref}. We'll be in touch shortly with the next steps.`,
+    });
+  }
+  queueEmail({
+    to: email,
+    subject: `Order received — ${ref}`,
+    body: `We've received order ${ref}. You can track its progress at any time from your account.`,
+  });
   writeDB(db);
   return order;
 }
+
+const STATUS_NOTIFICATION: Partial<Record<OrderStatus, { type: NotificationType; title: string; body: (ref: string) => string }>> = {
+  "Quote sent": {
+    type: "quote_sent",
+    title: "Quote sent",
+    body: (ref) => `Your quote for ${ref} is ready to review in your account.`,
+  },
+  "Payment pending": {
+    type: "payment_required",
+    title: "Payment required",
+    body: (ref) => `Order ${ref} is awaiting payment to enter production.`,
+  },
+  Paid: {
+    type: "payment_confirmed",
+    title: "Payment confirmed",
+    body: (ref) => `Payment for ${ref} has been received. Thank you.`,
+  },
+  "In preparation": {
+    type: "in_preparation",
+    title: "In preparation",
+    body: (ref) => `Our pâtissiers have started work on ${ref}.`,
+  },
+  "Ready for pick-up": {
+    type: "ready_pickup",
+    title: "Ready for pick-up",
+    body: (ref) => `Order ${ref} is ready for collection.`,
+  },
+  "Out for delivery": {
+    type: "out_for_delivery",
+    title: "Out for delivery",
+    body: (ref) => `Order ${ref} is on its way.`,
+  },
+  Completed: {
+    type: "completed",
+    title: "Order completed",
+    body: (ref) => `Order ${ref} is complete. We hope you enjoyed every bite.`,
+  },
+  Cancelled: {
+    type: "cancelled",
+    title: "Order cancelled",
+    body: (ref) => `Order ${ref} has been cancelled.`,
+  },
+};
 
 export function setOrderStatus(email: string, ref: string, status: OrderStatus) {
   const db = readDB();
@@ -271,6 +365,11 @@ export function setOrderStatus(email: string, ref: string, status: OrderStatus) 
     from: "studio",
     text: `Status updated → ${status}.`,
   });
+  const tpl = STATUS_NOTIFICATION[status];
+  if (tpl) {
+    pushNotification(db, key, { type: tpl.type, title: tpl.title, body: tpl.body(ref), ref });
+    queueEmail({ to: key, subject: `${tpl.title} — ${ref}`, body: tpl.body(ref) });
+  }
   writeDB(db);
 }
 
@@ -289,6 +388,151 @@ export function markAllMessagesRead(email: string) {
     }
   }
   if (changed) writeDB(db);
+}
+
+// ───── Messaging ─────
+
+export function sendCustomerMessage(email: string, ref: string, text: string) {
+  const trimmed = text.trim();
+  if (!trimmed) return;
+  const db = readDB();
+  const key = normEmail(email);
+  const list = db.orders[key];
+  if (!list) return;
+  const o = list.find((x) => x.ref === ref);
+  if (!o) return;
+  o.messages.push({
+    id: `m-${Date.now()}-c`,
+    at: new Date().toISOString(),
+    from: "customer",
+    text: trimmed.slice(0, 1000),
+    read: true,
+  });
+  writeDB(db);
+  // Notify the studio side via email stub (in production this would page the team).
+  queueEmail({
+    to: "studio@lasweet.example",
+    subject: `New customer message — ${ref}`,
+    body: `${o.customer.fullName} (${o.customer.email}) wrote:\n\n${trimmed}`,
+  });
+  // Simulate a studio reply shortly after so the demo conversation feels alive.
+  scheduleStudioAutoReply(key, ref);
+}
+
+export function sendStudioReply(email: string, ref: string, text: string) {
+  const trimmed = text.trim();
+  if (!trimmed) return;
+  const db = readDB();
+  const key = normEmail(email);
+  const list = db.orders[key];
+  if (!list) return;
+  const o = list.find((x) => x.ref === ref);
+  if (!o) return;
+  o.messages.push({
+    id: `m-${Date.now()}-s`,
+    at: new Date().toISOString(),
+    from: "studio",
+    text: trimmed.slice(0, 1000),
+  });
+  pushNotification(db, key, {
+    type: "new_message",
+    title: "New message from L&A Sweet",
+    body: trimmed.slice(0, 140),
+    ref,
+  });
+  writeDB(db);
+  queueEmail({
+    to: key,
+    subject: `New message about ${ref}`,
+    body: trimmed,
+  });
+}
+
+function scheduleStudioAutoReply(email: string, ref: string) {
+  if (!isBrowser()) return;
+  window.setTimeout(() => {
+    sendStudioReply(
+      email,
+      ref,
+      "Thanks for your message — one of our team will reply with details shortly. (Auto-acknowledgement)",
+    );
+  }, 2500);
+}
+
+// ───── Notifications ─────
+
+function pushNotification(
+  db: DB,
+  email: string,
+  n: Omit<Notification, "id" | "at" | "read">,
+) {
+  const key = normEmail(email);
+  const note: Notification = {
+    id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    at: new Date().toISOString(),
+    read: false,
+    ...n,
+  };
+  db.notifications[key] = [note, ...(db.notifications[key] ?? [])].slice(0, 100);
+}
+
+export function markAllNotificationsRead(email: string) {
+  const db = readDB();
+  const key = normEmail(email);
+  const list = db.notifications[key];
+  if (!list || list.length === 0) return;
+  let changed = false;
+  for (const n of list) {
+    if (!n.read) {
+      n.read = true;
+      changed = true;
+    }
+  }
+  if (changed) writeDB(db);
+}
+
+export function clearNotifications(email: string) {
+  const db = readDB();
+  const key = normEmail(email);
+  db.notifications[key] = [];
+  writeDB(db);
+}
+
+// ───── Email stub ─────
+// Frontend-only: logs the email and stores it in localStorage so the team can
+// inspect what would have been sent. Replace with Lovable Email + a server
+// function once the project moves to Lovable Cloud.
+type QueuedEmail = { id: string; at: string; to: string; subject: string; body: string };
+const EMAIL_LOG_KEY = "la_email_outbox_v1";
+
+export function queueEmail(input: { to: string; subject: string; body: string }) {
+  if (!isBrowser()) return;
+  try {
+    // TODO(cloud): replace this stub with a real send via the
+    // `send-transactional-email` server route once Lovable Cloud + email
+    // domain are enabled. Each call here would become a server-function
+    // invocation with the matching template name and templateData.
+    const log: QueuedEmail[] = JSON.parse(window.localStorage.getItem(EMAIL_LOG_KEY) || "[]");
+    log.unshift({
+      id: `e-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      at: new Date().toISOString(),
+      ...input,
+    });
+    window.localStorage.setItem(EMAIL_LOG_KEY, JSON.stringify(log.slice(0, 50)));
+    // eslint-disable-next-line no-console
+    console.info("[email-stub] →", input.to, "·", input.subject);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function readEmailOutbox(): QueuedEmail[] {
+  if (!isBrowser()) return [];
+  try {
+    return JSON.parse(window.localStorage.getItem(EMAIL_LOG_KEY) || "[]");
+  } catch {
+    return [];
+  }
 }
 
 export function queueReorder(items: OrderItem[]) {
@@ -331,6 +575,24 @@ export function useUserOrders(): Order[] {
   const db = useAccountDB();
   if (!db.session) return [];
   return db.orders[db.session] ?? [];
+}
+
+export function useUserNotifications(): Notification[] {
+  const db = useAccountDB();
+  if (!db.session) return [];
+  return db.notifications[db.session] ?? [];
+}
+
+export function useUnreadCounts() {
+  const db = useAccountDB();
+  if (!db.session) return { messages: 0, notifications: 0, total: 0 };
+  const orders = db.orders[db.session] ?? [];
+  const messages = orders.reduce(
+    (n, o) => n + o.messages.filter((m) => m.from !== "customer" && !m.read).length,
+    0,
+  );
+  const notifications = (db.notifications[db.session] ?? []).filter((n) => !n.read).length;
+  return { messages, notifications, total: messages + notifications };
 }
 
 /**

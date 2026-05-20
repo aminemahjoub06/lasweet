@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ShoppingBag, X, Minus, Plus, Trash2, User } from "lucide-react";
+import { ShoppingBag, X, Minus, Plus, Trash2, User, Bell } from "lucide-react";
 import {
   consumePendingReorder,
   saveOrder,
   useCurrentUser,
   useHydrated,
+  useUnreadCounts,
   type CustomerType,
 } from "@/lib/account";
 import raspberryImg from "@/assets/raspberry.png";
@@ -180,6 +181,7 @@ function Index() {
   // ─── Account integration ───
   const hydrated = useHydrated();
   const currentUser = useCurrentUser();
+  const unread = useUnreadCounts();
 
   // Pre-fill the order form with saved details when the customer signs in.
   useEffect(() => {
@@ -375,6 +377,20 @@ function Index() {
                 <span className="absolute -bottom-1 -right-1 h-2.5 w-2.5 bg-gold rounded-full border border-ink" />
               )}
             </Link>
+            {hydrated && currentUser && (
+              <Link
+                to="/account"
+                aria-label={unread.total ? `${unread.total} unread notifications` : "Notifications"}
+                className="relative inline-flex items-center justify-center h-10 w-10 border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors"
+              >
+                <Bell className="h-4 w-4" strokeWidth={1.5} />
+                {unread.total > 0 && (
+                  <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1 inline-flex items-center justify-center bg-gold text-ink text-[10px] font-medium rounded-full border border-ink">
+                    {unread.total}
+                  </span>
+                )}
+              </Link>
+            )}
           </div>
         </div>
       </header>

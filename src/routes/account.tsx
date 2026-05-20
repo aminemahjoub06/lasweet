@@ -8,19 +8,41 @@ import {
   login,
   logout,
   markAllMessagesRead,
+  markAllNotificationsRead,
+  clearNotifications,
   queueReorder,
+  sendCustomerMessage,
   setOrderStatus,
   signup,
   updateDetails,
-  useAccountDB,
   useCurrentUser,
   useHydrated,
+  useUnreadCounts,
+  useUserNotifications,
   useUserOrders,
   type CustomerType,
+  type NotificationType,
   type Order,
   type OrderStatus,
 } from "@/lib/account";
-import { LogOut, Package, Bell, MessageSquare, User as UserIcon, RotateCcw, X } from "lucide-react";
+import {
+  LogOut,
+  Package,
+  Bell,
+  MessageSquare,
+  User as UserIcon,
+  RotateCcw,
+  Send,
+  CheckCheck,
+  CheckCircle2,
+  Truck,
+  CreditCard,
+  AlertCircle,
+  PackageCheck,
+  Mail,
+  XCircle,
+  Sparkles,
+} from "lucide-react";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
@@ -297,15 +319,7 @@ function Dashboard() {
   const user = useCurrentUser()!;
   const orders = useUserOrders();
   const [tab, setTab] = useState<Tab>("orders");
-
-  const unreadMessages = useMemo(
-    () => orders.reduce((n, o) => n + o.messages.filter((m) => !m.read).length, 0),
-    [orders],
-  );
-  const activeNotifications = useMemo(
-    () => orders.filter((o) => o.status !== "Completed" && o.status !== "Cancelled").length,
-    [orders],
-  );
+  const counts = useUnreadCounts();
 
   const tabs: {
     id: Tab;
@@ -315,8 +329,8 @@ function Dashboard() {
   }[] = [
     { id: "orders", label: "My Orders", icon: Package, badge: orders.length || undefined },
     { id: "details", label: "Saved Details", icon: UserIcon },
-    { id: "messages", label: "Messages", icon: MessageSquare, badge: unreadMessages || undefined },
-    { id: "notifications", label: "Notifications", icon: Bell, badge: activeNotifications || undefined },
+    { id: "messages", label: "Messages", icon: MessageSquare, badge: counts.messages || undefined },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: counts.notifications || undefined },
     { id: "reorder", label: "Reorder", icon: RotateCcw },
   ];
 
@@ -353,6 +367,7 @@ function Dashboard() {
                     onClick={() => {
                       setTab(t.id);
                       if (t.id === "messages") markAllMessagesRead(user.email);
+                      if (t.id === "notifications") markAllNotificationsRead(user.email);
                     }}
                     className={`w-full flex items-center justify-between gap-3 px-4 py-3 text-[11px] tracking-[0.22em] uppercase border transition-colors whitespace-nowrap ${
                       active
@@ -506,11 +521,77 @@ function OrdersTab() {
                     </div>
                   </details>
                 </div>
+
+                {/* Inline order conversation */}
+                <OrderConversation order={o} email={user.email} />
               </div>
             )}
           </article>
         );
       })}
+    </div>
+  );
+}
+
+function OrderConversation({ order, email }: { order: Order; email: string }) {
+  const [text, setText] = useState("");
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    sendCustomerMessage(email, order.ref, text);
+    setText("");
+  };
+  return (
+    <div className="pt-5 border-t border-line">
+      <div className="text-[10px] tracking-[0.24em] uppercase text-gold mb-3 inline-flex items-center gap-2">
+        <MessageSquare className="h-3.5 w-3.5" strokeWidth={1.5} /> Conversation
+      </div>
+      <ul className="space-y-3 mb-4 max-h-72 overflow-y-auto pr-1">
+        {order.messages.map((m) => {
+          const mine = m.from === "customer";
+          return (
+            <li key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-[80%] px-4 py-2.5 text-sm leading-relaxed border ${
+                  mine
+                    ? "bg-gold/10 border-gold/40 text-[color:var(--foreground)]"
+                    : m.from === "system"
+                    ? "bg-ink-3/60 border-line text-[color:var(--foreground)]/70 italic"
+                    : "bg-ink-3 border-gold/30 text-[color:var(--foreground)]/90"
+                }`}
+              >
+                <p>{m.text}</p>
+                <div
+                  className={`text-[9px] tracking-[0.2em] uppercase mt-2 ${
+                    mine ? "text-gold/70" : "text-[color:var(--foreground)]/40"
+                  }`}
+                >
+                  {m.from === "studio" ? "L&A Sweet" : m.from === "system" ? "System" : "You"}
+                  <span className="mx-2">·</span>
+                  {new Date(m.at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      <form onSubmit={submit} className="flex items-end gap-2">
+        <textarea
+          rows={2}
+          maxLength={1000}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Write a message about this order…"
+          className={`${inputCls} resize-none flex-1`}
+        />
+        <button
+          type="submit"
+          disabled={!text.trim()}
+          className="border border-gold text-gold text-[10px] tracking-[0.24em] uppercase px-4 py-3 hover:bg-gold hover:text-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
+        >
+          <Send className="h-3.5 w-3.5" strokeWidth={1.5} /> Send
+        </button>
+      </form>
     </div>
   );
 }
@@ -621,59 +702,168 @@ function DetailsTab() {
 }
 
 function MessagesTab() {
+  const user = useCurrentUser()!;
   const orders = useUserOrders();
-  const messages = useMemo(
-    () =>
-      orders
-        .flatMap((o) => o.messages.map((m) => ({ ...m, ref: o.ref })))
-        .sort((a, b) => +new Date(b.at) - +new Date(a.at)),
+  const threads = useMemo(
+    () => orders.filter((o) => o.messages.length > 0).sort((a, b) => {
+      const al = a.messages.at(-1)!.at;
+      const bl = b.messages.at(-1)!.at;
+      return +new Date(bl) - +new Date(al);
+    }),
     [orders],
   );
+  const [activeRef, setActiveRef] = useState<string | null>(threads[0]?.ref ?? null);
+  const active = threads.find((t) => t.ref === activeRef) ?? threads[0];
 
-  if (messages.length === 0)
-    return <EmptyState title="No messages" body="Updates from the studio about your orders will land here." />;
+  if (threads.length === 0)
+    return (
+      <EmptyState
+        title="No conversations yet"
+        body="When you reach out about an order — or we send you an update — the thread will appear here."
+      />
+    );
 
   return (
-    <ul className="space-y-3">
-      {messages.map((m) => (
-        <li key={m.id} className="border border-line bg-ink-3/40 px-5 py-4 flex gap-4">
-          <div className="text-[10px] tracking-[0.24em] uppercase text-gold/80 w-20 shrink-0">
-            {m.from === "studio" ? "Studio" : m.from === "system" ? "System" : "You"}
-          </div>
-          <div className="flex-1">
-            <p className="text-sm text-[color:var(--foreground)]/85 leading-relaxed">{m.text}</p>
-            <div className="text-[10px] tracking-[0.2em] uppercase text-[color:var(--foreground)]/40 mt-2">
-              Order {m.ref} <span className="mx-2">·</span>
-              {new Date(m.at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+    <div className="grid md:grid-cols-[260px_1fr] gap-5 border border-line bg-ink-3/30 min-h-[500px]">
+      <ul className="md:border-r border-line max-h-[600px] overflow-y-auto">
+        {threads.map((t) => {
+          const last = t.messages.at(-1)!;
+          const unread = t.messages.filter((m) => m.from !== "customer" && !m.read).length;
+          const selected = active?.ref === t.ref;
+          return (
+            <li key={t.ref}>
+              <button
+                type="button"
+                onClick={() => setActiveRef(t.ref)}
+                className={`w-full text-left px-4 py-4 border-b border-line/60 transition-colors ${
+                  selected ? "bg-gold/10" : "hover:bg-ink-3/60"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-serif-display text-base text-gold">{t.ref}</span>
+                  {unread > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-gold text-ink text-[10px] font-medium rounded-full">
+                      {unread}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[color:var(--foreground)]/65 mt-1 line-clamp-2">{last.text}</p>
+                <div className="text-[9px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/40 mt-2">
+                  {new Date(last.at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="p-5 md:p-6 flex flex-col">
+        {active && (
+          <>
+            <div className="flex items-center justify-between pb-4 border-b border-line">
+              <div>
+                <div className="font-serif-display text-xl text-gold">{active.ref}</div>
+                <div className="mt-1"><StatusBadge status={active.status} /></div>
+              </div>
+              <button
+                type="button"
+                onClick={() => markAllMessagesRead(user.email)}
+                className="inline-flex items-center gap-2 text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/60 hover:text-gold transition-colors"
+              >
+                <CheckCheck className="h-3.5 w-3.5" strokeWidth={1.5} /> Mark read
+              </button>
             </div>
-          </div>
-        </li>
-      ))}
-    </ul>
+            <OrderConversation order={active} email={user.email} />
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
-function NotificationsTab() {
-  const orders = useUserOrders();
-  const active = orders.filter((o) => o.status !== "Completed" && o.status !== "Cancelled");
+const NOTIFICATION_ICON: Record<NotificationType, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
+  order_received: Sparkles,
+  quote_sent: Mail,
+  payment_required: AlertCircle,
+  payment_confirmed: CreditCard,
+  in_preparation: Package,
+  ready_pickup: PackageCheck,
+  out_for_delivery: Truck,
+  completed: CheckCircle2,
+  cancelled: XCircle,
+  new_message: MessageSquare,
+};
 
-  if (active.length === 0)
-    return <EmptyState title="All quiet" body="You'll get a notification here whenever an order changes status." />;
+function NotificationsTab() {
+  const user = useCurrentUser()!;
+  const notifications = useUserNotifications();
+
+  if (notifications.length === 0)
+    return <EmptyState title="All quiet" body="You'll get a notification here whenever an order changes status or a new message arrives." />;
 
   return (
-    <ul className="space-y-3">
-      {active.map((o) => (
-        <li key={o.ref} className="border border-line bg-ink-3/40 px-5 py-4 flex items-center justify-between gap-4">
-          <div>
-            <div className="font-serif-display text-base text-gold">{o.ref}</div>
-            <p className="text-xs text-[color:var(--foreground)]/65 mt-1">
-              Last update {new Date(o.statusHistory.at(-1)!.at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-            </p>
-          </div>
-          <StatusBadge status={o.status} />
-        </li>
-      ))}
-    </ul>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/60">
+          {notifications.length} {notifications.length === 1 ? "notification" : "notifications"}
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => markAllNotificationsRead(user.email)}
+            className="inline-flex items-center gap-2 text-[10px] tracking-[0.22em] uppercase text-gold border border-gold/40 px-4 py-2 hover:bg-gold hover:text-ink transition-colors"
+          >
+            <CheckCheck className="h-3.5 w-3.5" strokeWidth={1.5} /> Mark all read
+          </button>
+          <button
+            type="button"
+            onClick={() => clearNotifications(user.email)}
+            className="text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/55 border border-line px-4 py-2 hover:border-gold/60 hover:text-gold transition-colors"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+      <ul className="space-y-3">
+        {notifications.map((n) => {
+          const Icon = NOTIFICATION_ICON[n.type] ?? Bell;
+          return (
+            <li
+              key={n.id}
+              className={`relative border bg-ink-3/40 px-5 py-4 flex gap-4 transition-colors ${
+                n.read ? "border-line" : "border-gold/60"
+              }`}
+            >
+              <span
+                className={`mt-0.5 h-9 w-9 inline-flex items-center justify-center border ${
+                  n.read ? "border-line text-[color:var(--foreground)]/55" : "border-gold/60 text-gold"
+                }`}
+              >
+                <Icon className="h-4 w-4" strokeWidth={1.5} />
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-3">
+                  <p className={`text-sm ${n.read ? "text-[color:var(--foreground)]/75" : "text-[color:var(--foreground)] font-medium"}`}>
+                    {n.title}
+                  </p>
+                  {!n.read && <span className="h-1.5 w-1.5 rounded-full bg-gold mt-2 shrink-0" />}
+                </div>
+                <p className="text-xs text-[color:var(--foreground)]/65 mt-1 leading-relaxed">{n.body}</p>
+                <div className="text-[10px] tracking-[0.2em] uppercase text-[color:var(--foreground)]/40 mt-2">
+                  {n.ref && (
+                    <>
+                      Order {n.ref}
+                      <span className="mx-2">·</span>
+                    </>
+                  )}
+                  {new Date(n.at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
@@ -718,7 +908,3 @@ function ReorderTab() {
     </div>
   );
 }
-
-// avoid unused-import warning when X stays referenced for future use
-void X;
-void useAccountDB;
