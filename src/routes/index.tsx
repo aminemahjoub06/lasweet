@@ -671,7 +671,11 @@ function Index() {
                 </li>
               ))}
             </ul>
-            <button className="border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-gold hover:text-ink transition">
+            <button
+              type="button"
+              onClick={() => startOrderFlow({ orderType: "Restaurant" })}
+              className="border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-gold hover:text-ink transition"
+            >
               Get wholesale quote
             </button>
           </div>
@@ -696,7 +700,11 @@ function Index() {
                 </li>
               ))}
             </ul>
-            <button className="border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-gold hover:text-ink transition">
+            <button
+              type="button"
+              onClick={() => startOrderFlow({ orderType: "Private event" })}
+              className="border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 px-8 hover:bg-gold hover:text-ink transition"
+            >
               Book my event
             </button>
           </div>
