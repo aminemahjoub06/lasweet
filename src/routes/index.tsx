@@ -118,6 +118,21 @@ function Index() {
     setCart((c) => ({ ...c, [no]: Math.min(999, (c[no] ?? 0) + n) }));
     setCartOpen(true);
   };
+  const scrollToOrder = () => {
+    if (typeof document !== "undefined") {
+      document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+  const startOrderFlow = (opts?: { no?: string; qty?: number; orderType?: string }) => {
+    if (opts?.no) {
+      setCart((c) => ({ ...c, [opts.no!]: Math.min(999, (c[opts.no!] ?? 0) + (opts.qty ?? 1)) }));
+    }
+    if (opts?.orderType) {
+      setForm((f) => ({ ...f, orderType: opts.orderType! }));
+    }
+    setCartOpen(false);
+    setTimeout(scrollToOrder, 60);
+  };
   const setCartQty = (no: string, n: number) => {
     setCart((c) => {
       const next = { ...c };
