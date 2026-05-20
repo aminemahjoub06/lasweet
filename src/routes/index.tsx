@@ -918,26 +918,197 @@ function Index() {
 
             {/* RIGHT — Form */}
             <div className="lg:col-span-7 border border-gold/30 bg-ink-2/60 backdrop-blur-xl p-6 md:p-8 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.9)]">
-              {submitted ? (
-                <div className="py-10 text-center">
-                  <div className="eyebrow justify-center mb-6 inline-flex">Received</div>
+              {/* Step indicator */}
+              <div className="flex items-center gap-2 mb-8 text-[9px] tracking-[0.22em] uppercase">
+                {[
+                  { k: "form", l: "1 · Details" },
+                  { k: "payment", l: "2 · Payment" },
+                  { k: "confirmed", l: "3 · Confirmation" },
+                ].map((s, i, arr) => {
+                  const order = ["form", "payment", "confirmed"];
+                  const active = order.indexOf(step) >= order.indexOf(s.k);
+                  return (
+                    <div key={s.k} className="flex items-center gap-2">
+                      <span className={active ? "text-gold" : "text-[color:var(--foreground)]/35"}>
+                        {s.l}
+                      </span>
+                      {i < arr.length - 1 && (
+                        <span className={`h-px w-6 ${active ? "bg-gold/60" : "bg-line"}`} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {step === "confirmed" ? (
+                <div className="py-8 text-center">
+                  <div className="mx-auto mb-6 inline-flex h-14 w-14 items-center justify-center border border-gold/50 text-gold">
+                    ✓
+                  </div>
+                  <div className="eyebrow justify-center mb-4 inline-flex">Order Confirmed</div>
                   <h3 className="font-serif-display text-3xl md:text-4xl mb-4">
-                    Thank you, <span className="italic text-gold">{form.fullName.split(" ")[0] || "friend"}</span>
+                    Thank you,{" "}
+                    <span className="italic text-gold">
+                      {form.fullName.split(" ")[0] || "friend"}
+                    </span>
                   </h3>
-                  <p className="text-sm text-[color:var(--foreground)]/70 max-w-md mx-auto leading-relaxed">
-                    Your quote request has been recorded. We'll confirm availability and final pricing
-                    within 24 hours at <span className="text-gold">{form.email}</span>.
+                  <p className="text-sm text-[color:var(--foreground)]/75 max-w-md mx-auto leading-relaxed">
+                    Your order has been received. You will receive a confirmation shortly at{" "}
+                    <span className="text-gold">{form.email}</span>.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSubmitted(false);
-                      setCart({});
-                    }}
-                    className="mt-8 inline-flex items-center text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-5 py-3 hover:bg-gold hover:text-ink transition-colors"
-                  >
-                    Start a new order
-                  </button>
+                  <div className="mt-8 inline-block border border-gold/40 bg-ink-3/60 px-6 py-4">
+                    <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-1">
+                      Order reference
+                    </div>
+                    <div className="font-serif-display text-2xl text-gold tracking-wider">
+                      {orderRef}
+                    </div>
+                  </div>
+                  {form.createAccount && (
+                    <p className="mt-6 text-[11px] italic text-[color:var(--foreground)]/55">
+                      Saved to your account · {form.email}
+                    </p>
+                  )}
+                  <div className="mt-8">
+                    <button
+                      type="button"
+                      onClick={resetOrder}
+                      className="inline-flex items-center text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-5 py-3 hover:bg-gold hover:text-ink transition-colors"
+                    >
+                      Start a new order
+                    </button>
+                  </div>
+                </div>
+              ) : step === "payment" ? (
+                <div className="space-y-6">
+                  <div>
+                    <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">
+                      Payment
+                    </div>
+                    <h3 className="font-serif-display text-2xl md:text-3xl">
+                      Confirm &amp; <span className="italic text-gold">Pay</span>
+                    </h3>
+                    <p className="mt-3 text-sm text-[color:var(--foreground)]/65 leading-relaxed">
+                      Review your order summary before completing payment.
+                    </p>
+                  </div>
+
+                  {/* Order summary */}
+                  <div className="border border-line bg-ink-3/40 p-5 space-y-4">
+                    <ul className="divide-y divide-line">
+                      {orderSnapshot.map((i) => (
+                        <li key={i.no} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+                          <div className="h-12 w-12 shrink-0 border border-gold/40 bg-ink-3 p-1 flex items-center justify-center">
+                            {i.image && (
+                              <img
+                                src={i.image}
+                                alt={i.name}
+                                className="max-h-full max-w-full object-contain"
+                              />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
+                              No. {i.no}
+                            </div>
+                            <div className="font-serif-display text-base leading-tight">
+                              {i.prefix}
+                              <span className="italic text-gold">{i.suffix}</span>
+                            </div>
+                          </div>
+                          <div className="text-xs tracking-[0.18em] text-[color:var(--foreground)]/75">
+                            × {i.qty}
+                          </div>
+                          <div className="text-xs text-[color:var(--foreground)]/70 min-w-[80px] text-right">
+                            <span className="text-gold">${i.qty * PRICE_MIN}</span>
+                            <span className="mx-1">–</span>
+                            <span className="text-gold">${i.qty * PRICE_MAX}</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="border-t border-line pt-4 flex items-baseline justify-between">
+                      <span className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/60">
+                        Estimated total
+                      </span>
+                      <span className="font-serif-display text-xl">
+                        <span className="text-gold">${snapshotMin}</span>
+                        <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
+                        <span className="text-gold">${snapshotMax}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Customer recap */}
+                  <div className="border border-line bg-ink-3/40 p-5 text-sm space-y-2">
+                    <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
+                      Delivering to
+                    </div>
+                    <div className="font-serif-display text-lg">{form.fullName}</div>
+                    <div className="text-[color:var(--foreground)]/70">{form.email}</div>
+                    <div className="text-[color:var(--foreground)]/70">{form.phone}</div>
+                    <div className="text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 pt-2">
+                      {form.orderType} · {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
+                      {form.date ? ` · ${form.date}` : ""}
+                    </div>
+                  </div>
+
+                  {/* Payment method placeholder */}
+                  <div className="border border-gold/30 bg-ink-3/40 p-5">
+                    <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-3">
+                      Payment method
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-[color:var(--foreground)]/75">
+                      <span className="inline-flex h-9 w-12 items-center justify-center border border-gold/40 text-[10px] tracking-[0.18em] uppercase text-gold">
+                        Card
+                      </span>
+                      <span>Secure card payment via Stripe Checkout</span>
+                    </div>
+                    <p className="mt-3 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
+                      You'll be redirected to a secure Stripe-hosted page once connected.
+                      No card details are stored on this site.
+                    </p>
+                  </div>
+
+                  {formError && (
+                    <p className="text-xs tracking-wide text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-4 py-3">
+                      {formError}
+                    </p>
+                  )}
+
+                  <div className="flex items-center gap-2 text-[11px] text-[color:var(--foreground)]/65">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      className="text-gold"
+                    >
+                      <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" />
+                    </svg>
+                    Secure payment — your details are protected.
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setStep("form")}
+                      className="sm:w-1/3 border border-gold/40 text-gold text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-gold hover:text-ink transition-colors"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      type="button"
+                      disabled={paying}
+                      onClick={payOrder}
+                      className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-50 disabled:cursor-wait"
+                    >
+                      {paying ? "Processing…" : "Pay Securely"}
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <form onSubmit={submitQuote} className="space-y-6" noValidate>
