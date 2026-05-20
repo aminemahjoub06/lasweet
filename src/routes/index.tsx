@@ -1029,6 +1029,11 @@ function Index() {
             <p className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
               Pick-up: no minimum · Delivery: 6 pcs minimum
             </p>
+            <p className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
+              {cartCount >= 15
+                ? "15+ pcs: preparation time may be required unless stock is available."
+                : "Under 15 pcs: may be available immediately depending on stock."}
+            </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
                 type="button"
