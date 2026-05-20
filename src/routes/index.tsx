@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ShoppingBag, X, Minus, Plus, Trash2, User } from "lucide-react";
+import { ShoppingBag, X, Minus, Plus, Trash2, User, Bell } from "lucide-react";
 import {
   consumePendingReorder,
   saveOrder,
   useCurrentUser,
   useHydrated,
+  useUnreadCounts,
   type CustomerType,
 } from "@/lib/account";
 import raspberryImg from "@/assets/raspberry.png";
