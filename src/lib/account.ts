@@ -577,6 +577,24 @@ export function useUserOrders(): Order[] {
   return db.orders[db.session] ?? [];
 }
 
+export function useUserNotifications(): Notification[] {
+  const db = useAccountDB();
+  if (!db.session) return [];
+  return db.notifications[db.session] ?? [];
+}
+
+export function useUnreadCounts() {
+  const db = useAccountDB();
+  if (!db.session) return { messages: 0, notifications: 0, total: 0 };
+  const orders = db.orders[db.session] ?? [];
+  const messages = orders.reduce(
+    (n, o) => n + o.messages.filter((m) => m.from !== "customer" && !m.read).length,
+    0,
+  );
+  const notifications = (db.notifications[db.session] ?? []).filter((n) => !n.read).length;
+  return { messages, notifications, total: messages + notifications };
+}
+
 /**
  * Returns a stable boolean reflecting whether the user is hydrated (mounted).
  * Avoids hydration mismatches when SSR sees no session.
