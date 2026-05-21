@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import * as React from "react";
 import { ShoppingBag, X, Minus, Plus, Trash2, Check, ChefHat, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
 import vanillaImg from "@/assets/vanilla.png";
@@ -283,6 +284,7 @@ function Index() {
   // Cart state
   const [cart, setCart] = useState<Record<string, number>>({});
   const [cartOpen, setCartOpen] = useState(false);
+  const [addCount, setAddCount] = useState(0);
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
   const cartItems = flavours.filter((fl) => (cart[fl.no] ?? 0) > 0);
   const PRICE_MIN = 12;
@@ -291,7 +293,15 @@ function Index() {
   const subtotalMax = cartCount * PRICE_MAX;
   const addToCart = (no: string, n: number) => {
     setCart((c) => ({ ...c, [no]: Math.min(999, (c[no] ?? 0) + n) }));
-    setCartOpen(true);
+    setAddCount((prev) => {
+      const next = prev + 1;
+      if (next % 4 === 0) {
+        setCartOpen(true);
+      } else {
+        toast("Added to cart");
+      }
+      return next;
+    });
   };
   const startOrderFlow = (opts?: { no?: string; qty?: number; orderType?: string }) => {
     if (opts?.no) {
@@ -1268,16 +1278,11 @@ function Index() {
                 <span className="text-gold">${subtotalMax}</span>
               </span>
             </div>
-            <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
-              Final price confirmed after quote.
-            </p>
-            <p className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
+            <p
+              className="text-[11px] leading-snug"
+              style={{ letterSpacing: "0.08em", color: "rgba(245, 234, 210, 0.55)" }}
+            >
               Pick-up: no minimum · Delivery: 6 pcs minimum
-            </p>
-            <p className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
-              {cartCount >= 15
-                ? "15+ pcs: preparation time may be required unless stock is available."
-                : "Under 15 pcs: may be available immediately depending on stock."}
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
