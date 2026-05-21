@@ -208,6 +208,64 @@ function StoryShowcase() {
   );
 }
 
+function StoryShowcaseMobileBg() {
+  const showcase = [mangoImg, raspberryImg, vanillaImg, lemonImg];
+  const auras = [
+    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.32), rgba(255,140,40,0.10) 42%, transparent 72%)",
+    "radial-gradient(ellipse at 50% 50%, rgba(220,60,110,0.30), rgba(160,30,70,0.10) 44%, transparent 74%)",
+    "radial-gradient(ellipse at 50% 50%, rgba(240,220,180,0.28), rgba(200,170,120,0.10) 44%, transparent 74%)",
+    "radial-gradient(ellipse at 50% 50%, rgba(245,220,90,0.30), rgba(210,180,60,0.10) 44%, transparent 74%)",
+  ];
+  const [i, setI] = React.useState(0);
+  React.useEffect(() => {
+    const id = setInterval(() => setI((p) => (p + 1) % showcase.length), 3600);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      <style>{`
+        @keyframes laFloatM { 0%,100% { transform: translateY(-8px) scale(1); } 50% { transform: translateY(8px) scale(1.02); } }
+      `}</style>
+      {/* Flavour auras */}
+      {auras.map((bg, n) => (
+        <div
+          key={n}
+          aria-hidden
+          className="absolute inset-0 transition-opacity duration-[1100ms] ease-out"
+          style={{ background: bg, filter: "blur(48px)", opacity: n === i ? 0.85 : 0 }}
+        />
+      ))}
+      {/* Rotating product */}
+      <div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] aspect-square"
+        style={{ animation: "laFloatM 9s ease-in-out infinite" }}
+      >
+        {showcase.map((src, n) => (
+          <img
+            key={n}
+            src={src}
+            alt=""
+            aria-hidden
+            className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-[1400ms] ease-out ${
+              n === i ? "opacity-[0.32]" : "opacity-0"
+            }`}
+            style={{ filter: "blur(6px) drop-shadow(0 30px 40px rgba(0,0,0,0.6))" }}
+          />
+        ))}
+      </div>
+      {/* Readability overlay */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(10,10,10,0.55) 0%, rgba(10,10,10,0.35) 50%, rgba(10,10,10,0.65) 100%)",
+        }}
+      />
+    </div>
+  );
+}
+
 function Index() {
   const [idx, setIdx] = useState(1); // raspberry default per brief
   const f = flavours[idx];
