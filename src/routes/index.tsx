@@ -284,6 +284,7 @@ function Index() {
   // Cart state
   const [cart, setCart] = useState<Record<string, number>>({});
   const [cartOpen, setCartOpen] = useState(false);
+  const [addCount, setAddCount] = useState(0);
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
   const cartItems = flavours.filter((fl) => (cart[fl.no] ?? 0) > 0);
   const PRICE_MIN = 12;
@@ -292,7 +293,15 @@ function Index() {
   const subtotalMax = cartCount * PRICE_MAX;
   const addToCart = (no: string, n: number) => {
     setCart((c) => ({ ...c, [no]: Math.min(999, (c[no] ?? 0) + n) }));
-    setCartOpen(true);
+    setAddCount((prev) => {
+      const next = prev + 1;
+      if (next % 4 === 0) {
+        setCartOpen(true);
+      } else {
+        toast("Added to cart");
+      }
+      return next;
+    });
   };
   const startOrderFlow = (opts?: { no?: string; qty?: number; orderType?: string }) => {
     if (opts?.no) {
