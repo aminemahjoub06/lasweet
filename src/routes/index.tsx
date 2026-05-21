@@ -1018,14 +1018,20 @@ function Index() {
       </section>
 
       {/* FOOTER */}
-      <section id="story" className="diamond-bg border-t border-line">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-20 md:py-24">
+      <section id="story" className="diamond-bg border-t border-line relative overflow-hidden">
+        {/* Mobile-only ambient product background */}
+        <div className="md:hidden absolute inset-0 pointer-events-none">
+          <StoryShowcaseMobileBg />
+        </div>
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-20 md:py-24 relative">
           <div className="grid md:grid-cols-12 gap-10 md:gap-14 items-center">
-            {/* Left — premium rotating product showcase */}
-            <StoryShowcase />
+            {/* Left — premium rotating product showcase (desktop only) */}
+            <div className="hidden md:block md:col-span-5">
+              <StoryShowcase />
+            </div>
 
             {/* Right — story text */}
-            <div className="md:col-span-7">
+            <div className="md:col-span-7 relative z-10">
               <div className="eyebrow mb-5">Our Story</div>
               <h2 className="font-serif-display text-4xl md:text-[2.75rem] leading-[1.08] mb-8">
                 Handcrafted in Brisbane,
