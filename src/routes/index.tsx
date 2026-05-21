@@ -1278,16 +1278,11 @@ function Index() {
                 <span className="text-gold">${subtotalMax}</span>
               </span>
             </div>
-            <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
-              Final price confirmed after quote.
-            </p>
-            <p className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
+            <p
+              className="text-[11px] leading-snug"
+              style={{ letterSpacing: "0.08em", color: "rgba(245, 234, 210, 0.55)" }}
+            >
               Pick-up: no minimum · Delivery: 6 pcs minimum
-            </p>
-            <p className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
-              {cartCount >= 15
-                ? "15+ pcs: preparation time may be required unless stock is available."
-                : "Under 15 pcs: may be available immediately depending on stock."}
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
