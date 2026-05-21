@@ -95,6 +95,13 @@ const flavours: Flavour[] = [
 function StoryShowcase() {
   const showcase = [mangoImg, raspberryImg, vanillaImg, lemonImg];
   const labels = ["Mango", "Raspberry", "Vanilla", "Lemon"];
+  // Subtle flavour auras (low opacity, dark-friendly)
+  const auras = [
+    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.30), rgba(255,140,40,0.10) 40%, transparent 70%)", // Mango
+    "radial-gradient(ellipse at 50% 50%, rgba(220,60,110,0.28), rgba(160,30,70,0.10) 42%, transparent 72%)", // Raspberry
+    "radial-gradient(ellipse at 50% 50%, rgba(240,220,180,0.26), rgba(200,170,120,0.10) 42%, transparent 72%)", // Vanilla
+    "radial-gradient(ellipse at 50% 50%, rgba(245,220,90,0.28), rgba(210,180,60,0.10) 42%, transparent 72%)", // Lemon
+  ];
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
     const id = setInterval(() => setI((p) => (p + 1) % showcase.length), 3600);
@@ -112,13 +119,26 @@ function StoryShowcase() {
         .la-sweep { animation: laSweep 7s ease-in-out infinite; animation-delay: 1.2s; }
       `}</style>
       <div className="la-stage relative aspect-[4/5] max-h-[460px] flex items-center justify-center overflow-hidden">
-        {/* Soft radial gold glow */}
+        {/* Flavour-tinted ambient aura (crossfades on rotation) */}
+        {auras.map((bg, n) => (
+          <div
+            key={n}
+            aria-hidden
+            className="absolute inset-0 pointer-events-none transition-opacity duration-[1100ms] ease-out"
+            style={{
+              background: bg,
+              filter: "blur(36px)",
+              opacity: n === i ? 1 : 0,
+            }}
+          />
+        ))}
+        {/* Soft underlying gold glow (constant, very low) */}
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse at 50% 45%, rgba(201,168,76,0.24), rgba(201,168,76,0.08) 38%, transparent 68%)",
+              "radial-gradient(ellipse at 50% 45%, rgba(201,168,76,0.12), transparent 65%)",
           }}
         />
         {/* Subtle glass tint */}
