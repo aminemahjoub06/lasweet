@@ -232,12 +232,12 @@ function StoryShowcaseMobileBg() {
           key={n}
           aria-hidden
           className="absolute inset-0 transition-opacity duration-[1100ms] ease-out"
-          style={{ background: bg, filter: "blur(48px)", opacity: n === i ? 0.85 : 0 }}
+          style={{ background: bg, filter: "blur(60px)", opacity: n === i ? 1 : 0 }}
         />
       ))}
       {/* Rotating product */}
       <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] aspect-square"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[115%] aspect-square"
         style={{ animation: "laFloatM 9s ease-in-out infinite" }}
       >
         {showcase.map((src, n) => (
@@ -247,9 +247,9 @@ function StoryShowcaseMobileBg() {
             alt=""
             aria-hidden
             className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-[1400ms] ease-out ${
-              n === i ? "opacity-[0.32]" : "opacity-0"
+              n === i ? "opacity-[0.55]" : "opacity-0"
             }`}
-            style={{ filter: "blur(6px) drop-shadow(0 30px 40px rgba(0,0,0,0.6))" }}
+            style={{ filter: "blur(3px) drop-shadow(0 30px 40px rgba(0,0,0,0.6))" }}
           />
         ))}
       </div>
@@ -259,7 +259,7 @@ function StoryShowcaseMobileBg() {
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(180deg, rgba(10,10,10,0.55) 0%, rgba(10,10,10,0.35) 50%, rgba(10,10,10,0.65) 100%)",
+            "linear-gradient(180deg, rgba(10,10,10,0.45) 0%, rgba(10,10,10,0.25) 50%, rgba(10,10,10,0.55) 100%)",
         }}
       />
     </div>
