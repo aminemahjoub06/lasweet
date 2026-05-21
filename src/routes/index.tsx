@@ -315,7 +315,14 @@ function Index() {
       {/* HEADER */}
       <header className="absolute top-0 left-0 right-0 z-20">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 md:px-10 md:py-8">
-          <a href="#" className="font-serif-display text-xl md:text-2xl leading-none">
+          <a
+            href="#top"
+            onClick={(e) => {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className="font-serif-display text-xl md:text-2xl leading-none"
+          >
             L<span className="text-gold">&</span>A <span className="italic">Sweet</span>
           </a>
           <div className="flex items-center gap-6 md:gap-8">
