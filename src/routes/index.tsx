@@ -92,6 +92,80 @@ const flavours: Flavour[] = [
   },
 ];
 
+function StoryShowcase() {
+  const showcase = [mangoImg, raspberryImg, vanillaImg, lemonImg];
+  const labels = ["Mango", "Raspberry", "Vanilla", "Lemon"];
+  const [i, setI] = React.useState(0);
+  React.useEffect(() => {
+    const id = setInterval(() => setI((p) => (p + 1) % showcase.length), 4200);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div className="md:col-span-5 relative">
+      <style>{`
+        @keyframes laFloat { 0%,100% { transform: translateY(-6px) rotateX(6deg) rotateY(-4deg); } 50% { transform: translateY(6px) rotateX(6deg) rotateY(4deg); } }
+        @keyframes laFadeIn { from { opacity: 0; transform: scale(.94) rotateY(-10deg); } to { opacity: 1; transform: scale(1) rotateY(0); } }
+        .la-stage { perspective: 1200px; }
+        .la-float { animation: laFloat 7s ease-in-out infinite; transform-style: preserve-3d; will-change: transform; }
+        .la-fade { animation: laFadeIn 1.4s ease-out both; }
+      `}</style>
+      <div className="la-stage relative aspect-[4/5] max-h-[440px] flex items-center justify-center">
+        {/* Soft radial gold glow */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 45%, rgba(201,168,76,0.22), rgba(201,168,76,0.08) 35%, transparent 65%)",
+          }}
+        />
+        {/* Subtle vitrine vignette */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.55), transparent 60%)",
+          }}
+        />
+        {/* Product */}
+        <div className="la-float relative w-[70%] h-[70%] flex items-end justify-center">
+          {showcase.map((src, n) => (
+            <img
+              key={n}
+              src={src}
+              alt={`${labels[n]} dessert`}
+              className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-[1400ms] ease-out ${
+                n === i ? "opacity-100 la-fade" : "opacity-0"
+              }`}
+              style={{ filter: "drop-shadow(0 30px 50px rgba(0,0,0,0.55))" }}
+            />
+          ))}
+        </div>
+        {/* Soft reflection */}
+        <div
+          aria-hidden
+          className="absolute left-1/2 -translate-x-1/2 bottom-[8%] w-[55%] h-3 rounded-[50%] blur-md"
+          style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.6), transparent 70%)" }}
+        />
+      </div>
+      {/* Flavour indicator */}
+      <div className="mt-5 flex items-center justify-center gap-3">
+        {labels.map((l, n) => (
+          <button
+            key={l}
+            onClick={() => setI(n)}
+            aria-label={l}
+            className={`h-[2px] transition-all duration-500 ${
+              n === i ? "w-8 bg-gold" : "w-4 bg-gold/25 hover:bg-gold/50"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Index() {
   const [idx, setIdx] = useState(1); // raspberry default per brief
   const f = flavours[idx];
