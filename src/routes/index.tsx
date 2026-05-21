@@ -911,7 +911,7 @@ function Index() {
                 <img
                   src={mangoImg}
                   alt="Handcrafted trompe-l'œil dessert"
-                  className="absolute inset-0 w-full h-full object-contain opacity-50 scale-85"
+                  className="absolute inset-0 w-full h-full object-contain opacity-55 p-6"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-ink/60" />
               </div>
