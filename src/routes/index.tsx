@@ -903,31 +903,44 @@ function Index() {
 
       {/* FOOTER */}
       <section id="story" className="diamond-bg border-t border-line">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32 grid md:grid-cols-12 gap-10">
-          <div className="md:col-span-5" />
-          <div className="md:col-span-7">
-            <div className="eyebrow mb-8">Our Story</div>
-            <h2 className="font-serif-display text-5xl md:text-6xl leading-[1.05] mb-10">
-              Handcrafted in<br />
-              Brisbane,<br />
-              with <span className="italic text-gold">obsession</span>
-            </h2>
-            <div className="max-w-lg space-y-6 text-[color:var(--foreground)]/70 text-sm md:text-base leading-relaxed">
-              <p>
-                Each piece is an edible illusion. Sculpted by hand, coated in white chocolate,
-                filled with a generous ganache — mango, raspberry, vanilla or lemon. A dessert that
-                fools the eye and wins the heart.
-              </p>
-              <p>
-                Made in small batches in Brisbane for restaurants, cafés and events that want to
-                offer something truly unforgettable. No shortcuts on quality. No compromise on
-                flavour.
-              </p>
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-20 md:py-24">
+          <div className="grid md:grid-cols-12 gap-10 md:gap-14 items-center">
+            {/* Left — subtle product image */}
+            <div className="md:col-span-5 relative">
+              <div className="relative aspect-[4/5] max-h-[380px] overflow-hidden border border-gold/15 bg-ink-2">
+                <img
+                  src={mangoImg}
+                  alt="Handcrafted trompe-l'œil dessert"
+                  className="absolute inset-0 w-full h-full object-contain opacity-50 scale-85"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-ink/60" />
+              </div>
+              {/* Decorative corner accent */}
+              <div className="absolute -bottom-3 -right-3 w-20 h-20 border-r border-b border-gold/25" />
+              <div className="absolute -top-3 -left-3 w-12 h-12 border-l border-t border-gold/15" />
             </div>
-            <div className="mt-12 flex items-center gap-4 max-w-lg">
-              <div className="flex-1 h-px bg-line" />
-              <div className="font-serif-display italic text-sm text-[color:var(--foreground)]/80">
-                L<span className="text-gold">&</span>A Sweet <span className="text-gold mx-2">·</span> Brisbane
+
+            {/* Right — story text */}
+            <div className="md:col-span-7">
+              <div className="eyebrow mb-5">Our Story</div>
+              <h2 className="font-serif-display text-4xl md:text-[2.75rem] leading-[1.08] mb-8">
+                Handcrafted in Brisbane,
+                <br />
+                made to <span className="italic text-gold">impress</span>
+              </h2>
+              <div className="max-w-md space-y-5 text-[color:var(--foreground)]/65 text-sm leading-[1.75]">
+                <p>
+                  L&A Sweet creates handcrafted trompe-l'œil desserts designed for restaurants, cafés and private events. Each piece is coated in white chocolate, filled with generous ganache and finished by hand for a refined visual illusion.
+                </p>
+                <p>
+                  Made in small batches in Brisbane, our desserts are prepared with care, precision and freshness in mind — whether for a professional menu, a celebration or a special order.
+                </p>
+              </div>
+              <div className="mt-10 flex items-center gap-4 max-w-md">
+                <div className="flex-1 h-px bg-line" />
+                <div className="font-serif-display italic text-sm text-[color:var(--foreground)]/80 whitespace-nowrap">
+                  L<span className="text-gold">&</span>A Sweet <span className="text-gold mx-2">·</span> Brisbane
+                </div>
               </div>
             </div>
           </div>
