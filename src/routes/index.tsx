@@ -587,15 +587,22 @@ function Index() {
                   {f.description}
                 </p>
 
-                <div className="grid grid-cols-3 gap-3 mb-8">
+                <div className="grid grid-cols-3 gap-2 md:gap-3 mb-8">
                   {[
-                    { v: "Stock", l: "Availability" },
-                    { v: "15+ pcs", l: "Prep time may apply" },
-                    { v: "Fresh", l: "Keep chilled" },
+                    { v: "Stock", l: "Available" },
+                    { v: "15+ pcs", l: "Prep time" },
+                    { v: "Fresh", l: "Chilled" },
                   ].map((b) => (
-                    <div key={b.l} className="border border-line p-3 text-center">
-                      <div className="font-serif-display text-lg text-[color:var(--foreground)]">{b.v}</div>
-                      <div className="text-[9px] tracking-[0.2em] uppercase text-gold/80 mt-1">{b.l}</div>
+                    <div
+                      key={b.l}
+                      className="border border-line p-2.5 md:p-3 text-center flex flex-col items-center justify-center overflow-hidden"
+                    >
+                      <div className="font-serif-display text-sm md:text-lg leading-tight text-[color:var(--foreground)]">
+                        {b.v}
+                      </div>
+                      <div className="text-[10px] md:text-[11px] tracking-[0.08em] md:tracking-[0.2em] uppercase text-gold/80 mt-1 leading-tight">
+                        {b.l}
+                      </div>
                     </div>
                   ))}
                 </div>
