@@ -97,35 +97,46 @@ function StoryShowcase() {
   const labels = ["Mango", "Raspberry", "Vanilla", "Lemon"];
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
-    const id = setInterval(() => setI((p) => (p + 1) % showcase.length), 4200);
+    const id = setInterval(() => setI((p) => (p + 1) % showcase.length), 3600);
     return () => clearInterval(id);
   }, []);
   return (
     <div className="md:col-span-5 relative">
       <style>{`
-        @keyframes laFloat { 0%,100% { transform: translateY(-6px) rotateX(6deg) rotateY(-4deg); } 50% { transform: translateY(6px) rotateX(6deg) rotateY(4deg); } }
-        @keyframes laFadeIn { from { opacity: 0; transform: scale(.94) rotateY(-10deg); } to { opacity: 1; transform: scale(1) rotateY(0); } }
-        .la-stage { perspective: 1200px; }
-        .la-float { animation: laFloat 7s ease-in-out infinite; transform-style: preserve-3d; will-change: transform; }
-        .la-fade { animation: laFadeIn 1.4s ease-out both; }
+        @keyframes laFloat { 0%,100% { transform: translateY(-5px) rotateX(4deg) rotateY(-3deg); } 50% { transform: translateY(5px) rotateX(4deg) rotateY(3deg); } }
+        @keyframes laFadeIn { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: scale(1); } }
+        @keyframes laSweep { 0% { transform: translateX(-130%) skewX(-18deg); opacity: 0; } 25% { opacity: .9; } 60% { opacity: 0; } 100% { transform: translateX(180%) skewX(-18deg); opacity: 0; } }
+        .la-stage { perspective: 1400px; }
+        .la-float { animation: laFloat 8s ease-in-out infinite; transform-style: preserve-3d; will-change: transform; }
+        .la-fade { animation: laFadeIn 1.6s cubic-bezier(.22,.61,.36,1) both; }
+        .la-sweep { animation: laSweep 7s ease-in-out infinite; animation-delay: 1.2s; }
       `}</style>
-      <div className="la-stage relative aspect-[4/5] max-h-[440px] flex items-center justify-center">
+      <div className="la-stage relative aspect-[4/5] max-h-[460px] flex items-center justify-center overflow-hidden">
         {/* Soft radial gold glow */}
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse at 50% 45%, rgba(201,168,76,0.22), rgba(201,168,76,0.08) 35%, transparent 65%)",
+              "radial-gradient(ellipse at 50% 45%, rgba(201,168,76,0.24), rgba(201,168,76,0.08) 38%, transparent 68%)",
           }}
         />
-        {/* Subtle vitrine vignette */}
+        {/* Subtle glass tint */}
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.55), transparent 60%)",
+              "linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 35%, rgba(255,255,255,0) 70%, rgba(255,255,255,0.03) 100%)",
+          }}
+        />
+        {/* Vitrine vignette */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.6), transparent 62%)",
           }}
         />
         {/* Product */}
@@ -135,19 +146,30 @@ function StoryShowcase() {
               key={n}
               src={src}
               alt={`${labels[n]} dessert`}
-              className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-[1400ms] ease-out ${
-                n === i ? "opacity-100 la-fade" : "opacity-0"
+              className={`absolute inset-0 w-full h-full object-contain transition-all duration-[1600ms] ease-out ${
+                n === i ? "opacity-100 scale-100 la-fade" : "opacity-0 scale-95"
               }`}
-              style={{ filter: "drop-shadow(0 30px 50px rgba(0,0,0,0.55))" }}
+              style={{ filter: "drop-shadow(0 32px 48px rgba(0,0,0,0.6)) drop-shadow(0 0 24px rgba(201,168,76,0.12))" }}
             />
           ))}
         </div>
-        {/* Soft reflection */}
+        {/* Soft ground reflection */}
         <div
           aria-hidden
-          className="absolute left-1/2 -translate-x-1/2 bottom-[8%] w-[55%] h-3 rounded-[50%] blur-md"
+          className="absolute left-1/2 -translate-x-1/2 bottom-[6%] w-[60%] h-4 rounded-[50%] blur-md"
           style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.6), transparent 70%)" }}
         />
+        {/* Light sweep across glass */}
+        <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div
+            className="la-sweep absolute top-0 -left-1/3 h-full w-1/3"
+            style={{
+              background:
+                "linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.04) 30%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.04) 70%, transparent 100%)",
+              filter: "blur(6px)",
+            }}
+          />
+        </div>
       </div>
       {/* Flavour indicator */}
       <div className="mt-5 flex items-center justify-center gap-3">
