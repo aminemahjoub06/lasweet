@@ -905,20 +905,8 @@ function Index() {
       <section id="story" className="diamond-bg border-t border-line">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-20 md:py-24">
           <div className="grid md:grid-cols-12 gap-10 md:gap-14 items-center">
-            {/* Left — subtle product image */}
-            <div className="md:col-span-5 relative">
-              <div className="relative aspect-[4/5] max-h-[380px] overflow-hidden border border-gold/15 bg-ink-2">
-                <img
-                  src={mangoImg}
-                  alt="Handcrafted trompe-l'œil dessert"
-                  className="absolute inset-0 w-full h-full object-contain opacity-55 p-6"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-ink/60" />
-              </div>
-              {/* Decorative corner accent */}
-              <div className="absolute -bottom-3 -right-3 w-20 h-20 border-r border-b border-gold/25" />
-              <div className="absolute -top-3 -left-3 w-12 h-12 border-l border-t border-gold/15" />
-            </div>
+            {/* Left — premium rotating product showcase */}
+            <StoryShowcase />
 
             {/* Right — story text */}
             <div className="md:col-span-7">
