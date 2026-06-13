@@ -1132,6 +1132,31 @@ function Index() {
         </div>
       </section>
 
+      <section id="allergens" className="border-t border-line bg-ink">
+        <div className="mx-auto max-w-4xl px-6 md:px-10 py-16 md:py-20">
+          <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-8 md:p-10 shadow-[0_0_40px_-15px_rgba(212,175,55,0.4)]">
+            <div className="text-[10px] tracking-[0.32em] uppercase text-gold mb-3">Important</div>
+            <h2 className="font-serif-display text-3xl md:text-4xl mb-3">Allergens</h2>
+            <p className="text-[color:var(--foreground)]/75 italic mb-6">
+              Please let us know about any allergies or dietary requirements before ordering.
+            </p>
+            <p className="text-[color:var(--foreground)]/85 mb-3">
+              Our trompe-l'œil desserts may contain or come into contact with:
+            </p>
+            <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-[color:var(--foreground)]/85 mb-6">
+              <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
+              <li className="flex items-center gap-2"><span className="text-gold">·</span> Gluten</li>
+              <li className="flex items-center gap-2"><span className="text-gold">·</span> Eggs</li>
+              <li className="flex items-center gap-2"><span className="text-gold">·</span> Tree nuts, including hazelnut</li>
+              <li className="flex items-center gap-2 col-span-2"><span className="text-gold">·</span> Soy, depending on the white chocolate used</li>
+            </ul>
+            <div className="border-t border-gold/20 pt-5 text-sm text-[color:var(--foreground)]/70">
+              Products are prepared in a small kitchen environment, so traces of allergens may be present. Please contact us before ordering if you have a serious allergy.
+            </div>
+          </div>
+        </div>
+      </section>
+
       <footer id="footer" className="border-t border-line bg-ink-2">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
