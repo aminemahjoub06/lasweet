@@ -44,6 +44,9 @@ type Flavour = {
   description: string;
   short: string;
   image?: string;
+  available?: boolean;
+  price?: number;
+  sizes?: { label: string; price: number }[];
 };
 
 const flavours: Flavour[] = [
@@ -57,6 +60,8 @@ const flavours: Flavour[] = [
       "A tropical trompe-l'œil with a smooth white chocolate shell, revealing a soft homemade biscuit, real vanilla bean ganache and a bright mango compotée for a fresh, sunny and indulgent finish.",
     short: "White chocolate shell, homemade vanilla ganache, homemade biscuit and mango compote.",
     image: mangoImg,
+    available: false,
+    price: 20,
   },
   {
     no: "02",
@@ -68,6 +73,8 @@ const flavours: Flavour[] = [
       "A vibrant raspberry illusion coated in smooth white chocolate, filled with real vanilla bean ganache, a soft homemade biscuit and a tangy raspberry coulis that brings the perfect balance of sweetness and freshness.",
     short: "White chocolate shell, homemade vanilla ganache, raspberry coulis and homemade biscuit.",
     image: raspberryImg,
+    available: true,
+    price: 18,
   },
   {
     no: "03",
@@ -79,6 +86,11 @@ const flavours: Flavour[] = [
       "A delicate vanilla-inspired creation with a smooth white chocolate shell and a rich homemade hazelnut cream centre — creamy, nutty and comforting, with a refined handmade finish.",
     short: "White chocolate shell with homemade hazelnut cream.",
     image: vanillaImg,
+    available: true,
+    sizes: [
+      { label: "S", price: 15 },
+      { label: "L", price: 18 },
+    ],
   },
   {
     no: "04",
@@ -90,6 +102,8 @@ const flavours: Flavour[] = [
       "A bright lemon trompe-l'œil with a smooth white chocolate shell, soft homemade biscuit, silky lemon crémeux and vanilla ganache delicately lifted with fresh lemon zest for a clean, elegant citrus finish.",
     short: "White chocolate shell, homemade biscuit, lemon crémeux and vanilla ganache with lemon zest.",
     image: lemonImg,
+    available: true,
+    price: 18,
   },
 ];
 
