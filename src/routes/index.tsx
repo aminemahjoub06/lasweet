@@ -1273,26 +1273,87 @@ function Index() {
       </section>
 
       <section id="allergens" className="border-t border-line bg-ink">
-        <div className="mx-auto max-w-4xl px-6 md:px-10 py-16 md:py-20">
-          <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-8 md:p-10 shadow-[0_0_40px_-15px_rgba(212,175,55,0.4)]">
+        <div className="mx-auto max-w-6xl px-6 md:px-10 py-16 md:py-20">
+          <div className="text-center mb-10">
             <div className="text-[10px] tracking-[0.32em] uppercase text-gold mb-3">Important</div>
             <h2 className="font-serif-display text-3xl md:text-4xl mb-3">Allergens</h2>
-            <p className="text-[color:var(--foreground)]/75 italic mb-6">
+            <p className="text-[color:var(--foreground)]/75 italic max-w-2xl mx-auto">
               Please let us know about any allergies or dietary requirements before ordering.
             </p>
-            <p className="text-[color:var(--foreground)]/85 mb-3">
-              Our trompe-l'œil desserts may contain or come into contact with:
-            </p>
-            <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-[color:var(--foreground)]/85 mb-6">
-              <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
-              <li className="flex items-center gap-2"><span className="text-gold">·</span> Gluten</li>
-              <li className="flex items-center gap-2"><span className="text-gold">·</span> Eggs</li>
-              <li className="flex items-center gap-2"><span className="text-gold">·</span> Tree nuts, including hazelnut</li>
-              <li className="flex items-center gap-2 col-span-2"><span className="text-gold">·</span> Soy, depending on the white chocolate used</li>
-            </ul>
-            <div className="border-t border-gold/20 pt-5 text-sm text-[color:var(--foreground)]/70">
-              Products are prepared in a small kitchen environment, so traces of allergens may be present. Please contact us before ordering if you have a serious allergy.
+          </div>
+
+          <p className="text-center text-[color:var(--foreground)]/85 mb-10 max-w-3xl mx-auto">
+            Our trompe-l'œil desserts are handmade in small batches and may contain or come into contact with common allergens.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+            {/* Mango */}
+            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col">
+              <h3 className="font-serif-display text-xl mb-4 text-gold">Mango</h3>
+              <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
+              <ul className="space-y-2 text-sm text-[color:var(--foreground)]/85 mb-4">
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Soy</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Gluten</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Eggs</li>
+              </ul>
+              <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
+                Milk and soy are present in the white chocolate. Gluten and eggs are present in the homemade biscuit.
+              </div>
             </div>
+
+            {/* Raspberry */}
+            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col">
+              <h3 className="font-serif-display text-xl mb-4 text-gold">Raspberry</h3>
+              <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
+              <ul className="space-y-2 text-sm text-[color:var(--foreground)]/85 mb-4">
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Soy</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Gluten</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Eggs</li>
+              </ul>
+              <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
+                Milk and soy are present in the white chocolate. Gluten and eggs are present in the homemade biscuit.
+              </div>
+            </div>
+
+            {/* Lemon */}
+            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col">
+              <h3 className="font-serif-display text-xl mb-4 text-gold">Lemon</h3>
+              <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
+              <ul className="space-y-2 text-sm text-[color:var(--foreground)]/85 mb-4">
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Soy</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Gluten</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Eggs</li>
+              </ul>
+              <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
+                Milk and soy are present in the white chocolate. Gluten and eggs are present in the homemade biscuit. Eggs are also present in the lemon crémeux.
+              </div>
+            </div>
+
+            {/* Vanilla */}
+            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col">
+              <h3 className="font-serif-display text-xl mb-4 text-gold">Vanilla</h3>
+              <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
+              <ul className="space-y-2 text-sm text-[color:var(--foreground)]/85 mb-4">
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Soy</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Tree nuts, including hazelnut</li>
+              </ul>
+              <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
+                Milk and soy are present in the white chocolate. Tree nuts are present in the homemade hazelnut cream.
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-gold/20 bg-ink-2/50 p-6 md:p-8 text-center">
+            <p className="text-sm text-[color:var(--foreground)]/70 mb-3">
+              Products are prepared in a small kitchen environment, so traces of allergens may be present, including milk, soy, gluten, eggs and tree nuts. Please contact us before ordering if you have a serious allergy.
+            </p>
+            <p className="text-sm text-[color:var(--foreground)]/70">
+              Egg-free versions may be available on request for selected flavours, depending on preparation and availability. Please contact us before ordering.
+            </p>
           </div>
         </div>
       </section>
