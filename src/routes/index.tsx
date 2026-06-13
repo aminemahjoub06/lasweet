@@ -108,14 +108,14 @@ const flavours: Flavour[] = [
 ];
 
 function StoryShowcase() {
-  const showcase = [mangoImg, raspberryImg, vanillaImg, lemonImg];
-  const labels = ["Mango", "Raspberry", "Vanilla", "Lemon"];
+  const showcase = [raspberryImg, lemonImg, vanillaImg, mangoImg];
+  const labels = ["Raspberry", "Lemon", "Vanilla", "Mango"];
   // Subtle flavour auras (low opacity, dark-friendly)
   const auras = [
-    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.30), rgba(255,140,40,0.10) 40%, transparent 70%)", // Mango
     "radial-gradient(ellipse at 50% 50%, rgba(220,60,110,0.28), rgba(160,30,70,0.10) 42%, transparent 72%)", // Raspberry
-    "radial-gradient(ellipse at 50% 50%, rgba(240,220,180,0.26), rgba(200,170,120,0.10) 42%, transparent 72%)", // Vanilla
     "radial-gradient(ellipse at 50% 50%, rgba(245,220,90,0.28), rgba(210,180,60,0.10) 42%, transparent 72%)", // Lemon
+    "radial-gradient(ellipse at 50% 50%, rgba(240,220,180,0.26), rgba(200,170,120,0.10) 42%, transparent 72%)", // Vanilla
+    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.30), rgba(255,140,40,0.10) 40%, transparent 70%)", // Mango
   ];
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
