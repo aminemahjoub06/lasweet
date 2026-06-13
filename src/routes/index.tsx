@@ -587,7 +587,7 @@ function Index() {
           </a>
           <div className="flex items-center gap-6 md:gap-8">
             <nav className="hidden md:flex items-center gap-8 text-[11px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/70">
-              <a href="#creations" className="hover:text-gold transition">Creations</a>
+              <a href="#products" className="hover:text-gold transition">Creations</a>
               <a href="#wholesale" className="hover:text-gold transition">For Restaurants</a>
               <a href="#events" className="hover:text-gold transition">Events</a>
               <a href="#story" className="hover:text-gold transition">About</a>
@@ -746,57 +746,6 @@ function Index() {
               <div className="text-[10px] tracking-[0.24em] uppercase text-gold/80 mt-1 leading-relaxed">{s.l}</div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* COLLECTION */}
-      <section id="creations" className="bg-ink-2 border-t border-line">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32">
-          <div className="text-center mb-16">
-            <div className="eyebrow justify-center mb-6 inline-flex">The Collection</div>
-            <h2 className="font-serif-display text-5xl md:text-6xl leading-tight">
-              Four flavours, one <span className="italic text-gold">experience</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-line">
-            {flavours.map((fl) => (
-              <article
-                key={fl.no}
-                className="group/card relative overflow-hidden bg-ink-2 flex flex-col transition-transform duration-500 hover:-translate-y-1"
-              >
-                {/* Image on top, fully contained inside the card */}
-                <div className="relative aspect-square w-full overflow-hidden bg-ink p-6 md:p-8">
-                  {fl.image && (
-                    <img
-                      src={fl.image}
-                      alt={`${fl.prefix}${fl.suffix}`}
-                      className="absolute inset-0 m-auto h-full w-full object-contain p-6 md:p-8 transition-transform duration-[1200ms] ease-out group-hover/card:scale-[1.04]"
-                    />
-                  )}
-                  <div className="absolute top-4 left-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/60 backdrop-blur-md px-3 py-1.5 border border-gold/30">
-                    No. {fl.no}
-                  </div>
-                  {fl.available === false && (
-                    <div className="absolute top-4 right-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/70 backdrop-blur-md px-3 py-1.5 border border-gold/40">
-                      Coming soon
-                    </div>
-                  )}
-                </div>
-
-                {/* Text panel below the image */}
-                <div className="relative bg-ink/80 backdrop-blur-xl border-t border-gold/30 p-6 md:p-7">
-                  <h3 className="font-serif-display text-3xl md:text-4xl mb-3 text-[color:var(--foreground)]">
-                    {fl.prefix}<span className="italic text-gold">{fl.suffix}</span>
-                  </h3>
-                  <p className="text-sm text-[color:var(--foreground)]/75 leading-relaxed">
-                    {fl.description}
-                  </p>
-                  <div className="mt-5 h-px w-10 bg-gold" />
-                </div>
-              </article>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -1093,6 +1042,56 @@ function Index() {
                 );
               })}
             </div>
+          </div>
+        </div>
+      </section>
+      {/* COLLECTION */}
+      <section id="collection" className="bg-ink-2 border-t border-line">
+        <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32">
+          <div className="text-center mb-16">
+            <div className="eyebrow justify-center mb-6 inline-flex">The Collection</div>
+            <h2 className="font-serif-display text-5xl md:text-6xl leading-tight">
+              Four flavours, one <span className="italic text-gold">experience</span>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-line">
+            {flavours.map((fl) => (
+              <article
+                key={fl.no}
+                className="group/card relative overflow-hidden bg-ink-2 flex flex-col transition-transform duration-500 hover:-translate-y-1"
+              >
+                {/* Image on top, fully contained inside the card */}
+                <div className="relative aspect-square w-full overflow-hidden bg-ink p-6 md:p-8">
+                  {fl.image && (
+                    <img
+                      src={fl.image}
+                      alt={`${fl.prefix}${fl.suffix}`}
+                      className="absolute inset-0 m-auto h-full w-full object-contain p-6 md:p-8 transition-transform duration-[1200ms] ease-out group-hover/card:scale-[1.04]"
+                    />
+                  )}
+                  <div className="absolute top-4 left-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/60 backdrop-blur-md px-3 py-1.5 border border-gold/30">
+                    No. {fl.no}
+                  </div>
+                  {fl.available === false && (
+                    <div className="absolute top-4 right-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/70 backdrop-blur-md px-3 py-1.5 border border-gold/40">
+                      Coming soon
+                    </div>
+                  )}
+                </div>
+
+                {/* Text panel below the image */}
+                <div className="relative bg-ink/80 backdrop-blur-xl border-t border-gold/30 p-6 md:p-7">
+                  <h3 className="font-serif-display text-3xl md:text-4xl mb-3 text-[color:var(--foreground)]">
+                    {fl.prefix}<span className="italic text-gold">{fl.suffix}</span>
+                  </h3>
+                  <p className="text-sm text-[color:var(--foreground)]/75 leading-relaxed">
+                    {fl.description}
+                  </p>
+                  <div className="mt-5 h-px w-10 bg-gold" />
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
