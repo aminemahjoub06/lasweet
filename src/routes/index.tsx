@@ -2133,12 +2133,24 @@ function CheckoutModal({
                     <span className="text-gold">${snapshotTotal}</span>
                   </span>
                 </div>
-                <div className="mt-2 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
-                  <span>Delivery fee</span>
-                  <span className="text-gold">
-                    {form.delivery === "pickup" ? "Free" : "Confirmed separately"}
-                  </span>
-                </div>
+                {(() => {
+                  const snapQty = orderSnapshot.reduce((s, i) => s + i.qty, 0);
+                  const fee = form.delivery === "delivery" && snapQty < 8 ? 10 : 0;
+                  return (
+                    <>
+                      <div className="mt-2 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
+                        <span>Delivery fee</span>
+                        <span className="text-gold">{fee === 0 ? "Free" : `$${fee}`}</span>
+                      </div>
+                      <div className="mt-1 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
+                        <span>Total</span>
+                        <span className="font-serif-display normal-case tracking-normal text-base">
+                          ${snapshotTotal + fee}
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               <div className="border border-gold/30 bg-ink-3/40 p-5 space-y-2 text-[12px] leading-relaxed text-[color:var(--foreground)]/75">
