@@ -1961,7 +1961,7 @@ function CheckoutModal({
                 </div>
                 <ul className="divide-y divide-line">
                   {orderSnapshot.map((i) => (
-                    <li key={i.no} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
+                    <li key={i.key} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
                       <div className="h-10 w-10 shrink-0 border border-gold/40 bg-ink-3 p-1 flex items-center justify-center">
                         {i.image && (
                           <img src={i.image} alt={i.name} className="max-h-full max-w-full object-contain" />
@@ -1972,8 +1972,15 @@ function CheckoutModal({
                           {i.prefix}
                           <span className="italic text-gold">{i.suffix}</span>
                         </span>
+                        {i.sizeLabel && (
+                          <span className="ml-2 text-[10px] tracking-[0.18em] uppercase text-gold/70">
+                            Size {i.sizeLabel}
+                          </span>
+                        )}
                       </div>
-                      <div className="text-xs text-[color:var(--foreground)]/70">× {i.qty}</div>
+                      <div className="text-xs text-[color:var(--foreground)]/70">
+                        × {i.qty} · <span className="text-gold">${i.qty * i.price}</span>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -1983,15 +1990,13 @@ function CheckoutModal({
                     {form.date ? ` · ${form.date}` : ""}
                   </span>
                   <span className="font-serif-display normal-case tracking-normal text-base">
-                    <span className="text-gold">${snapshotMin}</span>
-                    <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
-                    <span className="text-gold">${snapshotMax}</span>
+                    <span className="text-gold">${snapshotTotal}</span>
                   </span>
                 </div>
                 <div className="mt-2 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
                   <span>Delivery fee</span>
                   <span className="text-gold">
-                    {form.delivery === "pickup" ? "Free" : "Confirmed after order details"}
+                    {form.delivery === "pickup" ? "Free" : "Confirmed separately"}
                   </span>
                 </div>
               </div>
