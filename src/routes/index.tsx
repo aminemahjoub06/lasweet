@@ -950,13 +950,58 @@ function Index() {
                       className="flex items-center justify-between gap-3 border-t border-line bg-ink-2 px-4 py-3 md:px-5 md:py-4"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="flex flex-col">
-                        <span className="font-serif-display text-base md:text-lg leading-none">
-                          <span className="text-gold">$12–20</span>
-                        </span>
-                        <span className="text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/55 mt-1">
-                          per piece
-                        </span>
+                      <div className="flex flex-col gap-1">
+                        {fl.sizes ? (
+                          <>
+                            <span className="font-serif-display text-base md:text-lg leading-none">
+                              <span className="text-gold">${fl.sizes.find((s) => s.label === getSize(fl))?.price ?? fl.sizes[0].price}</span>
+                            </span>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              {fl.sizes.map((s) => {
+                                const active = getSize(fl) === s.label;
+                                return (
+                                  <span
+                                    key={s.label}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedSize((sz) => ({ ...sz, [fl.no]: s.label }));
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setSelectedSize((sz) => ({ ...sz, [fl.no]: s.label }));
+                                      }
+                                    }}
+                                    className={`cursor-pointer text-[10px] tracking-[0.22em] uppercase px-2 py-1 border transition-colors ${
+                                      active
+                                        ? "bg-gold text-ink border-gold"
+                                        : "text-gold border-gold/40 hover:bg-gold hover:text-ink"
+                                    }`}
+                                  >
+                                    {s.label} · ${s.price}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <span className="font-serif-display text-base md:text-lg leading-none">
+                              <span className="text-gold">${fl.price}</span>
+                            </span>
+                            <span className="text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/55 mt-1">
+                              per piece
+                            </span>
+                            {fl.available === false && (
+                              <span className="mt-1 inline-block self-start text-[9px] tracking-[0.24em] uppercase text-gold border border-gold/50 bg-ink-3/60 px-2 py-0.5">
+                                Coming soon
+                              </span>
+                            )}
+                          </>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -1003,28 +1048,39 @@ function Index() {
                             +
                           </span>
                         </div>
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addToCart(fl.no, getQty(fl.no));
-                            setAdded(fl.no);
-                            window.setTimeout(() => setAdded((c) => (c === fl.no ? null : c)), 1400);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
+                        {fl.available === false ? (
+                          <span
+                            aria-disabled
+                            className="text-[10px] tracking-[0.24em] uppercase text-[color:var(--foreground)]/50 border border-line bg-ink-3/40 px-4 py-2 cursor-not-allowed"
+                          >
+                            Coming Soon
+                          </span>
+                        ) : (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={(e) => {
                               e.stopPropagation();
-                              addToCart(fl.no, getQty(fl.no));
-                              setAdded(fl.no);
-                              window.setTimeout(() => setAdded((c) => (c === fl.no ? null : c)), 1400);
-                            }
-                          }}
-                          className="cursor-pointer text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-4 py-2 hover:bg-gold hover:text-ink transition-colors"
-                        >
-                          {added === fl.no ? "Added ✓" : "Add to cart"}
-                        </span>
+                              const key = cartKeyFor(fl);
+                              addToCart(key, getQty(fl.no));
+                              setAdded(key);
+                              window.setTimeout(() => setAdded((c) => (c === key ? null : c)), 1400);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const key = cartKeyFor(fl);
+                                addToCart(key, getQty(fl.no));
+                                setAdded(key);
+                                window.setTimeout(() => setAdded((c) => (c === key ? null : c)), 1400);
+                              }
+                            }}
+                            className="cursor-pointer text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-4 py-2 hover:bg-gold hover:text-ink transition-colors"
+                          >
+                            {added === cartKeyFor(fl) ? "Added ✓" : "Add to cart"}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </button>
