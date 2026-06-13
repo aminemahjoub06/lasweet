@@ -458,10 +458,6 @@ function Index() {
     if (form.business.length > 120) return setFormError("Business name is too long.");
     if (form.delivery === "delivery" && form.address.trim().length < 5)
       return setFormError("Please enter a delivery address.");
-    if (form.delivery === "delivery" && cartCount < 8)
-      return setFormError(
-        "Delivery requires a minimum of 8 pieces. Please add more items or choose pick-up.",
-      );
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     if (form.createAccount) {
@@ -732,7 +728,7 @@ function Index() {
             { v: "4", l: "Flavours" },
             { v: "50 km", l: "Brisbane delivery" },
             { v: "15+ pcs", l: "Preparation time may apply" },
-            { v: "8\u00a0pcs", l: "Delivery minimum (pick-up: none)" },
+            { v: "$10", l: "Delivery under 8 pcs · free from 8" },
           ].map((s, i) => (
             <div
               key={s.l}
@@ -1175,8 +1171,8 @@ function Index() {
               <ul className="space-y-4 text-sm text-[color:var(--foreground)]/80 mb-10 flex-1">
                 {[
                   "Birthdays, weddings, parties and corporate events",
-                  "Pick-up available with no minimum order",
-                  "Delivery available from 6 pieces",
+                  "Pick-up available with no minimum order — free",
+                  "Delivery: $10 under 8 pieces, free from 8 pieces",
                   "Choose one flavour or a mixed selection",
                   "Fresh products, subject to availability",
                   "Final details confirmed after order request",
@@ -1532,7 +1528,7 @@ function Index() {
               className="text-[11px] leading-snug"
               style={{ letterSpacing: "0.08em", color: "rgba(245, 234, 210, 0.55)" }}
             >
-              Pick-up: no minimum · Delivery: 8 pcs minimum · Delivery fee confirmed separately if delivery is selected.
+              Pick-up: free · Delivery: $10 under 8 pcs · Free from 8 pcs
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
@@ -1863,19 +1859,13 @@ function CheckoutModal({
                   ))}
                 </div>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
-                  Pick-up: no minimum · Delivery: 8 pcs minimum · Restaurants & cafés: 20 pcs recommended.
-                  Longer distances may require a higher minimum or delivery fee.
+                  Pick-up: free, no minimum · Delivery: $10 under 8 pcs, free from 8 pcs.
                 </p>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
                   Under 15 pcs: may be available immediately depending on stock ·
                   15+ pcs: preparation time may be required unless stock is available ·
                   Final availability confirmed after order request.
                 </p>
-                {form.delivery === "delivery" && cartCount < 8 && (
-                  <p className="mt-2 text-[11px] text-rose-300/90">
-                    Delivery requires a minimum of 8 pieces. Please add more items or choose pick-up.
-                  </p>
-                )}
               </FieldLA>
 
               {form.delivery === "delivery" && (
@@ -2016,27 +2006,35 @@ function CheckoutModal({
                     <span className="text-gold">${snapshotTotal}</span>
                   </span>
                 </div>
-                <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/60">
-                  <span>Delivery fee</span>
-                  <span className="text-gold normal-case tracking-normal font-serif-display text-base">
-                    {form.delivery === "pickup"
-                      ? "Free (pick-up)"
-                      : "Confirmed after order details"}
-                  </span>
-                </div>
-                <div className="mt-3 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
-                  {form.delivery === "pickup"
-                    ? "Pick-up · No minimum order"
-                    : `Delivery · Minimum 8 pcs ${
-                        orderSnapshot.reduce((s, i) => s + i.qty, 0) >= 8 ? "✓ met" : "— not met"
-                      }`}
-                </div>
-                {form.delivery === "delivery" && (
-                  <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
-                    Delivery available from 8 pieces across Brisbane and surrounding area.
-                    Delivery fee confirmed separately based on distance — longer distances may require a higher minimum.
-                  </p>
-                )}
+                {(() => {
+                  const snapQty = orderSnapshot.reduce((s, i) => s + i.qty, 0);
+                  const fee = form.delivery === "delivery" && snapQty < 8 ? 10 : 0;
+                  const message =
+                    form.delivery === "pickup"
+                      ? "Pick-up is free with no minimum order."
+                      : snapQty < 8
+                      ? "Delivery fee applies under 8 pieces."
+                      : "Free delivery from 8 pieces.";
+                  return (
+                    <>
+                      <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/60">
+                        <span>Delivery fee</span>
+                        <span className="text-gold normal-case tracking-normal font-serif-display text-base">
+                          {fee === 0 ? "Free" : `$${fee}`}
+                        </span>
+                      </div>
+                      <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
+                        <span>Total</span>
+                        <span className="font-serif-display normal-case tracking-normal text-xl">
+                          ${snapshotTotal + fee}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
+                        {message}
+                      </p>
+                    </>
+                  );
+                })()}
               </div>
 
               <div className="border border-line bg-ink-3/40 p-5 text-sm space-y-2">
@@ -2135,12 +2133,24 @@ function CheckoutModal({
                     <span className="text-gold">${snapshotTotal}</span>
                   </span>
                 </div>
-                <div className="mt-2 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
-                  <span>Delivery fee</span>
-                  <span className="text-gold">
-                    {form.delivery === "pickup" ? "Free" : "Confirmed separately"}
-                  </span>
-                </div>
+                {(() => {
+                  const snapQty = orderSnapshot.reduce((s, i) => s + i.qty, 0);
+                  const fee = form.delivery === "delivery" && snapQty < 8 ? 10 : 0;
+                  return (
+                    <>
+                      <div className="mt-2 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
+                        <span>Delivery fee</span>
+                        <span className="text-gold">{fee === 0 ? "Free" : `$${fee}`}</span>
+                      </div>
+                      <div className="mt-1 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
+                        <span>Total</span>
+                        <span className="font-serif-display normal-case tracking-normal text-base">
+                          ${snapshotTotal + fee}
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               <div className="border border-gold/30 bg-ink-3/40 p-5 space-y-2 text-[12px] leading-relaxed text-[color:var(--foreground)]/75">
