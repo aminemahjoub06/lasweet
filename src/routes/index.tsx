@@ -282,7 +282,7 @@ function StoryShowcaseMobileBg() {
 }
 
 function Index() {
-  const [idx, setIdx] = useState(1); // raspberry default per brief
+  const [idx, setIdx] = useState(0); // raspberry default per brief (now first)
   const f = flavours[idx];
   const prev = () => setIdx((i) => (i - 1 + flavours.length) % flavours.length);
   const next = () => setIdx((i) => (i + 1) % flavours.length);
