@@ -52,19 +52,6 @@ type Flavour = {
 const flavours: Flavour[] = [
   {
     no: "01",
-    name: "Mango",
-    prefix: "Man",
-    suffix: "go",
-    label: "Signature Flavour",
-    description:
-      "A tropical trompe-l'œil with a smooth white chocolate shell, revealing a soft homemade biscuit, real vanilla bean ganache and a bright mango compotée for a fresh, sunny and indulgent finish.",
-    short: "White chocolate shell, homemade vanilla ganache, homemade biscuit and mango compote.",
-    image: mangoImg,
-    available: false,
-    price: 20,
-  },
-  {
-    no: "02",
     name: "Raspberry",
     prefix: "Rasp",
     suffix: "berry",
@@ -73,6 +60,19 @@ const flavours: Flavour[] = [
       "A vibrant raspberry illusion coated in smooth white chocolate, filled with real vanilla bean ganache, a soft homemade biscuit and a tangy raspberry coulis that brings the perfect balance of sweetness and freshness.",
     short: "White chocolate shell, homemade vanilla ganache, raspberry coulis and homemade biscuit.",
     image: raspberryImg,
+    available: true,
+    price: 18,
+  },
+  {
+    no: "02",
+    name: "Lemon",
+    prefix: "Le",
+    suffix: "mon",
+    label: "Bright Flavour",
+    description:
+      "A bright lemon trompe-l'œil with a smooth white chocolate shell, soft homemade biscuit, silky lemon crémeux and vanilla ganache delicately lifted with fresh lemon zest for a clean, elegant citrus finish.",
+    short: "White chocolate shell, homemade biscuit, lemon crémeux and vanilla ganache with lemon zest.",
+    image: lemonImg,
     available: true,
     price: 18,
   },
@@ -94,16 +94,16 @@ const flavours: Flavour[] = [
   },
   {
     no: "04",
-    name: "Lemon",
-    prefix: "Le",
-    suffix: "mon",
-    label: "Bright Flavour",
+    name: "Mango",
+    prefix: "Man",
+    suffix: "go",
+    label: "Signature Flavour",
     description:
-      "A bright lemon trompe-l'œil with a smooth white chocolate shell, soft homemade biscuit, silky lemon crémeux and vanilla ganache delicately lifted with fresh lemon zest for a clean, elegant citrus finish.",
-    short: "White chocolate shell, homemade biscuit, lemon crémeux and vanilla ganache with lemon zest.",
-    image: lemonImg,
-    available: true,
-    price: 18,
+      "A tropical trompe-l'œil with a smooth white chocolate shell, revealing a soft homemade biscuit, real vanilla bean ganache and a bright mango compotée for a fresh, sunny and indulgent finish.",
+    short: "White chocolate shell, homemade vanilla ganache, homemade biscuit and mango compote.",
+    image: mangoImg,
+    available: false,
+    price: 20,
   },
 ];
 
