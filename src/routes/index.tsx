@@ -1288,8 +1288,12 @@ function Index() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
             {/* Mango */}
-            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col">
-              <h3 className="font-serif-display text-xl mb-4 text-gold">Mango</h3>
+            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
+                <div className="absolute inset-0 rounded-full bg-gold/10 blur-md" />
+                <img src={mangoImg} alt="Mango" className="relative w-full h-full object-contain drop-shadow-sm" />
+              </div>
+              <h3 className="font-serif-display text-xl mb-4 text-gold pr-16">Mango</h3>
               <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
               <ul className="space-y-2 text-sm text-[color:var(--foreground)]/85 mb-4">
                 <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
