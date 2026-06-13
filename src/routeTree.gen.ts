@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrderSuccessRouteImport } from './routes/order.success'
+import { Route as OrderCancelRouteImport } from './routes/order.cancel'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const OrderSuccessRoute = OrderSuccessRouteImport.update({
   path: '/order/success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrderCancelRoute = OrderCancelRouteImport.update({
+  id: '/order/cancel',
+  path: '/order/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -32,30 +38,43 @@ const ApiPublicPaymentsWebhookRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/order/success' | '/api/public/payments/webhook'
+  fullPaths:
+    | '/'
+    | '/order/cancel'
+    | '/order/success'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/order/success' | '/api/public/payments/webhook'
-  id: '__root__' | '/' | '/order/success' | '/api/public/payments/webhook'
+  to: '/' | '/order/cancel' | '/order/success' | '/api/public/payments/webhook'
+  id:
+    | '__root__'
+    | '/'
+    | '/order/cancel'
+    | '/order/success'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  OrderCancelRoute: typeof OrderCancelRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
@@ -76,6 +95,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrderSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/order/cancel': {
+      id: '/order/cancel'
+      path: '/order/cancel'
+      fullPath: '/order/cancel'
+      preLoaderRoute: typeof OrderCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -88,6 +114,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  OrderCancelRoute: OrderCancelRoute,
   OrderSuccessRoute: OrderSuccessRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
