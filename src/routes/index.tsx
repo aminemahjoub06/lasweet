@@ -1457,12 +1457,15 @@ type OrderForm = {
   confirmPassword: string;
 };
 type SnapshotItem = {
+  key: string;
   no: string;
   name: string;
   prefix: string;
   suffix: string;
   image?: string;
   qty: number;
+  price: number;
+  sizeLabel?: string;
 };
 
 function CheckoutModal({
