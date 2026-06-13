@@ -1841,7 +1841,7 @@ function CheckoutModal({
                   onClick={() => setStep("payment")}
                   className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors"
                 >
-                  Validate &amp; Continue to Payment →
+                  Validate &amp; Continue →
                 </button>
               </div>
             </div>
