@@ -1833,7 +1833,7 @@ function CheckoutModal({
                 <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-3">Items</div>
                 <ul className="divide-y divide-line">
                   {orderSnapshot.map((i) => (
-                    <li key={i.no} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+                    <li key={i.key} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
                       <div className="h-12 w-12 shrink-0 border border-gold/40 bg-ink-3 p-1 flex items-center justify-center">
                         {i.image && (
                           <img
@@ -1845,32 +1845,33 @@ function CheckoutModal({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
-                          No. {i.no}
+                          No. {i.no}{i.sizeLabel ? ` · Size ${i.sizeLabel}` : ""}
                         </div>
                         <div className="font-serif-display text-base leading-tight">
                           {i.prefix}
                           <span className="italic text-gold">{i.suffix}</span>
+                        </div>
+                        <div className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 mt-1">
+                          ${i.price} per piece
                         </div>
                       </div>
                       <div className="text-xs tracking-[0.18em] text-[color:var(--foreground)]/75">
                         × {i.qty}
                       </div>
                       <div className="text-xs text-[color:var(--foreground)]/70 min-w-[80px] text-right">
-                        <span className="text-gold">${i.qty * PRICE_MIN}</span>
-                        <span className="mx-1">–</span>
-                        <span className="text-gold">${i.qty * PRICE_MAX}</span>
+                        <span className="text-gold font-serif-display text-base">
+                          ${i.qty * i.price}
+                        </span>
                       </div>
                     </li>
                   ))}
                 </ul>
                 <div className="border-t border-line mt-4 pt-4 flex items-baseline justify-between">
                   <span className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/60">
-                    Estimated subtotal
+                    Subtotal
                   </span>
                   <span className="font-serif-display text-xl">
-                    <span className="text-gold">${snapshotMin}</span>
-                    <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
-                    <span className="text-gold">${snapshotMax}</span>
+                    <span className="text-gold">${snapshotTotal}</span>
                   </span>
                 </div>
                 <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/60">
@@ -1891,12 +1892,9 @@ function CheckoutModal({
                 {form.delivery === "delivery" && (
                   <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
                     Delivery available from 6 pieces across Brisbane and surrounding area.
-                    Delivery fee confirmed based on distance — longer distances may require a higher minimum.
+                    Delivery fee confirmed separately based on distance — longer distances may require a higher minimum.
                   </p>
                 )}
-                <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55">
-                  Final price confirmed after quote.
-                </p>
               </div>
 
               <div className="border border-line bg-ink-3/40 p-5 text-sm space-y-2">
