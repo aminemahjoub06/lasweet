@@ -534,7 +534,7 @@ function Index() {
               notes: form.notes,
             },
             items: orderSnapshot,
-            estimate: { min: snapshotMin, max: snapshotMax },
+            total: snapshotTotal,
           });
           window.localStorage.setItem(key, JSON.stringify(existing));
         } catch {
@@ -558,7 +558,7 @@ function Index() {
     setForm((f) => ({ ...f, password: "", confirmPassword: "" }));
   };
   const openCheckout = () => {
-    if (cartItems.length === 0) return;
+    if (cartEntries.length === 0) return;
     setCartOpen(false);
     setFormError(null);
     setAccountMode(null);
