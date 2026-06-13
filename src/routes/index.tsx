@@ -429,6 +429,9 @@ function Index() {
   const [accountMode, setAccountMode] = useState<"create" | "login" | "guest" | null>(null);
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("online");
+  const submitCashOrder = useServerFn(createCashOrder);
+  const submitOnlineOrder = useServerFn(createStripeCheckout);
   // Snapshot of the cart at the moment the customer advances to payment,
   // so quantities can't change mid-checkout.
   const [orderSnapshot, setOrderSnapshot] = useState<
