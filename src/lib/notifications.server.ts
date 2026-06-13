@@ -1,7 +1,13 @@
 // Server-only notification helpers. Never imported directly by client modules.
-// Currently sends owner notification by email when Lovable Emails is set up.
+// Renders React Email templates and enqueues them via the Lovable email queue.
 
-const OWNER_EMAIL = "amahjoub0589@gmail.com";
+import * as React from "react";
+import { render } from "@react-email/components";
+import { TEMPLATES } from "@/lib/email-templates/registry";
+
+const SENDER_DOMAIN = "notify.lasweet.org";
+const FROM_DOMAIN = "lasweet.org";
+const SITE_NAME = "L&A Sweet";
 
 type NotifyArgs = {
   orderNumber: string;
@@ -29,67 +35,146 @@ type NotifyArgs = {
   paymentStatus: string;
 };
 
-function formatOrderText(a: NotifyArgs) {
-  const lines: string[] = [];
-  lines.push(`New L&A Sweet order — ${a.orderNumber}`);
-  lines.push("");
-  lines.push(`Customer: ${a.customer.fullName}`);
-  lines.push(`Email:    ${a.customer.email}`);
-  lines.push(`Phone:    ${a.customer.phone}`);
-  if (a.customer.business) lines.push(`Business: ${a.customer.business}`);
-  lines.push("");
-  lines.push(`Fulfilment: ${a.customer.delivery === "delivery" ? "Delivery" : "Pick-up"}`);
-  if (a.customer.delivery === "delivery" && a.customer.address)
-    lines.push(`Address:    ${a.customer.address}`);
-  if (a.customer.date) lines.push(`Date:       ${a.customer.date}`);
-  if (a.customer.orderType) lines.push(`Occasion:   ${a.customer.orderType}`);
-  if (a.customer.notes) lines.push(`Notes:      ${a.customer.notes}`);
-  lines.push("");
-  lines.push("Items:");
-  for (const i of a.items) {
-    const size = i.sizeLabel ? ` (Size ${i.sizeLabel})` : "";
-    lines.push(`  • ${i.qty} × ${i.name}${size} — $${(i.qty * i.price).toFixed(2)}`);
+function generateToken(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function ensureUnsubscribeToken(
+  supabase: any,
+  email: string,
+): Promise<string | null> {
+  const normalized = email.toLowerCase();
+  const { data: existing } = await supabase
+    .from("email_unsubscribe_tokens")
+    .select("token, used_at")
+    .eq("email", normalized)
+    .maybeSingle();
+  if (existing && !existing.used_at) return existing.token;
+  if (existing && existing.used_at) return null;
+  const token = generateToken();
+  await supabase
+    .from("email_unsubscribe_tokens")
+    .upsert({ token, email: normalized }, { onConflict: "email", ignoreDuplicates: true });
+  const { data: stored } = await supabase
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", normalized)
+    .maybeSingle();
+  return stored?.token ?? token;
+}
+
+async function enqueueTemplate(opts: {
+  templateName: string;
+  to: string;
+  data: Record<string, any>;
+  idempotencyKey: string;
+}) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const entry = TEMPLATES[opts.templateName];
+  if (!entry) {
+    console.error("[notifications] template not registered", opts.templateName);
+    return;
   }
-  lines.push("");
-  lines.push(`Subtotal:     $${a.subtotal.toFixed(2)}`);
-  lines.push(`Delivery fee: $${a.deliveryFee.toFixed(2)}`);
-  lines.push(`Total:        $${a.total.toFixed(2)}`);
-  lines.push("");
-  lines.push(`Payment: ${a.paymentMethod.toUpperCase()} — ${a.paymentStatus}`);
-  return lines.join("\n");
+  const effectiveRecipient = entry.to || opts.to;
+  if (!effectiveRecipient) return;
+
+  // Suppression check
+  const { data: suppressed } = await supabaseAdmin
+    .from("suppressed_emails")
+    .select("id")
+    .eq("email", effectiveRecipient.toLowerCase())
+    .maybeSingle();
+  if (suppressed) {
+    console.info("[notifications] recipient suppressed", opts.templateName);
+    return;
+  }
+
+  const unsubscribeToken = await ensureUnsubscribeToken(supabaseAdmin, effectiveRecipient);
+  if (!unsubscribeToken) {
+    console.info("[notifications] unsubscribed", opts.templateName);
+    return;
+  }
+
+  const element = React.createElement(entry.component, opts.data);
+  const html = await render(element);
+  const text = await render(element, { plainText: true });
+  const subject = typeof entry.subject === "function" ? entry.subject(opts.data) : entry.subject;
+  const messageId = crypto.randomUUID();
+
+  await supabaseAdmin.from("email_send_log").insert({
+    message_id: messageId,
+    template_name: opts.templateName,
+    recipient_email: effectiveRecipient,
+    status: "pending",
+  });
+
+  const { error } = await supabaseAdmin.rpc("enqueue_email", {
+    queue_name: "transactional_emails",
+    payload: {
+      message_id: messageId,
+      to: effectiveRecipient,
+      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      sender_domain: SENDER_DOMAIN,
+      subject,
+      html,
+      text,
+      purpose: "transactional",
+      label: opts.templateName,
+      idempotency_key: opts.idempotencyKey,
+      unsubscribe_token: unsubscribeToken,
+      queued_at: new Date().toISOString(),
+    },
+  });
+
+  if (error) {
+    console.error("[notifications] enqueue error", opts.templateName, error);
+    await supabaseAdmin.from("email_send_log").insert({
+      message_id: messageId,
+      template_name: opts.templateName,
+      recipient_email: effectiveRecipient,
+      status: "failed",
+      error_message: "Failed to enqueue email",
+    });
+  }
 }
 
 /**
- * Sends an owner notification email. No-op when Lovable Emails is not yet
- * configured for this project (no email domain set up). The order is always
- * saved to the database first, so notifications are best-effort only.
+ * Sends owner + customer emails for a new order. Best-effort; never throws.
  */
 export async function notifyOwnerNewOrder(args: NotifyArgs) {
-  const body = formatOrderText(args);
-  // eslint-disable-next-line no-console
-  console.info(
-    `[order:new] ${args.orderNumber} → ${OWNER_EMAIL} (${args.paymentMethod}/${args.paymentStatus})\n${body}`,
-  );
+  const templateData = {
+    orderNumber: args.orderNumber,
+    customerName: args.customer.fullName,
+    customerEmail: args.customer.email,
+    customerPhone: args.customer.phone,
+    business: args.customer.business,
+    deliveryMethod: args.customer.delivery,
+    deliveryAddress: args.customer.address,
+    deliveryDate: args.customer.date,
+    orderType: args.customer.orderType,
+    notes: args.customer.notes,
+    items: args.items,
+    subtotal: args.subtotal,
+    deliveryFee: args.deliveryFee,
+    total: args.total,
+    paymentMethod: args.paymentMethod,
+    paymentStatus: args.paymentStatus,
+  };
 
-  // Try to send via Lovable's internal transactional email route if available.
-  // Silently no-op if the email infrastructure is not set up yet.
-  try {
-    const url = process.env.LOVABLE_EMAIL_SEND_URL;
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!url || !apiKey) return;
-    await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        to: OWNER_EMAIL,
-        subject: `New order — ${args.orderNumber}`,
-        text: body,
-      }),
-    });
-  } catch (err) {
-    console.error("[notifyOwner] email send error", err);
-  }
+  await Promise.allSettled([
+    enqueueTemplate({
+      templateName: "owner-new-order",
+      to: "amahjoub0589@gmail.com",
+      data: templateData,
+      idempotencyKey: `owner-${args.orderNumber}`,
+    }),
+    enqueueTemplate({
+      templateName: "customer-order-confirmation",
+      to: args.customer.email,
+      data: templateData,
+      idempotencyKey: `customer-${args.orderNumber}`,
+    }),
+  ]);
 }
