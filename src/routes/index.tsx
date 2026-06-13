@@ -1656,7 +1656,7 @@ function CheckoutModal({
     { k: "account", l: "1 · Account" },
     { k: "details", l: "2 · Details" },
     { k: "review", l: "3 · Review" },
-    { k: "payment", l: "4 · Request" },
+    { k: "payment", l: "4 · Payment" },
   ];
   const order: CheckoutStep[] = ["account", "details", "review", "payment", "confirmed"];
 
