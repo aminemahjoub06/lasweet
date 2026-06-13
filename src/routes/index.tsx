@@ -708,7 +708,7 @@ function Index() {
                     {fl.prefix}<span className="italic text-gold">{fl.suffix}</span>
                   </h3>
                   <p className="text-sm text-[color:var(--foreground)]/75 leading-relaxed">
-                    {fl.short}
+                    {fl.description}
                   </p>
                   <div className="mt-5 h-px w-10 bg-gold" />
                 </div>
