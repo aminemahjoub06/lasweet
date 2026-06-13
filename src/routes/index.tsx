@@ -52,19 +52,6 @@ type Flavour = {
 const flavours: Flavour[] = [
   {
     no: "01",
-    name: "Mango",
-    prefix: "Man",
-    suffix: "go",
-    label: "Signature Flavour",
-    description:
-      "A tropical trompe-l'œil with a smooth white chocolate shell, revealing a soft homemade biscuit, real vanilla bean ganache and a bright mango compotée for a fresh, sunny and indulgent finish.",
-    short: "White chocolate shell, homemade vanilla ganache, homemade biscuit and mango compote.",
-    image: mangoImg,
-    available: false,
-    price: 20,
-  },
-  {
-    no: "02",
     name: "Raspberry",
     prefix: "Rasp",
     suffix: "berry",
@@ -73,6 +60,19 @@ const flavours: Flavour[] = [
       "A vibrant raspberry illusion coated in smooth white chocolate, filled with real vanilla bean ganache, a soft homemade biscuit and a tangy raspberry coulis that brings the perfect balance of sweetness and freshness.",
     short: "White chocolate shell, homemade vanilla ganache, raspberry coulis and homemade biscuit.",
     image: raspberryImg,
+    available: true,
+    price: 18,
+  },
+  {
+    no: "02",
+    name: "Lemon",
+    prefix: "Le",
+    suffix: "mon",
+    label: "Bright Flavour",
+    description:
+      "A bright lemon trompe-l'œil with a smooth white chocolate shell, soft homemade biscuit, silky lemon crémeux and vanilla ganache delicately lifted with fresh lemon zest for a clean, elegant citrus finish.",
+    short: "White chocolate shell, homemade biscuit, lemon crémeux and vanilla ganache with lemon zest.",
+    image: lemonImg,
     available: true,
     price: 18,
   },
@@ -94,28 +94,28 @@ const flavours: Flavour[] = [
   },
   {
     no: "04",
-    name: "Lemon",
-    prefix: "Le",
-    suffix: "mon",
-    label: "Bright Flavour",
+    name: "Mango",
+    prefix: "Man",
+    suffix: "go",
+    label: "Signature Flavour",
     description:
-      "A bright lemon trompe-l'œil with a smooth white chocolate shell, soft homemade biscuit, silky lemon crémeux and vanilla ganache delicately lifted with fresh lemon zest for a clean, elegant citrus finish.",
-    short: "White chocolate shell, homemade biscuit, lemon crémeux and vanilla ganache with lemon zest.",
-    image: lemonImg,
-    available: true,
-    price: 18,
+      "A tropical trompe-l'œil with a smooth white chocolate shell, revealing a soft homemade biscuit, real vanilla bean ganache and a bright mango compotée for a fresh, sunny and indulgent finish.",
+    short: "White chocolate shell, homemade vanilla ganache, homemade biscuit and mango compote.",
+    image: mangoImg,
+    available: false,
+    price: 20,
   },
 ];
 
 function StoryShowcase() {
-  const showcase = [mangoImg, raspberryImg, vanillaImg, lemonImg];
-  const labels = ["Mango", "Raspberry", "Vanilla", "Lemon"];
+  const showcase = [raspberryImg, lemonImg, vanillaImg, mangoImg];
+  const labels = ["Raspberry", "Lemon", "Vanilla", "Mango"];
   // Subtle flavour auras (low opacity, dark-friendly)
   const auras = [
-    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.30), rgba(255,140,40,0.10) 40%, transparent 70%)", // Mango
     "radial-gradient(ellipse at 50% 50%, rgba(220,60,110,0.28), rgba(160,30,70,0.10) 42%, transparent 72%)", // Raspberry
-    "radial-gradient(ellipse at 50% 50%, rgba(240,220,180,0.26), rgba(200,170,120,0.10) 42%, transparent 72%)", // Vanilla
     "radial-gradient(ellipse at 50% 50%, rgba(245,220,90,0.28), rgba(210,180,60,0.10) 42%, transparent 72%)", // Lemon
+    "radial-gradient(ellipse at 50% 50%, rgba(240,220,180,0.26), rgba(200,170,120,0.10) 42%, transparent 72%)", // Vanilla
+    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.30), rgba(255,140,40,0.10) 40%, transparent 70%)", // Mango
   ];
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
@@ -224,12 +224,12 @@ function StoryShowcase() {
 }
 
 function StoryShowcaseMobileBg() {
-  const showcase = [mangoImg, raspberryImg, vanillaImg, lemonImg];
+  const showcase = [raspberryImg, lemonImg, vanillaImg, mangoImg];
   const auras = [
-    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.32), rgba(255,140,40,0.10) 42%, transparent 72%)",
     "radial-gradient(ellipse at 50% 50%, rgba(220,60,110,0.30), rgba(160,30,70,0.10) 44%, transparent 74%)",
-    "radial-gradient(ellipse at 50% 50%, rgba(240,220,180,0.28), rgba(200,170,120,0.10) 44%, transparent 74%)",
     "radial-gradient(ellipse at 50% 50%, rgba(245,220,90,0.30), rgba(210,180,60,0.10) 44%, transparent 74%)",
+    "radial-gradient(ellipse at 50% 50%, rgba(240,220,180,0.28), rgba(200,170,120,0.10) 44%, transparent 74%)",
+    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.32), rgba(255,140,40,0.10) 42%, transparent 72%)",
   ];
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
@@ -282,7 +282,7 @@ function StoryShowcaseMobileBg() {
 }
 
 function Index() {
-  const [idx, setIdx] = useState(1); // raspberry default per brief
+  const [idx, setIdx] = useState(0); // raspberry default per brief (now first)
   const f = flavours[idx];
   const prev = () => setIdx((i) => (i - 1 + flavours.length) % flavours.length);
   const next = () => setIdx((i) => (i + 1) % flavours.length);
@@ -1287,25 +1287,6 @@ function Index() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-            {/* Mango */}
-            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
-              <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
-                <div className="absolute inset-0 rounded-full bg-gold/10 blur-md" />
-                <img src={mangoImg} alt="Mango" className="relative w-full h-full object-contain drop-shadow-sm" />
-              </div>
-              <h3 className="font-serif-display text-xl mb-4 text-gold pr-16">Mango</h3>
-              <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
-              <ul className="space-y-2 text-sm text-[color:var(--foreground)]/85 mb-4">
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Soy</li>
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Gluten</li>
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Eggs</li>
-              </ul>
-              <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
-                Milk and soy are present in the white chocolate. Gluten and eggs are present in the homemade biscuit.
-              </div>
-            </div>
-
             {/* Raspberry */}
             <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
               <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
@@ -1359,6 +1340,25 @@ function Index() {
               </ul>
               <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
                 Milk and soy are present in the white chocolate. Tree nuts are present in the homemade hazelnut cream.
+              </div>
+            </div>
+
+            {/* Mango */}
+            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
+                <div className="absolute inset-0 rounded-full bg-gold/10 blur-md" />
+                <img src={mangoImg} alt="Mango" className="relative w-full h-full object-contain drop-shadow-sm" />
+              </div>
+              <h3 className="font-serif-display text-xl mb-4 text-gold pr-16">Mango</h3>
+              <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
+              <ul className="space-y-2 text-sm text-[color:var(--foreground)]/85 mb-4">
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Soy</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Gluten</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Eggs</li>
+              </ul>
+              <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
+                Milk and soy are present in the white chocolate. Gluten and eggs are present in the homemade biscuit.
               </div>
             </div>
           </div>
