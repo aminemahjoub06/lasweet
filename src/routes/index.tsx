@@ -1851,12 +1851,13 @@ function CheckoutModal({
           {step === "payment" && (
             <div className="space-y-5">
               <div>
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Payment</div>
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Order Request</div>
                 <h3 className="font-serif-display text-2xl">
-                  <span className="italic text-gold">Payment</span>
+                  Order <span className="italic text-gold">Request</span>
                 </h3>
-                <p className="mt-2 text-sm text-[color:var(--foreground)]/70">
-                  Complete your order securely.
+                <p className="mt-2 text-sm text-[color:var(--foreground)]/70 leading-relaxed">
+                  We&apos;ll review your selection and contact you shortly to confirm
+                  availability, final pricing and payment details.
                 </p>
               </div>
 
@@ -1902,84 +1903,16 @@ function CheckoutModal({
                 </div>
               </div>
 
-              {/* Card details */}
-              <div className="border border-gold/30 bg-ink-3/40 p-5 space-y-4">
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold">
-                  Card details
+              <div className="border border-gold/30 bg-ink-3/40 p-5 space-y-2 text-[12px] leading-relaxed text-[color:var(--foreground)]/75">
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
+                  How it works
                 </div>
-                <FieldLA label="Card number">
-                  <input
-                    inputMode="numeric"
-                    autoComplete="cc-number"
-                    value={card.number}
-                    onChange={(e) => setCard((c) => ({ ...c, number: formatCardNumber(e.target.value) }))}
-                    placeholder="1234 5678 9012 3456"
-                    className="w-full bg-ink-3 border border-line focus:border-gold/60 outline-none px-3 py-3 text-sm tracking-[0.15em] placeholder:text-[color:var(--foreground)]/30"
-                  />
-                </FieldLA>
-                <div className="grid grid-cols-2 gap-3">
-                  <FieldLA label="Expiry">
-                    <input
-                      inputMode="numeric"
-                      autoComplete="cc-exp"
-                      value={card.expiry}
-                      onChange={(e) => setCard((c) => ({ ...c, expiry: formatExpiry(e.target.value) }))}
-                      placeholder="MM/YY"
-                      className="w-full bg-ink-3 border border-line focus:border-gold/60 outline-none px-3 py-3 text-sm placeholder:text-[color:var(--foreground)]/30"
-                    />
-                  </FieldLA>
-                  <FieldLA label="CVC">
-                    <input
-                      inputMode="numeric"
-                      autoComplete="cc-csc"
-                      value={card.cvc}
-                      onChange={(e) =>
-                        setCard((c) => ({ ...c, cvc: e.target.value.replace(/\D/g, "").slice(0, 4) }))
-                      }
-                      placeholder="123"
-                      className="w-full bg-ink-3 border border-line focus:border-gold/60 outline-none px-3 py-3 text-sm placeholder:text-[color:var(--foreground)]/30"
-                    />
-                  </FieldLA>
-                </div>
-                <FieldLA label="Cardholder name">
-                  <input
-                    autoComplete="cc-name"
-                    value={card.name}
-                    onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))}
-                    placeholder="Full name on card"
-                    className="w-full bg-ink-3 border border-line focus:border-gold/60 outline-none px-3 py-3 text-sm placeholder:text-[color:var(--foreground)]/30"
-                  />
-                </FieldLA>
-
-                <label className="flex items-start gap-3 text-xs text-[color:var(--foreground)]/75 cursor-pointer select-none pt-1">
-                  <input
-                    type="checkbox"
-                    checked={card.sameAsDelivery}
-                    onChange={(e) => setCard((c) => ({ ...c, sameAsDelivery: e.target.checked }))}
-                    className="mt-[2px] accent-[color:var(--gold)]"
-                  />
-                  <span>Same as delivery address</span>
-                </label>
-
-                {!card.sameAsDelivery && (
-                  <FieldLA label="Billing address">
-                    <textarea
-                      rows={2}
-                      value={card.billingAddress}
-                      onChange={(e) => setCard((c) => ({ ...c, billingAddress: e.target.value }))}
-                      placeholder="Street, city, postal code, country"
-                      className="w-full bg-ink-3 border border-line focus:border-gold/60 outline-none px-3 py-3 text-sm placeholder:text-[color:var(--foreground)]/30"
-                    />
-                  </FieldLA>
-                )}
+                <p>
+                  No payment is taken at this stage. Submit your request and our
+                  team will be in touch by email to confirm availability, final
+                  pricing and the secure payment link.
+                </p>
               </div>
-
-              <p className="text-[11px] tracking-[0.14em] uppercase text-[color:var(--foreground)]/55 text-center">
-                🔒 Secure payment — your details are protected.
-              </p>
-              <p className="text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed text-center">
-                Final pricing may be adjusted after confirmation if this is a quote-based order.
-              </p>
 
               {formError && (
                 <p className="text-xs tracking-wide text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-4 py-3">
@@ -2001,7 +1934,7 @@ function CheckoutModal({
                   onClick={handlePay}
                   className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-50 disabled:cursor-wait"
                 >
-                  {paying ? "Processing…" : "Pay Securely"}
+                  {paying ? "Sending…" : "Submit Order Request"}
                 </button>
               </div>
             </div>
@@ -2013,17 +1946,18 @@ function CheckoutModal({
               <div className="mx-auto mb-6 inline-flex h-14 w-14 items-center justify-center border border-gold/50 text-gold text-xl">
                 ✓
               </div>
-              <div className="eyebrow justify-center mb-4 inline-flex">Order Confirmed</div>
+              <div className="eyebrow justify-center mb-4 inline-flex">Request Received</div>
               <h3 className="font-serif-display text-3xl mb-4">
-                Thank you — your <span className="italic text-gold">order</span> has been received.
+                Thank you — your <span className="italic text-gold">order request</span> has been received.
               </h3>
               <p className="text-sm text-[color:var(--foreground)]/75 max-w-md mx-auto leading-relaxed">
-                A confirmation will be sent shortly to{" "}
-                <span className="text-gold">{form.email}</span>.
+                We&apos;ll contact you shortly at{" "}
+                <span className="text-gold">{form.email}</span> to confirm
+                availability, final pricing and payment details.
               </p>
               <div className="mt-8 inline-block border border-gold/40 bg-ink-3/60 px-6 py-4">
                 <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-1">
-                  Order reference
+                  Request reference
                 </div>
                 <div className="font-serif-display text-2xl text-gold tracking-wider">
                   {orderRef}
