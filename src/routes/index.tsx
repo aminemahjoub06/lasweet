@@ -54,7 +54,7 @@ const flavours: Flavour[] = [
     suffix: "go",
     label: "Signature Flavour",
     description:
-      "A bright tropical illusion coated in smooth white chocolate, filled with homemade vanilla ganache made with real vanilla beans, a soft homemade biscuit and a generous mango compote at the centre.",
+      "A tropical trompe-l'œil with a smooth white chocolate shell, revealing a soft homemade biscuit, real vanilla bean ganache and a bright mango compotée for a fresh, sunny and indulgent finish.",
     short: "White chocolate shell, homemade vanilla ganache, homemade biscuit and mango compote.",
     image: mangoImg,
   },
@@ -65,7 +65,7 @@ const flavours: Flavour[] = [
     suffix: "berry",
     label: "Intense Flavour",
     description:
-      "A delicate raspberry trompe-l'œil coated in smooth white chocolate, filled with homemade vanilla ganache made with real vanilla beans, a vibrant raspberry coulis and a soft homemade biscuit for a fresh, fruity finish.",
+      "A vibrant raspberry illusion coated in smooth white chocolate, filled with real vanilla bean ganache, a soft homemade biscuit and a tangy raspberry coulis that brings the perfect balance of sweetness and freshness.",
     short: "White chocolate shell, homemade vanilla ganache, raspberry coulis and homemade biscuit.",
     image: raspberryImg,
   },
@@ -76,7 +76,7 @@ const flavours: Flavour[] = [
     suffix: "lla",
     label: "Classic Flavour",
     description:
-      "A refined vanilla-inspired trompe-l'œil coated in smooth white chocolate and filled with homemade hazelnut cream, offering a rich, nutty and comforting centre with a premium handmade finish.",
+      "A delicate vanilla-inspired creation with a smooth white chocolate shell and a rich homemade hazelnut cream centre — creamy, nutty and comforting, with a refined handmade finish.",
     short: "White chocolate shell with homemade hazelnut cream.",
     image: vanillaImg,
   },
@@ -87,7 +87,7 @@ const flavours: Flavour[] = [
     suffix: "mon",
     label: "Bright Flavour",
     description:
-      "A fresh citrus illusion coated in smooth white chocolate, with a homemade biscuit, a silky lemon crémeux and a touch of lemon zest folded into the vanilla ganache for a bright, elegant finish.",
+      "A bright lemon trompe-l'œil with a smooth white chocolate shell, soft homemade biscuit, silky lemon crémeux and vanilla ganache delicately lifted with fresh lemon zest for a clean, elegant citrus finish.",
     short: "White chocolate shell, homemade biscuit, lemon crémeux and vanilla ganache with lemon zest.",
     image: lemonImg,
   },
