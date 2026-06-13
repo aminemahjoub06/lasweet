@@ -1246,22 +1246,25 @@ function Index() {
             <div className="md:col-span-7 relative z-10">
               <div className="eyebrow mb-5">Our Story</div>
               <h2 className="font-serif-display text-4xl md:text-[2.75rem] leading-[1.08] mb-8">
-                Handcrafted in Brisbane,
+                A French story,
                 <br />
-                made to <span className="italic text-gold">impress</span>
+                handcrafted in <span className="italic text-gold">Brisbane</span>
               </h2>
               <div className="max-w-md space-y-5 text-[color:var(--foreground)]/65 text-sm leading-[1.75]">
                 <p>
-                  L&A Sweet creates handcrafted trompe-l'œil desserts designed for restaurants, cafés and private events. Each piece is coated in white chocolate, filled with generous ganache and finished by hand for a refined visual illusion.
+                  L&A Sweet was born from a young French couple's dream to bring a piece of French pastry craft to Brisbane. After moving here four months ago, we started this adventure with one idea in mind: creating desserts that surprise the eye, tell a story and bring something new to the table.
                 </p>
                 <p>
-                  Made in small batches in Brisbane, our desserts are prepared with care, precision and freshness in mind — whether for a professional menu, a celebration or a special order.
+                  Every trompe-l'œil dessert is made by us, from start to finish. The biscuit, ganache, coulis, crémeux, compotée, white chocolate coating, assembly and final details are all prepared by hand in small batches, with care, precision and patience.
+                </p>
+                <p>
+                  We are only at the beginning of our journey, but our ambition is clear: to grow, to last, and to share a new expression of French pastry here in Brisbane — handmade, elegant and full of flavour.
                 </p>
               </div>
               <div className="mt-10 flex items-center gap-4 max-w-md">
                 <div className="flex-1 h-px bg-line" />
                 <div className="font-serif-display italic text-sm text-[color:var(--foreground)]/80 whitespace-nowrap">
-                  L<span className="text-gold">&</span>A Sweet <span className="text-gold mx-2">·</span> Brisbane
+                  L&A Sweet <span className="text-gold mx-2">·</span> Brisbane
                 </div>
               </div>
             </div>
