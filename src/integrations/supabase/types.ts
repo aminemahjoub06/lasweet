@@ -14,7 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          business: string | null
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          delivery_address: string | null
+          delivery_date: string | null
+          delivery_fee: number
+          delivery_method: string
+          id: string
+          items: Json
+          notes: string | null
+          order_number: string
+          order_type: string | null
+          payment_method: string
+          payment_status: string
+          stripe_session_id: string | null
+          subtotal: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          business?: string | null
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          delivery_address?: string | null
+          delivery_date?: string | null
+          delivery_fee?: number
+          delivery_method: string
+          id?: string
+          items: Json
+          notes?: string | null
+          order_number: string
+          order_type?: string | null
+          payment_method: string
+          payment_status?: string
+          stripe_session_id?: string | null
+          subtotal: number
+          total: number
+          updated_at?: string
+        }
+        Update: {
+          business?: string | null
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string
+          delivery_address?: string | null
+          delivery_date?: string | null
+          delivery_fee?: number
+          delivery_method?: string
+          id?: string
+          items?: Json
+          notes?: string | null
+          order_number?: string
+          order_type?: string | null
+          payment_method?: string
+          payment_status?: string
+          stripe_session_id?: string | null
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
