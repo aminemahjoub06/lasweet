@@ -458,9 +458,9 @@ function Index() {
     if (form.business.length > 120) return setFormError("Business name is too long.");
     if (form.delivery === "delivery" && form.address.trim().length < 5)
       return setFormError("Please enter a delivery address.");
-    if (form.delivery === "delivery" && cartCount < 6)
+    if (form.delivery === "delivery" && cartCount < 8)
       return setFormError(
-        "Delivery requires a minimum of 6 pieces. Please add more items or choose pick-up.",
+        "Delivery requires a minimum of 8 pieces. Please add more items or choose pick-up.",
       );
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
@@ -732,7 +732,7 @@ function Index() {
             { v: "4", l: "Flavours" },
             { v: "50 km", l: "Brisbane delivery" },
             { v: "15+ pcs", l: "Preparation time may apply" },
-            { v: "6 pcs", l: "Delivery minimum (pick-up: none)" },
+            { v: "8\u00a0pcs", l: "Delivery minimum (pick-up: none)" },
           ].map((s, i) => (
             <div
               key={s.l}
@@ -1532,7 +1532,7 @@ function Index() {
               className="text-[11px] leading-snug"
               style={{ letterSpacing: "0.08em", color: "rgba(245, 234, 210, 0.55)" }}
             >
-              Pick-up: no minimum · Delivery: 6 pcs minimum · Delivery fee confirmed separately if delivery is selected.
+              Pick-up: no minimum · Delivery: 8 pcs minimum · Delivery fee confirmed separately if delivery is selected.
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
@@ -1863,7 +1863,7 @@ function CheckoutModal({
                   ))}
                 </div>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
-                  Pick-up: no minimum · Delivery: 6 pcs minimum · Restaurants & cafés: 20 pcs recommended.
+                  Pick-up: no minimum · Delivery: 8 pcs minimum · Restaurants & cafés: 20 pcs recommended.
                   Longer distances may require a higher minimum or delivery fee.
                 </p>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
@@ -1871,9 +1871,9 @@ function CheckoutModal({
                   15+ pcs: preparation time may be required unless stock is available ·
                   Final availability confirmed after order request.
                 </p>
-                {form.delivery === "delivery" && cartCount < 6 && (
+                {form.delivery === "delivery" && cartCount < 8 && (
                   <p className="mt-2 text-[11px] text-rose-300/90">
-                    Delivery requires a minimum of 6 pieces. Please add more items or choose pick-up.
+                    Delivery requires a minimum of 8 pieces. Please add more items or choose pick-up.
                   </p>
                 )}
               </FieldLA>
@@ -2027,13 +2027,13 @@ function CheckoutModal({
                 <div className="mt-3 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
                   {form.delivery === "pickup"
                     ? "Pick-up · No minimum order"
-                    : `Delivery · Minimum 6 pcs ${
-                        orderSnapshot.reduce((s, i) => s + i.qty, 0) >= 6 ? "✓ met" : "— not met"
+                    : `Delivery · Minimum 8 pcs ${
+                        orderSnapshot.reduce((s, i) => s + i.qty, 0) >= 8 ? "✓ met" : "— not met"
                       }`}
                 </div>
                 {form.delivery === "delivery" && (
                   <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
-                    Delivery available from 6 pieces across Brisbane and surrounding area.
+                    Delivery available from 8 pieces across Brisbane and surrounding area.
                     Delivery fee confirmed separately based on distance — longer distances may require a higher minimum.
                   </p>
                 )}
