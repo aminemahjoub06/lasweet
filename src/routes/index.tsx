@@ -54,7 +54,7 @@ const flavours: Flavour[] = [
     suffix: "go",
     label: "Signature Flavour",
     description:
-      "A bright tropical illusion coated in smooth white chocolate, filled with homemade vanilla ganache made with real vanilla beans, a soft homemade biscuit and a generous mango compote at the centre.",
+      "A tropical trompe-l'œil with a smooth white chocolate shell, revealing a soft homemade biscuit, real vanilla bean ganache and a bright mango compotée for a fresh, sunny and indulgent finish.",
     short: "White chocolate shell, homemade vanilla ganache, homemade biscuit and mango compote.",
     image: mangoImg,
   },
