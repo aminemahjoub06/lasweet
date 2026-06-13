@@ -2222,7 +2222,13 @@ function CheckoutModal({
                   onClick={handlePay}
                   className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-50 disabled:cursor-wait"
                 >
-                  {paying ? "Sending…" : "Submit Order Request"}
+                  {paying
+                    ? "Processing…"
+                    : paymentMethod === "online"
+                      ? "Pay securely with card →"
+                      : paymentMethod === "cash"
+                        ? "Confirm cash order"
+                        : "Choose a payment method"}
                 </button>
               </div>
             </div>
