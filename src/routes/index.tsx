@@ -54,8 +54,8 @@ const flavours: Flavour[] = [
     suffix: "go",
     label: "Signature Flavour",
     description:
-      "White chocolate shell. Lush mango ganache hidden inside. A trompe-l'œil that dissolves the eye and delights the palate — every single time.",
-    short: "Exotic, sun-drenched ganache. Bright mango folded into silky white chocolate, for a fresh, tropical finish that lifts any dessert menu.",
+      "A bright tropical illusion coated in smooth white chocolate, filled with homemade vanilla ganache made with real vanilla beans, a soft homemade biscuit and a generous mango compote at the centre.",
+    short: "White chocolate shell, homemade vanilla ganache, homemade biscuit and mango compote.",
     image: mangoImg,
   },
   {
@@ -65,8 +65,8 @@ const flavours: Flavour[] = [
     suffix: "berry",
     label: "Intense Flavour",
     description:
-      "Sharp, vivid raspberry ganache wrapped in smooth white chocolate. The perfect contrast — bold fruit against quiet sweetness.",
-    short: "Bold and brave. A nuance that bites. Raspberry ganache with a sharp, vivid note, wrapped in smooth white chocolate for perfect balance.",
+      "A delicate raspberry trompe-l'œil coated in smooth white chocolate, filled with homemade vanilla ganache made with real vanilla beans, a vibrant raspberry coulis and a soft homemade biscuit for a fresh, fruity finish.",
+    short: "White chocolate shell, homemade vanilla ganache, raspberry coulis and homemade biscuit.",
     image: raspberryImg,
   },
   {
@@ -76,8 +76,8 @@ const flavours: Flavour[] = [
     suffix: "lla",
     label: "Classic Flavour",
     description:
-      "A classic vanilla ganache enclosed in a crisp white-chocolate shell. Timeless, silky, and universally loved.",
-    short: "Timeless, silky, universally loved. A classic vanilla ganache in a crisp white-chocolate shell — pure comfort, dressed as an illusion.",
+      "A refined vanilla-inspired trompe-l'œil coated in smooth white chocolate and filled with homemade hazelnut cream, offering a rich, nutty and comforting centre with a premium handmade finish.",
+    short: "White chocolate shell with homemade hazelnut cream.",
     image: vanillaImg,
   },
   {
@@ -87,8 +87,8 @@ const flavours: Flavour[] = [
     suffix: "mon",
     label: "Bright Flavour",
     description:
-      "Fresh lemon ganache with a clean, citrus edge, in a white-chocolate casing that melts on the tongue.",
-    short: "Bright, zesty, effortlessly light. Fresh lemon ganache with a clean, citrus edge, in a white-chocolate casing that melts on the tongue.",
+      "A fresh citrus illusion coated in smooth white chocolate, with a homemade biscuit, a silky lemon crémeux and a touch of lemon zest folded into the vanilla ganache for a bright, elegant finish.",
+    short: "White chocolate shell, homemade biscuit, lemon crémeux and vanilla ganache with lemon zest.",
     image: lemonImg,
   },
 ];
