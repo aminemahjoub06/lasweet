@@ -1572,6 +1572,8 @@ function Index() {
         payOrder={payOrder}
         orderRef={orderRef}
         resetOrder={resetOrder}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
       />
     </main>
   );
