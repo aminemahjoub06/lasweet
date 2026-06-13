@@ -1532,7 +1532,7 @@ function Index() {
               className="text-[11px] leading-snug"
               style={{ letterSpacing: "0.08em", color: "rgba(245, 234, 210, 0.55)" }}
             >
-              Pick-up: no minimum · Delivery: 8 pcs minimum · Delivery fee confirmed separately if delivery is selected.
+              Pick-up: free · Delivery: $10 under 8 pcs · Free from 8 pcs
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
