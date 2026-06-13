@@ -2159,15 +2159,47 @@ function CheckoutModal({
                 })()}
               </div>
 
-              <div className="border border-gold/30 bg-ink-3/40 p-5 space-y-2 text-[12px] leading-relaxed text-[color:var(--foreground)]/75">
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
-                  How it works
+              {/* Payment method selector */}
+              <div className="space-y-3">
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold">
+                  Payment method
                 </div>
-                <p>
-                  No payment is taken at this stage. Submit your request and our
-                  team will be in touch by email to confirm availability, final
-                  pricing and the secure payment link.
-                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("online")}
+                    className={`text-left border p-4 transition-colors ${
+                      paymentMethod === "online"
+                        ? "border-gold bg-gold/10"
+                        : "border-gold/30 hover:border-gold/60"
+                    }`}
+                  >
+                    <div className="text-[11px] tracking-[0.24em] uppercase text-gold mb-1">
+                      Pay online
+                    </div>
+                    <div className="font-serif-display text-lg">Card payment</div>
+                    <p className="mt-1 text-[12px] text-[color:var(--foreground)]/70 leading-relaxed">
+                      Secure card payment via Stripe Checkout.
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("cash")}
+                    className={`text-left border p-4 transition-colors ${
+                      paymentMethod === "cash"
+                        ? "border-gold bg-gold/10"
+                        : "border-gold/30 hover:border-gold/60"
+                    }`}
+                  >
+                    <div className="text-[11px] tracking-[0.24em] uppercase text-gold mb-1">
+                      Pay cash
+                    </div>
+                    <div className="font-serif-display text-lg">On pick-up / delivery</div>
+                    <p className="mt-1 text-[12px] text-[color:var(--foreground)]/70 leading-relaxed">
+                      Cash payment available on pick-up or delivery.
+                    </p>
+                  </button>
+                </div>
               </div>
 
               {formError && (
