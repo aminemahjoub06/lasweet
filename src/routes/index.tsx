@@ -1481,10 +1481,7 @@ function CheckoutModal({
   setFormError,
   validateDetails,
   orderSnapshot,
-  snapshotMin,
-  snapshotMax,
-  PRICE_MIN,
-  PRICE_MAX,
+  snapshotTotal,
   cartCount,
   paying,
   payOrder,
@@ -1503,10 +1500,7 @@ function CheckoutModal({
   setFormError: (v: string | null) => void;
   validateDetails: (e: React.FormEvent) => void;
   orderSnapshot: SnapshotItem[];
-  snapshotMin: number;
-  snapshotMax: number;
-  PRICE_MIN: number;
-  PRICE_MAX: number;
+  snapshotTotal: number;
   cartCount: number;
   paying: boolean;
   payOrder: () => void;
