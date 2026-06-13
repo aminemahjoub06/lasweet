@@ -1147,7 +1147,7 @@ function Index() {
             <a href="#footer" className="hover:text-gold transition">Contact</a>
             <a href="#wholesale" className="hover:text-gold transition">Wholesale</a>
             <a href="#events" className="hover:text-gold transition">Events</a>
-            <a href="#footer" className="hover:text-gold transition">Allergens</a>
+            <a href="#allergens" className="hover:text-gold transition">Allergens</a>
           </nav>
         </div>
       </footer>
