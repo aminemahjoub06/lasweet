@@ -1294,7 +1294,7 @@ function Index() {
 
           {/* Items */}
           <div className="flex-1 overflow-y-auto px-6 py-5">
-            {cartItems.length === 0 ? (
+            {cartEntries.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center text-sm text-[color:var(--foreground)]/60">
                 <ShoppingBag className="h-8 w-8 text-gold/60 mb-4" strokeWidth={1.2} />
                 <p>Your selection is empty.</p>
@@ -1304,15 +1304,14 @@ function Index() {
               </div>
             ) : (
               <ul className="space-y-5">
-                {cartItems.map((fl) => {
-                  const q = cart[fl.no];
+                {cartEntries.map(({ variant: v, qty: q }) => {
                   return (
-                    <li key={fl.no} className="flex gap-4 border-b border-line pb-5 last:border-b-0">
+                    <li key={v.key} className="flex gap-4 border-b border-line pb-5 last:border-b-0">
                       <div className="h-16 w-16 shrink-0 border border-gold/40 bg-ink-3 p-1.5 flex items-center justify-center">
-                        {fl.image && (
+                        {v.image && (
                           <img
-                            src={fl.image}
-                            alt={fl.name}
+                            src={v.image}
+                            alt={v.name}
                             className="max-h-full max-w-full object-contain"
                             loading="lazy"
                           />
@@ -1322,17 +1321,20 @@ function Index() {
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
-                              No. {fl.no}
+                              No. {v.no}{v.sizeLabel ? ` · Size ${v.sizeLabel}` : ""}
                             </div>
                             <div className="font-serif-display text-lg leading-tight">
-                              {fl.prefix}
-                              <span className="italic text-gold">{fl.suffix}</span>
+                              {v.prefix}
+                              <span className="italic text-gold">{v.suffix}</span>
+                            </div>
+                            <div className="text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 mt-1">
+                              ${v.price} per piece
                             </div>
                           </div>
                           <button
                             type="button"
-                            aria-label={`Remove ${fl.name}`}
-                            onClick={() => setCartQty(fl.no, 0)}
+                            aria-label={`Remove ${v.name}`}
+                            onClick={() => setCartQty(v.key, 0)}
                             className="text-[color:var(--foreground)]/50 hover:text-gold transition-colors"
                           >
                             <Trash2 className="h-4 w-4" strokeWidth={1.5} />
@@ -1343,7 +1345,7 @@ function Index() {
                             <button
                               type="button"
                               aria-label="Decrease quantity"
-                              onClick={() => setCartQty(fl.no, q - 1)}
+                              onClick={() => setCartQty(v.key, q - 1)}
                               className="h-8 w-8 inline-flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"
                             >
                               <Minus className="h-3 w-3" strokeWidth={1.8} />
@@ -1354,16 +1356,16 @@ function Index() {
                             <button
                               type="button"
                               aria-label="Increase quantity"
-                              onClick={() => setCartQty(fl.no, q + 1)}
+                              onClick={() => setCartQty(v.key, q + 1)}
                               className="h-8 w-8 inline-flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"
                             >
                               <Plus className="h-3 w-3" strokeWidth={1.8} />
                             </button>
                           </div>
-                          <div className="text-xs text-[color:var(--foreground)]/60">
-                            <span className="text-gold">${q * PRICE_MIN}</span>
-                            <span className="mx-1">–</span>
-                            <span className="text-gold">${q * PRICE_MAX}</span>
+                          <div className="text-sm text-[color:var(--foreground)]/70">
+                            <span className="text-gold font-serif-display text-base">
+                              ${q * v.price}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -1378,24 +1380,22 @@ function Index() {
           <div className="border-t border-line px-6 py-5 space-y-4 bg-ink">
             <div className="flex items-baseline justify-between">
               <span className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/60">
-                Estimated subtotal
+                Subtotal
               </span>
               <span className="font-serif-display text-xl">
-                <span className="text-gold">${subtotalMin}</span>
-                <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
-                <span className="text-gold">${subtotalMax}</span>
+                <span className="text-gold">${subtotal}</span>
               </span>
             </div>
             <p
               className="text-[11px] leading-snug"
               style={{ letterSpacing: "0.08em", color: "rgba(245, 234, 210, 0.55)" }}
             >
-              Pick-up: no minimum · Delivery: 6 pcs minimum
+              Pick-up: no minimum · Delivery: 6 pcs minimum · Delivery fee confirmed separately if delivery is selected.
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
                 type="button"
-                disabled={cartItems.length === 0}
+                disabled={cartEntries.length === 0}
                 onClick={openCheckout}
                 className="w-full bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-3 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -1427,10 +1427,7 @@ function Index() {
         setFormError={setFormError}
         validateDetails={validateDetails}
         orderSnapshot={orderSnapshot}
-        snapshotMin={snapshotMin}
-        snapshotMax={snapshotMax}
-        PRICE_MIN={PRICE_MIN}
-        PRICE_MAX={PRICE_MAX}
+        snapshotTotal={snapshotTotal}
         cartCount={cartCount}
         paying={paying}
         payOrder={payOrder}
