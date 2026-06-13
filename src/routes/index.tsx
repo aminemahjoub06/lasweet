@@ -777,6 +777,11 @@ function Index() {
                   <div className="absolute top-4 left-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/60 backdrop-blur-md px-3 py-1.5 border border-gold/30">
                     No. {fl.no}
                   </div>
+                  {fl.available === false && (
+                    <div className="absolute top-4 right-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/70 backdrop-blur-md px-3 py-1.5 border border-gold/40">
+                      Coming soon
+                    </div>
+                  )}
                 </div>
 
                 {/* Text panel below the image */}
