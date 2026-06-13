@@ -732,7 +732,7 @@ function Index() {
             { v: "4", l: "Flavours" },
             { v: "50 km", l: "Brisbane delivery" },
             { v: "15+ pcs", l: "Preparation time may apply" },
-            { v: "8\u00a0pcs", l: "Delivery minimum (pick-up: none)" },
+            { v: "$10", l: "Delivery under 8 pcs · free from 8" },
           ].map((s, i) => (
             <div
               key={s.l}
@@ -1175,8 +1175,8 @@ function Index() {
               <ul className="space-y-4 text-sm text-[color:var(--foreground)]/80 mb-10 flex-1">
                 {[
                   "Birthdays, weddings, parties and corporate events",
-                  "Pick-up available with no minimum order",
-                  "Delivery available from 6 pieces",
+                  "Pick-up available with no minimum order — free",
+                  "Delivery: $10 under 8 pieces, free from 8 pieces",
                   "Choose one flavour or a mixed selection",
                   "Fresh products, subject to availability",
                   "Final details confirmed after order request",
