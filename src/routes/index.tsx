@@ -2091,13 +2091,12 @@ function CheckoutModal({
           {step === "payment" && (
             <div className="space-y-5">
               <div>
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Order Request</div>
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Payment</div>
                 <h3 className="font-serif-display text-2xl">
-                  Order <span className="italic text-gold">Request</span>
+                  Choose your <span className="italic text-gold">payment method</span>
                 </h3>
                 <p className="mt-2 text-sm text-[color:var(--foreground)]/70 leading-relaxed">
-                  We&apos;ll review your selection and contact you shortly to confirm
-                  availability, final pricing and payment details.
+                  Pay securely online with card now, or pay in cash on pick-up or delivery.
                 </p>
               </div>
 
