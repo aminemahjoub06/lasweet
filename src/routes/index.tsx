@@ -685,10 +685,11 @@ function Index() {
 
                 <button
                   type="button"
-                  onClick={() => startOrderFlow({ no: f.no, qty: 1 })}
-                  className="w-full border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold hover:text-ink transition"
+                  disabled={f.available === false}
+                  onClick={() => startOrderFlow({ no: cartKeyFor(f), qty: 1 })}
+                  className="w-full border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold hover:text-ink transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gold"
                 >
-                  Order this flavour
+                  {f.available === false ? "Coming Soon" : "Order this flavour"}
                 </button>
               </div>
 
