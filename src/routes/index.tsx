@@ -497,54 +497,46 @@ function Index() {
     setPaying(true);
     setFormError(null);
     try {
-      // ─────────────────────────────────────────────────────────────
-      // TODO(stripe): Replace this block with a real Stripe Checkout flow.
-      //
-      //  1. Create a server function (e.g. src/lib/checkout.functions.ts)
-      //     that builds a Stripe Checkout Session from `orderSnapshot`
-      //     and the customer details in `form`, then returns { url }.
-      //  2. Call it here with useServerFn and redirect:
-      //         const { url } = await createCheckoutSession({ data: payload });
-      //         window.location.href = url;
-      //  3. Implement the success route + Stripe webhook to mark the
-      //     order as paid and persist it to the user's account.
-      //
-      //  Until Stripe is enabled, we simulate a successful authorisation
-      //  so the rest of the post-payment flow can be tested.
-      // ─────────────────────────────────────────────────────────────
-      await new Promise((r) => setTimeout(r, 900));
-      const ref = generateOrderRef();
-      setOrderRef(ref);
+      const payload = {
+        customer: {
+          fullName: form.fullName,
+          email: form.email,
+          phone: form.phone,
+          business: form.business,
+          orderType: form.orderType,
+          date: form.date,
+          delivery: form.delivery,
+          address: form.address,
+          notes: form.notes,
+        },
+        items: orderSnapshot.map((i) => ({
+          key: i.key,
+          no: i.no,
+          name: i.name,
+          prefix: i.prefix,
+          suffix: i.suffix,
+          image: i.image,
+          qty: i.qty,
+          price: i.price,
+          sizeLabel: i.sizeLabel,
+        })),
+      };
 
-      // Persist the order locally if the customer chose to create an account.
-      if (form.createAccount && typeof window !== "undefined") {
-        try {
-          const key = `la_orders_${form.email.toLowerCase()}`;
-          const existing = JSON.parse(window.localStorage.getItem(key) || "[]");
-          existing.push({
-            ref,
-            createdAt: new Date().toISOString(),
-            customer: {
-              fullName: form.fullName,
-              email: form.email,
-              phone: form.phone,
-              business: form.business,
-              orderType: form.orderType,
-              date: form.date,
-              delivery: form.delivery,
-              notes: form.notes,
-            },
-            items: orderSnapshot,
-            total: snapshotTotal,
-          });
-          window.localStorage.setItem(key, JSON.stringify(existing));
-        } catch {
-          /* storage not available — silently skip */
-        }
+      if (paymentMethod === "online") {
+        const { url } = await submitOnlineOrder({ data: payload });
+        setCart({});
+        window.location.href = url;
+        return;
       }
-
+      const { orderNumber } = await submitCashOrder({ data: payload });
+      setOrderRef(orderNumber);
       setCart({});
       setCheckoutStep("confirmed");
+    } catch (err) {
+      console.error(err);
+      setFormError(
+        err instanceof Error ? err.message : "Something went wrong. Please try again.",
+      );
     } finally {
       setPaying(false);
     }
