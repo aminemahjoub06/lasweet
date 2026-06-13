@@ -1385,8 +1385,8 @@ function Index() {
             </div>
           </div>
           <nav className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/70">
-            <a href="https://www.instagram.com/l.a.sweet.bne" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition">Instagram</a>
-            <a href="https://www.tiktok.com/@l.a.sweet.bne" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition">TikTok</a>
+            <a href="https://www.instagram.com/l.a.sweet.bne/" target="_blank" rel="noopener noreferrer external" className="hover:text-gold transition">Instagram</a>
+            <a href="https://www.tiktok.com/@l.a.sweet.bne" target="_blank" rel="noopener noreferrer external" className="hover:text-gold transition">TikTok</a>
             <a href="#footer" className="hover:text-gold transition">Contact</a>
             <a href="#wholesale" className="hover:text-gold transition">Wholesale</a>
             <a href="#events" className="hover:text-gold transition">Events</a>
