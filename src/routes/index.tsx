@@ -430,10 +430,19 @@ function Index() {
   // Snapshot of the cart at the moment the customer advances to payment,
   // so quantities can't change mid-checkout.
   const [orderSnapshot, setOrderSnapshot] = useState<
-    { no: string; name: string; prefix: string; suffix: string; image?: string; qty: number }[]
+    {
+      key: string;
+      no: string;
+      name: string;
+      prefix: string;
+      suffix: string;
+      image?: string;
+      qty: number;
+      price: number;
+      sizeLabel?: string;
+    }[]
   >([]);
-  const snapshotMin = orderSnapshot.reduce((s, i) => s + i.qty * PRICE_MIN, 0);
-  const snapshotMax = orderSnapshot.reduce((s, i) => s + i.qty * PRICE_MAX, 0);
+  const snapshotTotal = orderSnapshot.reduce((s, i) => s + i.qty * i.price, 0);
   const updateForm = <K extends keyof OrderForm>(k: K, v: OrderForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
   const validateDetails = (e: React.FormEvent) => {
@@ -454,20 +463,23 @@ function Index() {
         "Delivery requires a minimum of 6 pieces. Please add more items or choose pick-up.",
       );
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
-    if (cartItems.length === 0) return setFormError("Your selection is empty — add a flavour first.");
+    if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     if (form.createAccount) {
       if (form.password.length < 8) return setFormError("Password must be at least 8 characters.");
       if (form.password !== form.confirmPassword) return setFormError("Passwords do not match.");
     }
     // Lock in a snapshot of the cart so quantities can't change mid-review.
     setOrderSnapshot(
-      cartItems.map((fl) => ({
-        no: fl.no,
-        name: fl.name,
-        prefix: fl.prefix,
-        suffix: fl.suffix,
-        image: fl.image,
-        qty: cart[fl.no]!,
+      cartEntries.map(({ variant, qty }) => ({
+        key: variant.key,
+        no: variant.no,
+        name: variant.name,
+        prefix: variant.prefix,
+        suffix: variant.suffix,
+        image: variant.image,
+        qty,
+        price: variant.price,
+        sizeLabel: variant.sizeLabel,
       })),
     );
     setCheckoutStep("review");
