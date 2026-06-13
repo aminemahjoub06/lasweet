@@ -429,7 +429,7 @@ function Index() {
   const [accountMode, setAccountMode] = useState<"create" | "login" | "guest" | null>(null);
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("online");
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash" | null>(null);
   const submitCashOrder = useServerFn(createCashOrder);
   const submitOnlineOrder = useServerFn(createStripeCheckout);
   // Snapshot of the cart at the moment the customer advances to payment,
@@ -494,6 +494,10 @@ function Index() {
 
   const payOrder = async () => {
     if (paying || orderSnapshot.length === 0) return;
+    if (!paymentMethod) {
+      setFormError("Please choose a payment method.");
+      return;
+    }
     setPaying(true);
     setFormError(null);
     try {
