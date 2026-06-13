@@ -1628,6 +1628,8 @@ function CheckoutModal({
   payOrder,
   orderRef,
   resetOrder,
+  paymentMethod,
+  setPaymentMethod,
 }: {
   open: boolean;
   onClose: () => void;
@@ -1647,6 +1649,8 @@ function CheckoutModal({
   payOrder: () => void;
   orderRef: string | null;
   resetOrder: () => void;
+  paymentMethod: "online" | "cash" | null;
+  setPaymentMethod: (m: "online" | "cash" | null) => void;
 }) {
   const steps: { k: CheckoutStep; l: string }[] = [
     { k: "account", l: "1 · Account" },
