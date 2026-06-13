@@ -89,9 +89,10 @@ export const createCashOrder = createServerFn({ method: "POST" })
       throw new Error("Could not save your order. Please try again.");
     }
 
-    // Best-effort owner notification
-    await import("./notifications.server").then((m) =>
-      m.notifyOwnerNewOrder({
+    // Best-effort owner notification (never blocks the order)
+    try {
+      const { notifyOwnerNewOrder } = await import("./notifications.server");
+      await notifyOwnerNewOrder({
         orderNumber,
         customer: data.customer,
         items: data.items,
@@ -100,8 +101,10 @@ export const createCashOrder = createServerFn({ method: "POST" })
         total,
         paymentMethod: "cash",
         paymentStatus: "cash_pending",
-      }).catch((e) => console.error("[notifyOwner] failed", e)),
-    );
+      });
+    } catch (e) {
+      console.error("[notifyOwner] failed", e);
+    }
 
     return { orderNumber, total };
   });
