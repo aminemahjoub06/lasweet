@@ -429,7 +429,7 @@ function Index() {
   const [accountMode, setAccountMode] = useState<"create" | "login" | "guest" | null>(null);
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("online");
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash" | null>(null);
   const submitCashOrder = useServerFn(createCashOrder);
   const submitOnlineOrder = useServerFn(createStripeCheckout);
   // Snapshot of the cart at the moment the customer advances to payment,
@@ -494,6 +494,10 @@ function Index() {
 
   const payOrder = async () => {
     if (paying || orderSnapshot.length === 0) return;
+    if (!paymentMethod) {
+      setFormError("Please choose a payment method.");
+      return;
+    }
     setPaying(true);
     setFormError(null);
     try {
@@ -1568,6 +1572,8 @@ function Index() {
         payOrder={payOrder}
         orderRef={orderRef}
         resetOrder={resetOrder}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
       />
     </main>
   );
@@ -1622,6 +1628,8 @@ function CheckoutModal({
   payOrder,
   orderRef,
   resetOrder,
+  paymentMethod,
+  setPaymentMethod,
 }: {
   open: boolean;
   onClose: () => void;
@@ -1641,12 +1649,14 @@ function CheckoutModal({
   payOrder: () => void;
   orderRef: string | null;
   resetOrder: () => void;
+  paymentMethod: "online" | "cash" | null;
+  setPaymentMethod: (m: "online" | "cash" | null) => void;
 }) {
   const steps: { k: CheckoutStep; l: string }[] = [
     { k: "account", l: "1 · Account" },
     { k: "details", l: "2 · Details" },
     { k: "review", l: "3 · Review" },
-    { k: "payment", l: "4 · Request" },
+    { k: "payment", l: "4 · Payment" },
   ];
   const order: CheckoutStep[] = ["account", "details", "review", "payment", "confirmed"];
 
@@ -2081,13 +2091,12 @@ function CheckoutModal({
           {step === "payment" && (
             <div className="space-y-5">
               <div>
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Order Request</div>
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Payment</div>
                 <h3 className="font-serif-display text-2xl">
-                  Order <span className="italic text-gold">Request</span>
+                  Choose your <span className="italic text-gold">payment method</span>
                 </h3>
                 <p className="mt-2 text-sm text-[color:var(--foreground)]/70 leading-relaxed">
-                  We&apos;ll review your selection and contact you shortly to confirm
-                  availability, final pricing and payment details.
+                  Pay securely online with card now, or pay in cash on pick-up or delivery.
                 </p>
               </div>
 
@@ -2150,15 +2159,47 @@ function CheckoutModal({
                 })()}
               </div>
 
-              <div className="border border-gold/30 bg-ink-3/40 p-5 space-y-2 text-[12px] leading-relaxed text-[color:var(--foreground)]/75">
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
-                  How it works
+              {/* Payment method selector */}
+              <div className="space-y-3">
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold">
+                  Payment method
                 </div>
-                <p>
-                  No payment is taken at this stage. Submit your request and our
-                  team will be in touch by email to confirm availability, final
-                  pricing and the secure payment link.
-                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("online")}
+                    className={`text-left border p-4 transition-colors ${
+                      paymentMethod === "online"
+                        ? "border-gold bg-gold/10"
+                        : "border-gold/30 hover:border-gold/60"
+                    }`}
+                  >
+                    <div className="text-[11px] tracking-[0.24em] uppercase text-gold mb-1">
+                      Pay online
+                    </div>
+                    <div className="font-serif-display text-lg">Card payment</div>
+                    <p className="mt-1 text-[12px] text-[color:var(--foreground)]/70 leading-relaxed">
+                      Secure card payment via Stripe Checkout.
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("cash")}
+                    className={`text-left border p-4 transition-colors ${
+                      paymentMethod === "cash"
+                        ? "border-gold bg-gold/10"
+                        : "border-gold/30 hover:border-gold/60"
+                    }`}
+                  >
+                    <div className="text-[11px] tracking-[0.24em] uppercase text-gold mb-1">
+                      Pay cash
+                    </div>
+                    <div className="font-serif-display text-lg">On pick-up / delivery</div>
+                    <p className="mt-1 text-[12px] text-[color:var(--foreground)]/70 leading-relaxed">
+                      Cash payment available on pick-up or delivery.
+                    </p>
+                  </button>
+                </div>
               </div>
 
               {formError && (
@@ -2181,7 +2222,13 @@ function CheckoutModal({
                   onClick={handlePay}
                   className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-50 disabled:cursor-wait"
                 >
-                  {paying ? "Sending…" : "Submit Order Request"}
+                  {paying
+                    ? "Processing…"
+                    : paymentMethod === "online"
+                      ? "Pay securely with card →"
+                      : paymentMethod === "cash"
+                        ? "Confirm cash order"
+                        : "Choose a payment method"}
                 </button>
               </div>
             </div>
