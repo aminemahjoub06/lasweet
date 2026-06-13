@@ -44,6 +44,9 @@ type Flavour = {
   description: string;
   short: string;
   image?: string;
+  available?: boolean;
+  price?: number;
+  sizes?: { label: string; price: number }[];
 };
 
 const flavours: Flavour[] = [
@@ -57,6 +60,8 @@ const flavours: Flavour[] = [
       "A tropical trompe-l'œil with a smooth white chocolate shell, revealing a soft homemade biscuit, real vanilla bean ganache and a bright mango compotée for a fresh, sunny and indulgent finish.",
     short: "White chocolate shell, homemade vanilla ganache, homemade biscuit and mango compote.",
     image: mangoImg,
+    available: false,
+    price: 20,
   },
   {
     no: "02",
@@ -68,6 +73,8 @@ const flavours: Flavour[] = [
       "A vibrant raspberry illusion coated in smooth white chocolate, filled with real vanilla bean ganache, a soft homemade biscuit and a tangy raspberry coulis that brings the perfect balance of sweetness and freshness.",
     short: "White chocolate shell, homemade vanilla ganache, raspberry coulis and homemade biscuit.",
     image: raspberryImg,
+    available: true,
+    price: 18,
   },
   {
     no: "03",
@@ -79,6 +86,11 @@ const flavours: Flavour[] = [
       "A delicate vanilla-inspired creation with a smooth white chocolate shell and a rich homemade hazelnut cream centre — creamy, nutty and comforting, with a refined handmade finish.",
     short: "White chocolate shell with homemade hazelnut cream.",
     image: vanillaImg,
+    available: true,
+    sizes: [
+      { label: "S", price: 15 },
+      { label: "L", price: 18 },
+    ],
   },
   {
     no: "04",
@@ -90,6 +102,8 @@ const flavours: Flavour[] = [
       "A bright lemon trompe-l'œil with a smooth white chocolate shell, soft homemade biscuit, silky lemon crémeux and vanilla ganache delicately lifted with fresh lemon zest for a clean, elegant citrus finish.",
     short: "White chocolate shell, homemade biscuit, lemon crémeux and vanilla ganache with lemon zest.",
     image: lemonImg,
+    available: true,
+    price: 18,
   },
 ];
 
@@ -281,18 +295,68 @@ function Index() {
   const setQ = (no: string, n: number) =>
     setQty((q) => ({ ...q, [no]: Math.max(1, Math.min(99, n)) }));
 
-  // Cart state
+  // Per-card selected size for products with sizes (Vanilla).
+  const [selectedSize, setSelectedSize] = useState<Record<string, string>>({});
+  const getSize = (fl: Flavour) =>
+    selectedSize[fl.no] ?? (fl.sizes?.[0]?.label ?? "");
+
+  // Build the cart key for a flavour (+ optional size).
+  const cartKeyFor = (fl: Flavour, size?: string) =>
+    fl.sizes ? `${fl.no}-${size ?? getSize(fl)}` : fl.no;
+
+  // Resolve a cart key back to a variant (display + price).
+  type Variant = {
+    key: string;
+    no: string;
+    name: string;
+    prefix: string;
+    suffix: string;
+    sizeLabel?: string;
+    price: number;
+    image?: string;
+  };
+  const resolveVariant = (key: string): Variant | null => {
+    const [no, size] = key.split("-");
+    const fl = flavours.find((f) => f.no === no);
+    if (!fl) return null;
+    if (fl.sizes) {
+      const s = fl.sizes.find((x) => x.label === size) ?? fl.sizes[0];
+      return {
+        key,
+        no: fl.no,
+        name: `${fl.name} ${s.label}`,
+        prefix: fl.prefix,
+        suffix: `${fl.suffix} ${s.label}`,
+        sizeLabel: s.label,
+        price: s.price,
+        image: fl.image,
+      };
+    }
+    return {
+      key,
+      no: fl.no,
+      name: fl.name,
+      prefix: fl.prefix,
+      suffix: fl.suffix,
+      price: fl.price ?? 0,
+      image: fl.image,
+    };
+  };
+
+  // Cart state — keys are variant keys (no, or `${no}-${size}` for sized items).
   const [cart, setCart] = useState<Record<string, number>>({});
   const [cartOpen, setCartOpen] = useState(false);
   const [addCount, setAddCount] = useState(0);
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
-  const cartItems = flavours.filter((fl) => (cart[fl.no] ?? 0) > 0);
-  const PRICE_MIN = 12;
-  const PRICE_MAX = 20;
-  const subtotalMin = cartCount * PRICE_MIN;
-  const subtotalMax = cartCount * PRICE_MAX;
-  const addToCart = (no: string, n: number) => {
-    setCart((c) => ({ ...c, [no]: Math.min(999, (c[no] ?? 0) + n) }));
+  const cartEntries = Object.entries(cart)
+    .map(([key, qty]) => {
+      const v = resolveVariant(key);
+      return v ? { variant: v, qty } : null;
+    })
+    .filter((x): x is { variant: Variant; qty: number } => x !== null && x.qty > 0);
+  const subtotal = cartEntries.reduce((s, i) => s + i.qty * i.variant.price, 0);
+  const addToCart = (key: string, n: number) => {
+    setCart((c) => ({ ...c, [key]: Math.min(999, (c[key] ?? 0) + n) }));
     setAddCount((prev) => {
       const next = prev + 1;
       if (next % 4 === 0) {
@@ -316,11 +380,11 @@ function Index() {
     setCheckoutStep("account");
     setCartOpen(true);
   };
-  const setCartQty = (no: string, n: number) => {
+  const setCartQty = (key: string, n: number) => {
     setCart((c) => {
       const next = { ...c };
-      if (n <= 0) delete next[no];
-      else next[no] = Math.min(999, n);
+      if (n <= 0) delete next[key];
+      else next[key] = Math.min(999, n);
       return next;
     });
   };
@@ -366,10 +430,19 @@ function Index() {
   // Snapshot of the cart at the moment the customer advances to payment,
   // so quantities can't change mid-checkout.
   const [orderSnapshot, setOrderSnapshot] = useState<
-    { no: string; name: string; prefix: string; suffix: string; image?: string; qty: number }[]
+    {
+      key: string;
+      no: string;
+      name: string;
+      prefix: string;
+      suffix: string;
+      image?: string;
+      qty: number;
+      price: number;
+      sizeLabel?: string;
+    }[]
   >([]);
-  const snapshotMin = orderSnapshot.reduce((s, i) => s + i.qty * PRICE_MIN, 0);
-  const snapshotMax = orderSnapshot.reduce((s, i) => s + i.qty * PRICE_MAX, 0);
+  const snapshotTotal = orderSnapshot.reduce((s, i) => s + i.qty * i.price, 0);
   const updateForm = <K extends keyof OrderForm>(k: K, v: OrderForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
   const validateDetails = (e: React.FormEvent) => {
@@ -390,20 +463,23 @@ function Index() {
         "Delivery requires a minimum of 6 pieces. Please add more items or choose pick-up.",
       );
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
-    if (cartItems.length === 0) return setFormError("Your selection is empty — add a flavour first.");
+    if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     if (form.createAccount) {
       if (form.password.length < 8) return setFormError("Password must be at least 8 characters.");
       if (form.password !== form.confirmPassword) return setFormError("Passwords do not match.");
     }
     // Lock in a snapshot of the cart so quantities can't change mid-review.
     setOrderSnapshot(
-      cartItems.map((fl) => ({
-        no: fl.no,
-        name: fl.name,
-        prefix: fl.prefix,
-        suffix: fl.suffix,
-        image: fl.image,
-        qty: cart[fl.no]!,
+      cartEntries.map(({ variant, qty }) => ({
+        key: variant.key,
+        no: variant.no,
+        name: variant.name,
+        prefix: variant.prefix,
+        suffix: variant.suffix,
+        image: variant.image,
+        qty,
+        price: variant.price,
+        sizeLabel: variant.sizeLabel,
       })),
     );
     setCheckoutStep("review");
@@ -458,7 +534,7 @@ function Index() {
               notes: form.notes,
             },
             items: orderSnapshot,
-            estimate: { min: snapshotMin, max: snapshotMax },
+            total: snapshotTotal,
           });
           window.localStorage.setItem(key, JSON.stringify(existing));
         } catch {
@@ -482,7 +558,7 @@ function Index() {
     setForm((f) => ({ ...f, password: "", confirmPassword: "" }));
   };
   const openCheckout = () => {
-    if (cartItems.length === 0) return;
+    if (cartEntries.length === 0) return;
     setCartOpen(false);
     setFormError(null);
     setAccountMode(null);
@@ -609,10 +685,11 @@ function Index() {
 
                 <button
                   type="button"
-                  onClick={() => startOrderFlow({ no: f.no, qty: 1 })}
-                  className="w-full border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold hover:text-ink transition"
+                  disabled={f.available === false}
+                  onClick={() => startOrderFlow({ no: cartKeyFor(f), qty: 1 })}
+                  className="w-full border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold hover:text-ink transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gold"
                 >
-                  Order this flavour
+                  {f.available === false ? "Coming Soon" : "Order this flavour"}
                 </button>
               </div>
 
@@ -700,6 +777,11 @@ function Index() {
                   <div className="absolute top-4 left-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/60 backdrop-blur-md px-3 py-1.5 border border-gold/30">
                     No. {fl.no}
                   </div>
+                  {fl.available === false && (
+                    <div className="absolute top-4 right-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/70 backdrop-blur-md px-3 py-1.5 border border-gold/40">
+                      Coming soon
+                    </div>
+                  )}
                 </div>
 
                 {/* Text panel below the image */}
@@ -874,13 +956,58 @@ function Index() {
                       className="flex items-center justify-between gap-3 border-t border-line bg-ink-2 px-4 py-3 md:px-5 md:py-4"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="flex flex-col">
-                        <span className="font-serif-display text-base md:text-lg leading-none">
-                          <span className="text-gold">$12–20</span>
-                        </span>
-                        <span className="text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/55 mt-1">
-                          per piece
-                        </span>
+                      <div className="flex flex-col gap-1">
+                        {fl.sizes ? (
+                          <>
+                            <span className="font-serif-display text-base md:text-lg leading-none">
+                              <span className="text-gold">${fl.sizes.find((s) => s.label === getSize(fl))?.price ?? fl.sizes[0].price}</span>
+                            </span>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              {fl.sizes.map((s) => {
+                                const active = getSize(fl) === s.label;
+                                return (
+                                  <span
+                                    key={s.label}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedSize((sz) => ({ ...sz, [fl.no]: s.label }));
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setSelectedSize((sz) => ({ ...sz, [fl.no]: s.label }));
+                                      }
+                                    }}
+                                    className={`cursor-pointer text-[10px] tracking-[0.22em] uppercase px-2 py-1 border transition-colors ${
+                                      active
+                                        ? "bg-gold text-ink border-gold"
+                                        : "text-gold border-gold/40 hover:bg-gold hover:text-ink"
+                                    }`}
+                                  >
+                                    {s.label} · ${s.price}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <span className="font-serif-display text-base md:text-lg leading-none">
+                              <span className="text-gold">${fl.price}</span>
+                            </span>
+                            <span className="text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/55 mt-1">
+                              per piece
+                            </span>
+                            {fl.available === false && (
+                              <span className="mt-1 inline-block self-start text-[9px] tracking-[0.24em] uppercase text-gold border border-gold/50 bg-ink-3/60 px-2 py-0.5">
+                                Coming soon
+                              </span>
+                            )}
+                          </>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -927,28 +1054,39 @@ function Index() {
                             +
                           </span>
                         </div>
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addToCart(fl.no, getQty(fl.no));
-                            setAdded(fl.no);
-                            window.setTimeout(() => setAdded((c) => (c === fl.no ? null : c)), 1400);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
+                        {fl.available === false ? (
+                          <span
+                            aria-disabled
+                            className="text-[10px] tracking-[0.24em] uppercase text-[color:var(--foreground)]/50 border border-line bg-ink-3/40 px-4 py-2 cursor-not-allowed"
+                          >
+                            Coming Soon
+                          </span>
+                        ) : (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={(e) => {
                               e.stopPropagation();
-                              addToCart(fl.no, getQty(fl.no));
-                              setAdded(fl.no);
-                              window.setTimeout(() => setAdded((c) => (c === fl.no ? null : c)), 1400);
-                            }
-                          }}
-                          className="cursor-pointer text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-4 py-2 hover:bg-gold hover:text-ink transition-colors"
-                        >
-                          {added === fl.no ? "Added ✓" : "Add to cart"}
-                        </span>
+                              const key = cartKeyFor(fl);
+                              addToCart(key, getQty(fl.no));
+                              setAdded(key);
+                              window.setTimeout(() => setAdded((c) => (c === key ? null : c)), 1400);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const key = cartKeyFor(fl);
+                                addToCart(key, getQty(fl.no));
+                                setAdded(key);
+                                window.setTimeout(() => setAdded((c) => (c === key ? null : c)), 1400);
+                              }
+                            }}
+                            className="cursor-pointer text-[10px] tracking-[0.24em] uppercase text-gold border border-gold/50 px-4 py-2 hover:bg-gold hover:text-ink transition-colors"
+                          >
+                            {added === cartKeyFor(fl) ? "Added ✓" : "Add to cart"}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </button>
@@ -1218,7 +1356,7 @@ function Index() {
 
           {/* Items */}
           <div className="flex-1 overflow-y-auto px-6 py-5">
-            {cartItems.length === 0 ? (
+            {cartEntries.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center text-sm text-[color:var(--foreground)]/60">
                 <ShoppingBag className="h-8 w-8 text-gold/60 mb-4" strokeWidth={1.2} />
                 <p>Your selection is empty.</p>
@@ -1228,15 +1366,14 @@ function Index() {
               </div>
             ) : (
               <ul className="space-y-5">
-                {cartItems.map((fl) => {
-                  const q = cart[fl.no];
+                {cartEntries.map(({ variant: v, qty: q }) => {
                   return (
-                    <li key={fl.no} className="flex gap-4 border-b border-line pb-5 last:border-b-0">
+                    <li key={v.key} className="flex gap-4 border-b border-line pb-5 last:border-b-0">
                       <div className="h-16 w-16 shrink-0 border border-gold/40 bg-ink-3 p-1.5 flex items-center justify-center">
-                        {fl.image && (
+                        {v.image && (
                           <img
-                            src={fl.image}
-                            alt={fl.name}
+                            src={v.image}
+                            alt={v.name}
                             className="max-h-full max-w-full object-contain"
                             loading="lazy"
                           />
@@ -1246,17 +1383,20 @@ function Index() {
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
-                              No. {fl.no}
+                              No. {v.no}{v.sizeLabel ? ` · Size ${v.sizeLabel}` : ""}
                             </div>
                             <div className="font-serif-display text-lg leading-tight">
-                              {fl.prefix}
-                              <span className="italic text-gold">{fl.suffix}</span>
+                              {v.prefix}
+                              <span className="italic text-gold">{v.suffix}</span>
+                            </div>
+                            <div className="text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 mt-1">
+                              ${v.price} per piece
                             </div>
                           </div>
                           <button
                             type="button"
-                            aria-label={`Remove ${fl.name}`}
-                            onClick={() => setCartQty(fl.no, 0)}
+                            aria-label={`Remove ${v.name}`}
+                            onClick={() => setCartQty(v.key, 0)}
                             className="text-[color:var(--foreground)]/50 hover:text-gold transition-colors"
                           >
                             <Trash2 className="h-4 w-4" strokeWidth={1.5} />
@@ -1267,7 +1407,7 @@ function Index() {
                             <button
                               type="button"
                               aria-label="Decrease quantity"
-                              onClick={() => setCartQty(fl.no, q - 1)}
+                              onClick={() => setCartQty(v.key, q - 1)}
                               className="h-8 w-8 inline-flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"
                             >
                               <Minus className="h-3 w-3" strokeWidth={1.8} />
@@ -1278,16 +1418,16 @@ function Index() {
                             <button
                               type="button"
                               aria-label="Increase quantity"
-                              onClick={() => setCartQty(fl.no, q + 1)}
+                              onClick={() => setCartQty(v.key, q + 1)}
                               className="h-8 w-8 inline-flex items-center justify-center hover:bg-gold hover:text-ink transition-colors"
                             >
                               <Plus className="h-3 w-3" strokeWidth={1.8} />
                             </button>
                           </div>
-                          <div className="text-xs text-[color:var(--foreground)]/60">
-                            <span className="text-gold">${q * PRICE_MIN}</span>
-                            <span className="mx-1">–</span>
-                            <span className="text-gold">${q * PRICE_MAX}</span>
+                          <div className="text-sm text-[color:var(--foreground)]/70">
+                            <span className="text-gold font-serif-display text-base">
+                              ${q * v.price}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -1302,24 +1442,22 @@ function Index() {
           <div className="border-t border-line px-6 py-5 space-y-4 bg-ink">
             <div className="flex items-baseline justify-between">
               <span className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/60">
-                Estimated subtotal
+                Subtotal
               </span>
               <span className="font-serif-display text-xl">
-                <span className="text-gold">${subtotalMin}</span>
-                <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
-                <span className="text-gold">${subtotalMax}</span>
+                <span className="text-gold">${subtotal}</span>
               </span>
             </div>
             <p
               className="text-[11px] leading-snug"
               style={{ letterSpacing: "0.08em", color: "rgba(245, 234, 210, 0.55)" }}
             >
-              Pick-up: no minimum · Delivery: 6 pcs minimum
+              Pick-up: no minimum · Delivery: 6 pcs minimum · Delivery fee confirmed separately if delivery is selected.
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
                 type="button"
-                disabled={cartItems.length === 0}
+                disabled={cartEntries.length === 0}
                 onClick={openCheckout}
                 className="w-full bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-3 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -1351,10 +1489,7 @@ function Index() {
         setFormError={setFormError}
         validateDetails={validateDetails}
         orderSnapshot={orderSnapshot}
-        snapshotMin={snapshotMin}
-        snapshotMax={snapshotMax}
-        PRICE_MIN={PRICE_MIN}
-        PRICE_MAX={PRICE_MAX}
+        snapshotTotal={snapshotTotal}
         cartCount={cartCount}
         paying={paying}
         payOrder={payOrder}
@@ -1384,12 +1519,15 @@ type OrderForm = {
   confirmPassword: string;
 };
 type SnapshotItem = {
+  key: string;
   no: string;
   name: string;
   prefix: string;
   suffix: string;
   image?: string;
   qty: number;
+  price: number;
+  sizeLabel?: string;
 };
 
 function CheckoutModal({
@@ -1405,10 +1543,7 @@ function CheckoutModal({
   setFormError,
   validateDetails,
   orderSnapshot,
-  snapshotMin,
-  snapshotMax,
-  PRICE_MIN,
-  PRICE_MAX,
+  snapshotTotal,
   cartCount,
   paying,
   payOrder,
@@ -1427,10 +1562,7 @@ function CheckoutModal({
   setFormError: (v: string | null) => void;
   validateDetails: (e: React.FormEvent) => void;
   orderSnapshot: SnapshotItem[];
-  snapshotMin: number;
-  snapshotMax: number;
-  PRICE_MIN: number;
-  PRICE_MAX: number;
+  snapshotTotal: number;
   cartCount: number;
   paying: boolean;
   payOrder: () => void;
@@ -1763,7 +1895,7 @@ function CheckoutModal({
                 <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-3">Items</div>
                 <ul className="divide-y divide-line">
                   {orderSnapshot.map((i) => (
-                    <li key={i.no} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+                    <li key={i.key} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
                       <div className="h-12 w-12 shrink-0 border border-gold/40 bg-ink-3 p-1 flex items-center justify-center">
                         {i.image && (
                           <img
@@ -1775,32 +1907,33 @@ function CheckoutModal({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
-                          No. {i.no}
+                          No. {i.no}{i.sizeLabel ? ` · Size ${i.sizeLabel}` : ""}
                         </div>
                         <div className="font-serif-display text-base leading-tight">
                           {i.prefix}
                           <span className="italic text-gold">{i.suffix}</span>
+                        </div>
+                        <div className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 mt-1">
+                          ${i.price} per piece
                         </div>
                       </div>
                       <div className="text-xs tracking-[0.18em] text-[color:var(--foreground)]/75">
                         × {i.qty}
                       </div>
                       <div className="text-xs text-[color:var(--foreground)]/70 min-w-[80px] text-right">
-                        <span className="text-gold">${i.qty * PRICE_MIN}</span>
-                        <span className="mx-1">–</span>
-                        <span className="text-gold">${i.qty * PRICE_MAX}</span>
+                        <span className="text-gold font-serif-display text-base">
+                          ${i.qty * i.price}
+                        </span>
                       </div>
                     </li>
                   ))}
                 </ul>
                 <div className="border-t border-line mt-4 pt-4 flex items-baseline justify-between">
                   <span className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/60">
-                    Estimated subtotal
+                    Subtotal
                   </span>
                   <span className="font-serif-display text-xl">
-                    <span className="text-gold">${snapshotMin}</span>
-                    <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
-                    <span className="text-gold">${snapshotMax}</span>
+                    <span className="text-gold">${snapshotTotal}</span>
                   </span>
                 </div>
                 <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/60">
@@ -1821,12 +1954,9 @@ function CheckoutModal({
                 {form.delivery === "delivery" && (
                   <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
                     Delivery available from 6 pieces across Brisbane and surrounding area.
-                    Delivery fee confirmed based on distance — longer distances may require a higher minimum.
+                    Delivery fee confirmed separately based on distance — longer distances may require a higher minimum.
                   </p>
                 )}
-                <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55">
-                  Final price confirmed after quote.
-                </p>
               </div>
 
               <div className="border border-line bg-ink-3/40 p-5 text-sm space-y-2">
@@ -1893,7 +2023,7 @@ function CheckoutModal({
                 </div>
                 <ul className="divide-y divide-line">
                   {orderSnapshot.map((i) => (
-                    <li key={i.no} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
+                    <li key={i.key} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
                       <div className="h-10 w-10 shrink-0 border border-gold/40 bg-ink-3 p-1 flex items-center justify-center">
                         {i.image && (
                           <img src={i.image} alt={i.name} className="max-h-full max-w-full object-contain" />
@@ -1904,8 +2034,15 @@ function CheckoutModal({
                           {i.prefix}
                           <span className="italic text-gold">{i.suffix}</span>
                         </span>
+                        {i.sizeLabel && (
+                          <span className="ml-2 text-[10px] tracking-[0.18em] uppercase text-gold/70">
+                            Size {i.sizeLabel}
+                          </span>
+                        )}
                       </div>
-                      <div className="text-xs text-[color:var(--foreground)]/70">× {i.qty}</div>
+                      <div className="text-xs text-[color:var(--foreground)]/70">
+                        × {i.qty} · <span className="text-gold">${i.qty * i.price}</span>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -1915,15 +2052,13 @@ function CheckoutModal({
                     {form.date ? ` · ${form.date}` : ""}
                   </span>
                   <span className="font-serif-display normal-case tracking-normal text-base">
-                    <span className="text-gold">${snapshotMin}</span>
-                    <span className="mx-1 text-[color:var(--foreground)]/40">–</span>
-                    <span className="text-gold">${snapshotMax}</span>
+                    <span className="text-gold">${snapshotTotal}</span>
                   </span>
                 </div>
                 <div className="mt-2 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
                   <span>Delivery fee</span>
                   <span className="text-gold">
-                    {form.delivery === "pickup" ? "Free" : "Confirmed after order details"}
+                    {form.delivery === "pickup" ? "Free" : "Confirmed separately"}
                   </span>
                 </div>
               </div>
