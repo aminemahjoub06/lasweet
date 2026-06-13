@@ -295,18 +295,68 @@ function Index() {
   const setQ = (no: string, n: number) =>
     setQty((q) => ({ ...q, [no]: Math.max(1, Math.min(99, n)) }));
 
-  // Cart state
+  // Per-card selected size for products with sizes (Vanilla).
+  const [selectedSize, setSelectedSize] = useState<Record<string, string>>({});
+  const getSize = (fl: Flavour) =>
+    selectedSize[fl.no] ?? (fl.sizes?.[0]?.label ?? "");
+
+  // Build the cart key for a flavour (+ optional size).
+  const cartKeyFor = (fl: Flavour, size?: string) =>
+    fl.sizes ? `${fl.no}-${size ?? getSize(fl)}` : fl.no;
+
+  // Resolve a cart key back to a variant (display + price).
+  type Variant = {
+    key: string;
+    no: string;
+    name: string;
+    prefix: string;
+    suffix: string;
+    sizeLabel?: string;
+    price: number;
+    image?: string;
+  };
+  const resolveVariant = (key: string): Variant | null => {
+    const [no, size] = key.split("-");
+    const fl = flavours.find((f) => f.no === no);
+    if (!fl) return null;
+    if (fl.sizes) {
+      const s = fl.sizes.find((x) => x.label === size) ?? fl.sizes[0];
+      return {
+        key,
+        no: fl.no,
+        name: `${fl.name} ${s.label}`,
+        prefix: fl.prefix,
+        suffix: `${fl.suffix} ${s.label}`,
+        sizeLabel: s.label,
+        price: s.price,
+        image: fl.image,
+      };
+    }
+    return {
+      key,
+      no: fl.no,
+      name: fl.name,
+      prefix: fl.prefix,
+      suffix: fl.suffix,
+      price: fl.price ?? 0,
+      image: fl.image,
+    };
+  };
+
+  // Cart state — keys are variant keys (no, or `${no}-${size}` for sized items).
   const [cart, setCart] = useState<Record<string, number>>({});
   const [cartOpen, setCartOpen] = useState(false);
   const [addCount, setAddCount] = useState(0);
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
-  const cartItems = flavours.filter((fl) => (cart[fl.no] ?? 0) > 0);
-  const PRICE_MIN = 12;
-  const PRICE_MAX = 20;
-  const subtotalMin = cartCount * PRICE_MIN;
-  const subtotalMax = cartCount * PRICE_MAX;
-  const addToCart = (no: string, n: number) => {
-    setCart((c) => ({ ...c, [no]: Math.min(999, (c[no] ?? 0) + n) }));
+  const cartEntries = Object.entries(cart)
+    .map(([key, qty]) => {
+      const v = resolveVariant(key);
+      return v ? { variant: v, qty } : null;
+    })
+    .filter((x): x is { variant: Variant; qty: number } => x !== null && x.qty > 0);
+  const subtotal = cartEntries.reduce((s, i) => s + i.qty * i.variant.price, 0);
+  const addToCart = (key: string, n: number) => {
+    setCart((c) => ({ ...c, [key]: Math.min(999, (c[key] ?? 0) + n) }));
     setAddCount((prev) => {
       const next = prev + 1;
       if (next % 4 === 0) {
@@ -330,11 +380,11 @@ function Index() {
     setCheckoutStep("account");
     setCartOpen(true);
   };
-  const setCartQty = (no: string, n: number) => {
+  const setCartQty = (key: string, n: number) => {
     setCart((c) => {
       const next = { ...c };
-      if (n <= 0) delete next[no];
-      else next[no] = Math.min(999, n);
+      if (n <= 0) delete next[key];
+      else next[key] = Math.min(999, n);
       return next;
     });
   };
