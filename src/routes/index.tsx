@@ -1133,7 +1133,6 @@ function Index() {
       </section>
 
       <footer id="footer" className="border-t border-line bg-ink-2">
-      </footer>
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
             <div className="font-serif-display text-xl">
