@@ -412,7 +412,7 @@ function Index() {
     phone: "",
     business: "",
     orderType: "Other",
-    date: "",
+    date: new Date().toISOString().slice(0, 10),
     delivery: "delivery",
     address: "",
     notes: "",
@@ -527,7 +527,9 @@ function Index() {
       };
 
       if (paymentMethod === "online") {
-        const { url } = await submitOnlineOrder({ data: payload });
+        const { url } = await submitOnlineOrder({
+          data: { ...payload, origin: window.location.origin },
+        });
         setCart({});
         // Break out of the Lovable preview iframe — Stripe Checkout refuses to load in iframes.
         try {
@@ -1671,6 +1673,12 @@ function CheckoutModal({
   ];
   const order: CheckoutStep[] = ["account", "details", "review", "payment", "confirmed"];
 
+  const fmtDate = (iso: string) => {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-");
+    return d && m && y ? `${d}/${m}/${y}` : iso;
+  };
+
   const chooseAccount = (m: "create" | "login" | "guest") => {
     setAccountMode(m);
     updateForm("createAccount", m === "create");
@@ -1853,6 +1861,7 @@ function CheckoutModal({
                   <input
                     type="date"
                     value={form.date}
+                    min={new Date().toISOString().slice(0, 10)}
                     onChange={(e) => updateForm("date", e.target.value)}
                     className={inputCls}
                   />
@@ -2067,7 +2076,7 @@ function CheckoutModal({
                 )}
                 <div className="text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 pt-2">
                   {form.orderType} · {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
-                  {form.date ? ` · ${form.date}` : ""}
+                  {form.date ? ` · ${fmtDate(form.date)}` : ""}
                 </div>
                 {form.delivery === "delivery" && form.address && (
                   <div className="text-[color:var(--foreground)]/70 pt-1">{form.address}</div>
@@ -2144,7 +2153,7 @@ function CheckoutModal({
                 <div className="border-t border-line pt-3 flex flex-wrap items-baseline justify-between gap-2 text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/60">
                   <span>
                     {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
-                    {form.date ? ` · ${form.date}` : ""}
+                    {form.date ? ` · ${fmtDate(form.date)}` : ""}
                   </span>
                   <span className="font-serif-display normal-case tracking-normal text-base">
                     <span className="text-gold">${snapshotTotal}</span>
