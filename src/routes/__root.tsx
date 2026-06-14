@@ -76,11 +76,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "L&A Sweet — Handcrafted Trompe-l'œil Desserts, Brisbane" },
       { name: "description", content: "L&A Sweet creates handcrafted trompe-l'œil desserts in Brisbane. Four signature flavours, wholesale and private events." },
       { name: "author", content: "L&A Sweet" },
-      { property: "og:title", content: "L&A Sweet — Handcrafted Trompe-l'œil Desserts" },
-      { property: "og:description", content: "Edible illusions, handcrafted in Brisbane. Mango, raspberry, vanilla, lemon." },
+      { property: "og:title", content: "L&A Sweet — Handcrafted Trompe-l'œil Desserts, Brisbane" },
+      { property: "og:description", content: "L&A Sweet creates handcrafted trompe-l'œil desserts in Brisbane. Four signature flavours, wholesale and private events." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "L&A Sweet — Handcrafted Trompe-l'œil Desserts, Brisbane" },
+      { name: "twitter:description", content: "L&A Sweet creates handcrafted trompe-l'œil desserts in Brisbane. Four signature flavours, wholesale and private events." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd208fa1-dc97-4233-be0e-6a8b70c68bca/id-preview-a600e1de--9d9470e8-0b4c-4b69-ac18-7ec8769340c6.lovable.app-1781411351936.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd208fa1-dc97-4233-be0e-6a8b70c68bca/id-preview-a600e1de--9d9470e8-0b4c-4b69-ac18-7ec8769340c6.lovable.app-1781411351936.png" },
     ],
     links: [
       {
