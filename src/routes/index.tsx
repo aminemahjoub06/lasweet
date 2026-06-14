@@ -2082,7 +2082,7 @@ function CheckoutModal({
                 )}
                 <div className="text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 pt-2">
                   {form.orderType} · {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
-                  {form.date ? ` · ${form.date}` : ""}
+                  {form.date ? ` · ${fmtDate(form.date)}` : ""}
                 </div>
                 {form.delivery === "delivery" && form.address && (
                   <div className="text-[color:var(--foreground)]/70 pt-1">{form.address}</div>
@@ -2159,7 +2159,7 @@ function CheckoutModal({
                 <div className="border-t border-line pt-3 flex flex-wrap items-baseline justify-between gap-2 text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/60">
                   <span>
                     {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
-                    {form.date ? ` · ${form.date}` : ""}
+                    {form.date ? ` · ${fmtDate(form.date)}` : ""}
                   </span>
                   <span className="font-serif-display normal-case tracking-normal text-base">
                     <span className="text-gold">${snapshotTotal}</span>
