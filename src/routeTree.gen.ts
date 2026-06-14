@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrderSuccessRouteImport } from './routes/order.success'
 import { Route as OrderCancelRouteImport } from './routes/order.cancel'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -43,6 +44,11 @@ const OrderCancelRoute = OrderCancelRouteImport.update({
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/admin/orders',
+  path: '/admin/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
@@ -78,6 +84,7 @@ const ApiPublicPaymentsWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/unsubscribe'
+    | '/admin/orders'
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/unsubscribe'
+    | '/admin/orders'
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/unsubscribe'
+    | '/admin/orders'
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
@@ -154,6 +166,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   OrderCancelRoute: typeof OrderCancelRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
@@ -201,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -242,6 +262,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   UnsubscribeRoute: UnsubscribeRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   OrderCancelRoute: OrderCancelRoute,
   OrderSuccessRoute: OrderSuccessRoute,
