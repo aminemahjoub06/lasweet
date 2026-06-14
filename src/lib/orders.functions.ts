@@ -34,6 +34,10 @@ const orderPayloadSchema = z.object({
   items: z.array(itemSchema).min(1).max(50),
 });
 
+const stripeCheckoutSchema = orderPayloadSchema.extend({
+  origin: z.string().url().max(2048).optional(),
+});
+
 export type OrderPayload = z.infer<typeof orderPayloadSchema>;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -114,7 +118,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const createStripeCheckout = createServerFn({ method: "POST" })
-  .inputValidator((input) => orderPayloadSchema.parse(input))
+  .inputValidator((input) => stripeCheckoutSchema.parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { subtotal, deliveryFee, total } = computeTotals(data.items, data.customer.delivery);
@@ -149,11 +153,24 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       throw new Error("Could not save your order. Please try again.");
     }
 
-    // 2) Build the Stripe Checkout Session via the Lovable connector gateway
-    const { getRequestHost } = await import("@tanstack/react-start/server");
-    const host = getRequestHost();
-    const proto = host.includes("localhost") ? "http" : "https";
-    const origin = `${proto}://${host}`;
+    // 2) Build the Stripe Checkout Session via the Lovable connector gateway.
+    // Use the client-provided origin (real browser URL) so Stripe never
+    // redirects back to localhost when the server runs in a sandbox.
+    let origin = data.origin?.replace(/\/$/, "") ?? "";
+    if (!origin || origin.includes("localhost")) {
+      try {
+        const { getRequestHost } = await import("@tanstack/react-start/server");
+        const host = getRequestHost();
+        if (host && !host.includes("localhost")) {
+          origin = `https://${host}`;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    if (!origin) {
+      throw new Error("Could not determine site origin for payment redirect.");
+    }
 
     const lovableKey = process.env.LOVABLE_API_KEY;
     const stripeKey = process.env.STRIPE_SANDBOX_API_KEY;
@@ -163,8 +180,12 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
 
     const params = new URLSearchParams();
     params.append("mode", "payment");
-    params.append("success_url", `${origin}/order/success?order=${orderNumber}`);
-    params.append("cancel_url", `${origin}/order/cancel?order=${orderNumber}`);
+    params.append(
+      "success_url",
+      `${origin}/order/success?order=${orderNumber}&session_id={CHECKOUT_SESSION_ID}`,
+    );
+    params.append("cancel_url", `${origin}/?payment=cancelled`);
+    params.append("locale", "en");
     params.append("customer_email", data.customer.email);
     params.append("client_reference_id", orderNumber);
     params.append("metadata[order_number]", orderNumber);
@@ -236,7 +257,7 @@ export const getOrderStatus = createServerFn({ method: "GET" })
     const { data: row, error } = await supabaseAdmin
       .from("orders")
       .select(
-        "order_number, customer_name, customer_email, delivery_method, total, payment_method, payment_status, items, subtotal, delivery_fee",
+        "order_number, customer_name, customer_email, customer_phone, business, delivery_method, delivery_address, delivery_date, order_type, notes, total, payment_method, payment_status, items, subtotal, delivery_fee, created_at",
       )
       .eq("order_number", data.orderNumber)
       .maybeSingle();
