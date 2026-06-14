@@ -529,6 +529,17 @@ function Index() {
       if (paymentMethod === "online") {
         const { url } = await submitOnlineOrder({ data: payload });
         setCart({});
+        // Break out of the Lovable preview iframe — Stripe Checkout refuses to load in iframes.
+        try {
+          if (window.top && window.top !== window.self) {
+            window.top.location.href = url;
+            return;
+          }
+        } catch {
+          // Cross-origin top — fall back to opening in a new tab.
+          window.open(url, "_blank", "noopener,noreferrer");
+          return;
+        }
         window.location.href = url;
         return;
       }
