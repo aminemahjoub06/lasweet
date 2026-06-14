@@ -527,7 +527,9 @@ function Index() {
       };
 
       if (paymentMethod === "online") {
-        const { url } = await submitOnlineOrder({ data: payload });
+        const { url } = await submitOnlineOrder({
+          data: { ...payload, origin: window.location.origin },
+        });
         setCart({});
         // Break out of the Lovable preview iframe — Stripe Checkout refuses to load in iframes.
         try {
