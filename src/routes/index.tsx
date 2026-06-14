@@ -411,7 +411,7 @@ function Index() {
     email: "",
     phone: "",
     business: "",
-    orderType: "Restaurant",
+    orderType: "Other",
     date: "",
     delivery: "delivery",
     address: "",
@@ -1832,10 +1832,10 @@ function CheckoutModal({
                     onChange={(e) => updateForm("orderType", e.target.value)}
                     className={inputCls}
                   >
-                    <option className="bg-ink-2">Restaurant</option>
-                    <option className="bg-ink-2">Café</option>
-                    <option className="bg-ink-2">Private event</option>
                     <option className="bg-ink-2">Other</option>
+                    <option className="bg-ink-2">Café</option>
+                    <option className="bg-ink-2">Restaurant</option>
+                    <option className="bg-ink-2">Event</option>
                   </select>
                 </FieldLA>
                 <FieldLA label="Preferred date">
@@ -2179,7 +2179,7 @@ function CheckoutModal({
                     </div>
                     <div className="font-serif-display text-lg">Card payment</div>
                     <p className="mt-1 text-[12px] text-[color:var(--foreground)]/70 leading-relaxed">
-                      Secure card payment via Stripe Checkout.
+                      Secure online payment by card.
                     </p>
                   </button>
                   <button
@@ -2225,9 +2225,9 @@ function CheckoutModal({
                   {paying
                     ? "Processing…"
                     : paymentMethod === "online"
-                      ? "Pay securely with card →"
+                      ? "Continue to Secure Payment →"
                       : paymentMethod === "cash"
-                        ? "Confirm cash order"
+                        ? "Confirm Order"
                         : "Choose a payment method"}
                 </button>
               </div>
