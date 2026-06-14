@@ -412,7 +412,7 @@ function Index() {
     phone: "",
     business: "",
     orderType: "Other",
-    date: "",
+    date: new Date().toISOString().slice(0, 10),
     delivery: "delivery",
     address: "",
     notes: "",
@@ -1855,6 +1855,7 @@ function CheckoutModal({
                   <input
                     type="date"
                     value={form.date}
+                    min={new Date().toISOString().slice(0, 10)}
                     onChange={(e) => updateForm("date", e.target.value)}
                     className={inputCls}
                   />
