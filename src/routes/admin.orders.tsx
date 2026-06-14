@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { listAdminOrders } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/orders")({
@@ -112,9 +112,8 @@ function AdminOrdersPage() {
               </thead>
               <tbody>
                 {orders.map((o) => (
-                  <>
+                  <Fragment key={o.id}>
                     <tr
-                      key={o.id}
                       className="border-t border-line cursor-pointer hover:bg-ink-2"
                       onClick={() => setOpenId(openId === o.id ? null : o.id)}
                     >
@@ -142,7 +141,7 @@ function AdminOrdersPage() {
                       <td className="px-3 py-2 text-right text-gold">${Number(o.total).toFixed(2)}</td>
                     </tr>
                     {openId === o.id && (
-                      <tr key={`${o.id}-details`} className="bg-ink-3/40">
+                      <tr className="bg-ink-3/40">
                         <td colSpan={7} className="px-3 py-4 text-xs">
                           <div className="grid sm:grid-cols-2 gap-4">
                             <div>
@@ -187,7 +186,7 @@ function AdminOrdersPage() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 ))}
                 {orders.length === 0 && (
                   <tr>
