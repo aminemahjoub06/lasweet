@@ -31,14 +31,23 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
       POST: async ({ request }) => {
         const rawBody = await request.text();
         const signature = request.headers.get("stripe-signature");
-        const secret = process.env.PAYMENTS_SANDBOX_WEBHOOK_SECRET;
-
-        if (!secret) {
-          console.error("[stripe-webhook] no secret configured");
-          return new Response("Webhook not configured", { status: 500 });
-        }
-        if (!verifyStripeSignature(rawBody, signature, secret)) {
-          console.warn("[stripe-webhook] invalid signature");
+        // Lovable registers separate webhook endpoints for sandbox and live
+        // and appends ?env=sandbox|live. Fall back to trying both secrets so
+        // legacy registrations without the query param keep working.
+        const envParam = new URL(request.url).searchParams.get("env");
+        const sandboxSecret = process.env.PAYMENTS_SANDBOX_WEBHOOK_SECRET;
+        const liveSecret = process.env.PAYMENTS_LIVE_WEBHOOK_SECRET;
+        const candidates =
+          envParam === "live"
+            ? [liveSecret]
+            : envParam === "sandbox"
+              ? [sandboxSecret]
+              : [liveSecret, sandboxSecret];
+        const ok = candidates.some(
+          (s) => !!s && verifyStripeSignature(rawBody, signature, s),
+        );
+        if (!ok) {
+          console.warn("[stripe-webhook] invalid signature", { envParam });
           return new Response("Invalid signature", { status: 401 });
         }
 

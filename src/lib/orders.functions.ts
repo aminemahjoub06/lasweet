@@ -173,7 +173,12 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     }
 
     const lovableKey = process.env.LOVABLE_API_KEY;
-    const stripeKey = process.env.STRIPE_SANDBOX_API_KEY;
+    // Use the live Stripe connection in production builds, sandbox otherwise.
+    const useLive =
+      process.env.NODE_ENV === "production" && !!process.env.STRIPE_LIVE_API_KEY;
+    const stripeKey = useLive
+      ? process.env.STRIPE_LIVE_API_KEY
+      : process.env.STRIPE_SANDBOX_API_KEY;
     if (!lovableKey || !stripeKey) {
       throw new Error("Payment provider is not configured.");
     }
