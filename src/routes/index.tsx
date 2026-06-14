@@ -5,6 +5,7 @@ import { ShoppingBag, X, Minus, Plus, Trash2, Check, ChefHat, Sparkles } from "l
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createCashOrder, createStripeCheckout } from "@/lib/orders.functions";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
 import vanillaImg from "@/assets/vanilla.png";
@@ -2295,6 +2296,7 @@ function CheckoutModal({
           )}
         </div>
       </aside>
+      <PWAInstallPrompt />
     </div>
   );
 }

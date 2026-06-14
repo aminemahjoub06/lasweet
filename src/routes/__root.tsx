@@ -85,12 +85,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:description", content: "L&A Sweet creates handcrafted trompe-l'œil desserts in Brisbane. Four signature flavours, wholesale and private events." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd208fa1-dc97-4233-be0e-6a8b70c68bca/id-preview-a600e1de--9d9470e8-0b4c-4b69-ac18-7ec8769340c6.lovable.app-1781411351936.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fd208fa1-dc97-4233-be0e-6a8b70c68bca/id-preview-a600e1de--9d9470e8-0b4c-4b69-ac18-7ec8769340c6.lovable.app-1781411351936.png" },
+      { name: "theme-color", content: "#0a0806" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "L&A Sweet" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/__l5e/assets-v1/2858dfef-e965-4231-85ed-b5cca9e75716/icon-512.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
