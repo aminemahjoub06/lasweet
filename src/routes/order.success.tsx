@@ -77,6 +77,10 @@ function OrderSuccessPage() {
           </div>
         )}
 
+        <p className="mt-4 text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
+          Order saved successfully.
+        </p>
+
         {isLoading && !data && (
           <p className="mt-6 text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
             Loading order…
