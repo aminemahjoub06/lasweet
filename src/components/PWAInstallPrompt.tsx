@@ -91,7 +91,7 @@ export function PWAInstallPrompt() {
         }}
       >
         <img
-          src="/__l5e/assets-v1/6f4494e0-25af-4872-bb77-a842c97266c8/icon-192.png"
+          src="/__l5e/assets-v1/47262132-16e1-4013-b7a4-6317628c549a/icon-192.png"
           alt="L&A Sweet"
           className="h-10 w-10 rounded-md"
         />
