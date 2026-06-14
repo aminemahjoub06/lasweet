@@ -1679,6 +1679,12 @@ function CheckoutModal({
   ];
   const order: CheckoutStep[] = ["account", "details", "review", "payment", "confirmed"];
 
+  const fmtDate = (iso: string) => {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-");
+    return d && m && y ? `${d}/${m}/${y}` : iso;
+  };
+
   const chooseAccount = (m: "create" | "login" | "guest") => {
     setAccountMode(m);
     updateForm("createAccount", m === "create");
