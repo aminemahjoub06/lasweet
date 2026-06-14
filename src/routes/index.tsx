@@ -2296,6 +2296,7 @@ function CheckoutModal({
           )}
         </div>
       </aside>
+      <PWAInstallPrompt />
     </div>
   );
 }
