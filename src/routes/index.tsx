@@ -492,6 +492,12 @@ function Index() {
     return `LA-${year}-${rand}`;
   };
 
+  const fmtDate = (iso: string) => {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-");
+    return d && m && y ? `${d}/${m}/${y}` : iso;
+  };
+
   const payOrder = async () => {
     if (paying || orderSnapshot.length === 0) return;
     if (!paymentMethod) {
