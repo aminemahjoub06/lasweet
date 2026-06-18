@@ -716,13 +716,6 @@ function Index() {
                 <p className="text-sm md:text-base text-[color:var(--foreground)]/70 leading-relaxed mb-6 max-w-md">
                   {f.description}
                 </p>
-                <p className="text-xs text-[color:var(--foreground)]/55 leading-relaxed mb-4 max-w-md">
-                  Homemade in Brisbane, crafted by hand in small batches.
-                </p>
-                <p className="text-xs text-[color:var(--foreground)]/50 leading-relaxed mb-6 max-w-md italic">
-                  No extra sugar added to our homemade fillings.
-                </p>
-
                 <div className="grid grid-cols-3 gap-2 md:gap-3 mb-8">
                   {[
                     { v: "Stock", l: "Available" },
@@ -751,6 +744,15 @@ function Index() {
                 >
                   {f.available === false ? "Coming Soon" : "Order this flavour"}
                 </button>
+
+                <div className="mt-5 pt-5 border-t border-gold/20 flex flex-col items-center gap-2">
+                  <span className="text-xs tracking-[0.2em] uppercase text-gold font-medium">
+                    Homemade in Brisbane
+                  </span>
+                  <span className="text-xs tracking-[0.2em] uppercase text-[color:var(--foreground)]/60">
+                    No extra sugar added
+                  </span>
+                </div>
               </div>
 
               <button
