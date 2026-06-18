@@ -90,8 +90,7 @@ const flavours: Flavour[] = [
       "A refined pistachio trompe-l'œil with a smooth white chocolate shell, a soft homemade biscuit and a rich homemade pistachio cream centre — nutty, delicate and elegantly indulgent.",
     short: "White chocolate shell, homemade biscuit and homemade pistachio cream.",
     image: pistachioImg,
-    available: true,
-    price: 18,
+    available: false,
   },
   {
     no: "04",
