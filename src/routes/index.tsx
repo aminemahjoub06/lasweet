@@ -8,7 +8,7 @@ import { createCashOrder, createStripeCheckout } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
-import vanillaImg from "@/assets/vanilla.png";
+import pistachioImg from "@/assets/pistachio.png";
 import lemonImg from "@/assets/lemon.png";
 
 export const Route = createFileRoute("/")({
@@ -81,19 +81,16 @@ const flavours: Flavour[] = [
   },
   {
     no: "03",
-    name: "Vanilla",
-    prefix: "Vani",
-    suffix: "lla",
-    label: "Classic Flavour",
+    name: "Pistachio",
+    prefix: "Pista",
+    suffix: "chio",
+    label: "Nutty Flavour",
     description:
-      "A delicate vanilla-inspired creation with a smooth white chocolate shell and a rich homemade hazelnut cream centre — creamy, nutty and comforting, with a refined handmade finish.",
-    short: "White chocolate shell with homemade hazelnut cream.",
-    image: vanillaImg,
+      "A refined pistachio trompe-l'œil with a smooth white chocolate shell, a soft homemade biscuit and a rich homemade pistachio cream centre — nutty, delicate and elegantly indulgent.",
+    short: "White chocolate shell, homemade biscuit and homemade pistachio cream.",
+    image: pistachioImg,
     available: true,
-    sizes: [
-      { label: "S", price: 15 },
-      { label: "L", price: 18 },
-    ],
+    price: 18,
   },
   {
     no: "04",
