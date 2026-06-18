@@ -594,8 +594,40 @@ function Index() {
 
   return (
     <main className="min-h-screen bg-ink text-[color:var(--foreground)]">
+      {/* OPEN-FOR-ORDERS BANNER */}
+      {bannerOpen && (
+        <div className="fixed top-0 inset-x-0 z-30 bg-ink border-b border-gold/30 backdrop-blur supports-[backdrop-filter]:bg-ink/85">
+          <div className="mx-auto max-w-7xl px-4 md:px-10 py-2 flex items-center gap-3 md:gap-5">
+            <Sparkles className="hidden sm:block h-3.5 w-3.5 text-gold shrink-0" strokeWidth={1.5} />
+            <p className="flex-1 text-[11px] md:text-[12px] leading-snug tracking-wide text-[color:var(--foreground)]/85">
+              <span className="text-gold uppercase tracking-[0.22em] mr-2">Now open</span>
+              <span className="hidden md:inline">Orders are available online — choose pick-up or delivery, select your preferred date, and pay by card or cash.</span>
+              <span className="md:hidden">Orders are now open online.</span>
+            </p>
+            <button
+              type="button"
+              onClick={scrollToProducts}
+              className="shrink-0 inline-flex items-center px-3 py-1.5 text-[10px] md:text-[11px] uppercase tracking-[0.22em] border border-gold/60 text-gold hover:bg-gold hover:text-ink transition-colors"
+            >
+              Order now
+            </button>
+            <button
+              type="button"
+              onClick={closeBanner}
+              aria-label="Dismiss"
+              className="shrink-0 text-[color:var(--foreground)]/50 hover:text-gold transition"
+            >
+              <X className="h-3.5 w-3.5" strokeWidth={1.5} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* HEADER */}
-      <header className="absolute top-0 left-0 right-0 z-20">
+      <header
+        className="absolute left-0 right-0 z-20"
+        style={{ top: bannerOpen ? 44 : 0 }}
+      >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 md:px-10 md:py-8">
           <a
             href="#top"
