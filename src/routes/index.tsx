@@ -713,11 +713,14 @@ function Index() {
                   {f.prefix}
                   <span className="italic text-gold">{f.suffix}</span>
                 </h1>
-                <p className="text-sm md:text-base text-[color:var(--foreground)]/70 leading-relaxed mb-8 max-w-md">
+                <p className="text-sm md:text-base text-[color:var(--foreground)]/70 leading-relaxed mb-6 max-w-md">
                   {f.description}
                 </p>
+                <p className="text-xs text-[color:var(--foreground)]/55 leading-relaxed mb-6 max-w-md">
+                  Handcrafted from A to Z in Brisbane — with naturally balanced sweetness and no extra sugar added to our homemade fillings.
+                </p>
 
-                <div className="grid grid-cols-3 gap-2 md:gap-3 mb-8">
+                <div className="grid grid-cols-3 gap-2 md:gap-3 mb-4">
                   {[
                     { v: "Stock", l: "Available" },
                     { v: "15+ pcs", l: "Prep time" },
@@ -733,6 +736,23 @@ function Index() {
                       <div className="text-[10px] md:text-[11px] tracking-[0.08em] md:tracking-[0.2em] uppercase text-gold/80 mt-1 leading-tight">
                         {b.l}
                       </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 md:gap-3 mb-8">
+                  {[
+                    "Handmade from A to Z",
+                    "French pastry know-how",
+                    "No added sugar in our homemade preparations",
+                  ].map((badge) => (
+                    <div
+                      key={badge}
+                      className="border border-gold/25 p-2 md:p-3 text-center flex items-center justify-center"
+                    >
+                      <span className="text-[9px] md:text-[10px] tracking-[0.12em] md:tracking-[0.18em] uppercase text-gold/70 leading-tight">
+                        {badge}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -811,6 +831,9 @@ function Index() {
             <h2 className="font-serif-display text-5xl md:text-6xl leading-tight mb-4">
               Trompe-l'œil desserts <span className="italic text-gold">you can explore</span>
             </h2>
+            <p className="text-sm text-[color:var(--foreground)]/55 italic max-w-2xl mx-auto">
+              Our homemade fillings are crafted with naturally balanced sweetness and no extra sugar added.
+            </p>
           </div>
 
           <div id="product-grid" className="relative scroll-mt-[120px]">
@@ -1310,6 +1333,9 @@ function Index() {
                 </p>
                 <p>
                   Every trompe-l'œil dessert is made by us, from start to finish. The biscuit, ganache, coulis, crémeux, compotée, white chocolate coating, assembly and final details are all prepared by hand in small batches, with care, precision and patience.
+                </p>
+                <p>
+                  Every biscuit, ganache, crémeux, coulis and compotée is prepared by hand, with naturally balanced sweetness and no extra sugar added to our homemade preparations.
                 </p>
                 <p>
                   We are only at the beginning of our journey, but our ambition is clear: to grow, to last, and to share a new expression of French pastry here in Brisbane — handmade, elegant and full of flavour.
