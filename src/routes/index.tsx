@@ -8,8 +8,9 @@ import { createCashOrder, createStripeCheckout } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
-import pistachioImg from "@/assets/pistachio.png";
+import pistachioNewAsset from "@/assets/pistachio-new.png.asset.json";
 import lemonImg from "@/assets/lemon.png";
+const pistachioImg = pistachioNewAsset.url;
 
 export const Route = createFileRoute("/")({
   component: Index,
