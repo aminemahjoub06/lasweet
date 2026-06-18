@@ -8,8 +8,9 @@ import { createCashOrder, createStripeCheckout } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
-import pistachioImg from "@/assets/pistachio.png";
+import pistachioNewAsset from "@/assets/pistachio-new.png.asset.json";
 import lemonImg from "@/assets/lemon.png";
+const pistachioImg = pistachioNewAsset.url;
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -89,8 +90,7 @@ const flavours: Flavour[] = [
       "A refined pistachio trompe-l'œil with a smooth white chocolate shell, a soft homemade biscuit and a rich homemade pistachio cream centre — nutty, delicate and elegantly indulgent.",
     short: "White chocolate shell, homemade biscuit and homemade pistachio cream.",
     image: pistachioImg,
-    available: true,
-    price: 18,
+    available: false,
   },
   {
     no: "04",
@@ -953,10 +953,10 @@ function Index() {
                         ) : (
                           <>
                             <span className="font-serif-display text-base md:text-lg leading-none">
-                              <span className="text-gold">${fl.price}</span>
+                              <span className="text-gold">{fl.available === false ? "??" : `$${fl.price}`}</span>
                             </span>
                             <span className="text-[10px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/55 mt-1">
-                              per piece
+                              {fl.available === false ? "Price coming soon" : "per piece"}
                             </span>
                             {fl.available === false && (
                               <span className="mt-1 inline-block self-start text-[9px] tracking-[0.24em] uppercase text-gold border border-gold/50 bg-ink-3/60 px-2 py-0.5">
