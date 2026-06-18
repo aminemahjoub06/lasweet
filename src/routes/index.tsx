@@ -287,6 +287,20 @@ function Index() {
   const prev = () => setIdx((i) => (i - 1 + flavours.length) % flavours.length);
   const next = () => setIdx((i) => (i + 1) % flavours.length);
 
+  const [bannerOpen, setBannerOpen] = useState(true);
+  React.useEffect(() => {
+    try {
+      if (localStorage.getItem("la-open-banner-dismissed") === "1") setBannerOpen(false);
+    } catch {}
+  }, []);
+  const closeBanner = () => {
+    setBannerOpen(false);
+    try { localStorage.setItem("la-open-banner-dismissed", "1"); } catch {}
+  };
+  const scrollToProducts = () => {
+    document.getElementById("products")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const [expandedNo, setExpandedNo] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [qty, setQty] = useState<Record<string, number>>({});
