@@ -1461,6 +1461,9 @@ function Index() {
             <a href="#wholesale" className="hover:text-gold transition">Wholesale</a>
             <a href="#events" className="hover:text-gold transition">Events</a>
             <a href="#allergens" className="hover:text-gold transition">Allergens</a>
+            <Link to="/privacy" className="hover:text-gold transition">Privacy</Link>
+            <Link to="/terms" className="hover:text-gold transition">Terms</Link>
+            <Link to="/legal" className="hover:text-gold transition">Legal</Link>
           </nav>
         </div>
       </footer>
