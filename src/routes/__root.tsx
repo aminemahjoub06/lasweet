@@ -10,6 +10,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { Toaster } from "sonner";
+import { CookieBanner } from "../components/CookieBanner";
 
 function NotFoundComponent() {
   return (
