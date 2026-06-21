@@ -6,6 +6,7 @@ import {
   Heading,
   Hr,
   Html,
+  Link,
   Preview,
   Section,
   Text,
@@ -33,18 +34,49 @@ interface Props {
   paymentStatus?: string
 }
 
+const SITE_URL = 'https://lasweet.lovable.app'
+
+function firstName(full?: string) {
+  if (!full) return ''
+  const trimmed = full.trim()
+  if (!trimmed) return ''
+  return trimmed.split(/\s+/)[0]
+}
+
+function formatAud(n: number) {
+  return `A$${n.toFixed(2)}`
+}
+
+function formatDateAu(raw?: string) {
+  if (!raw) return ''
+  // Try to parse common machine formats and render as DD/MM/YYYY.
+  // If it doesn't parse cleanly, return the original string unchanged.
+  const d = new Date(raw)
+  if (!isNaN(d.getTime()) && /^\d{4}-\d{2}-\d{2}/.test(raw)) {
+    const dd = String(d.getDate()).padStart(2, '0')
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const yyyy = d.getFullYear()
+    return `${dd}/${mm}/${yyyy}`
+  }
+  return raw
+}
+
 const CustomerOrderConfirmation = (p: Props) => {
   const items = p.items ?? []
-  const paid = p.paymentStatus === 'paid'
+  const isOnline = p.paymentMethod === 'online'
+  const isDelivery = p.deliveryMethod === 'delivery'
+  const fulfilmentLabel = isDelivery ? 'Delivery' : 'Pick-up'
+  const greetingName = firstName(p.customerName) || 'there'
   return (
     <Html lang="en" dir="ltr">
       <Head />
-      <Preview>Thank you for your L&A Sweet order</Preview>
+      <Preview>Your L&A Sweet order is confirmed</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>Thank you{p.customerName ? `, ${p.customerName}` : ''}</Heading>
+          <Heading style={h1}>Hi {greetingName},</Heading>
           <Text style={lead}>
-            We&apos;ve received your order at L&amp;A Sweet. Here are your details.
+            Thank you for your order with L&amp;A Sweet. Your order has been
+            received and registered. Here is a summary of your details.
           </Text>
 
           <Section style={card}>
@@ -55,13 +87,15 @@ const CustomerOrderConfirmation = (p: Props) => {
           <Hr style={hr} />
 
           <Text style={label}>Fulfilment</Text>
-          <Text style={value}>
-            {p.deliveryMethod === 'delivery' ? 'Delivery' : 'Pick-up'}
-          </Text>
-          {p.deliveryMethod === 'delivery' && p.deliveryAddress ? (
-            <Text style={value}>{p.deliveryAddress}</Text>
+          <Text style={value}>Method: {fulfilmentLabel}</Text>
+          {p.deliveryDate ? (
+            <Text style={value}>
+              {isDelivery ? 'Delivery date' : 'Pick-up date'}: {formatDateAu(p.deliveryDate)}
+            </Text>
           ) : null}
-          {p.deliveryDate ? <Text style={value}>Date: {p.deliveryDate}</Text> : null}
+          {isDelivery && p.deliveryAddress ? (
+            <Text style={value}>Delivery address: {p.deliveryAddress}</Text>
+          ) : null}
 
           <Hr style={hr} />
 
@@ -69,29 +103,39 @@ const CustomerOrderConfirmation = (p: Props) => {
           {items.map((i, idx) => (
             <Text key={idx} style={value}>
               {i.qty} × {i.name}
-              {i.sizeLabel ? ` (Size ${i.sizeLabel})` : ''} — ${(i.qty * i.price).toFixed(2)}
+              {i.sizeLabel ? ` (Size ${i.sizeLabel})` : ''} — {formatAud(i.price)} each ({formatAud(i.qty * i.price)})
             </Text>
           ))}
 
           <Hr style={hr} />
 
-          <Text style={value}>Subtotal: ${(p.subtotal ?? 0).toFixed(2)}</Text>
-          <Text style={value}>Delivery fee: ${(p.deliveryFee ?? 0).toFixed(2)}</Text>
-          <Text style={totalRow}>Total: ${(p.total ?? 0).toFixed(2)}</Text>
+          <Text style={value}>Subtotal: {formatAud(p.subtotal ?? 0)}</Text>
+          <Text style={value}>Delivery fee: {formatAud(p.deliveryFee ?? 0)}</Text>
+          <Text style={totalRow}>Total: {formatAud(p.total ?? 0)} AUD</Text>
 
           <Hr style={hr} />
 
+          <Text style={label}>Payment</Text>
           <Text style={value}>
-            Payment: {p.paymentMethod === 'cash'
-              ? 'Cash on pick-up or delivery'
-              : paid
-                ? 'Paid online'
-                : 'Awaiting confirmation'}
+            {isOnline
+              ? 'Payment received — thank you.'
+              : `Payment will be collected at ${isDelivery ? 'delivery' : 'pick-up'}.`}
           </Text>
 
+          <Hr style={hr} />
+
+          <Text style={label}>Storage and freshness</Text>
+          <Text style={value}>
+            Please keep your dessert refrigerated at 2–4°C and enjoy within 24 hours.
+          </Text>
+
+          <Text style={signature}>Warm regards,<br />L&amp;A Sweet — Brisbane</Text>
+
+          <Hr style={hr} />
+
           <Text style={footer}>
-            We&apos;ll be in touch shortly to confirm the final details. Reply to this email
-            with any questions.
+            By placing this order you accept our handling of your details as described in our{' '}
+            <Link href={`${SITE_URL}/privacy`} style={link}>Privacy Policy</Link>.
           </Text>
         </Container>
       </Body>
@@ -102,13 +146,14 @@ const CustomerOrderConfirmation = (p: Props) => {
 export const template = {
   component: CustomerOrderConfirmation,
   subject: (d: Record<string, any>) =>
-    `Your L&A Sweet order — ${d.orderNumber ?? ''}`,
+    `Your L&A Sweet order #${d.orderNumber ?? ''} is confirmed`,
   displayName: 'Customer — order confirmation',
   previewData: {
     orderNumber: 'LAS-26-ABCDE',
-    customerName: 'Jane',
+    customerName: 'Jane Smith',
     deliveryMethod: 'delivery',
     deliveryAddress: '1 Queen St, Brisbane',
+    deliveryDate: '2026-06-28',
     items: [{ name: 'Raspberry', qty: 4, price: 18 }],
     subtotal: 72,
     deliveryFee: 10,
@@ -130,3 +175,5 @@ const value: React.CSSProperties = { fontSize: '14px', color: '#222', margin: '2
 const totalRow: React.CSSProperties = { fontSize: '16px', color: '#111', fontWeight: 600, margin: '6px 0 0' }
 const footer: React.CSSProperties = { fontSize: '12px', color: '#666', margin: '16px 0 0' }
 const hr: React.CSSProperties = { borderColor: '#eee', margin: '16px 0' }
+const signature: React.CSSProperties = { fontSize: '14px', color: '#222', margin: '16px 0 0' }
+const link: React.CSSProperties = { color: '#b8860b', textDecoration: 'underline' }
