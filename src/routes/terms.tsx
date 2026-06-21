@@ -68,6 +68,9 @@ function TermsPage() {
           <section>
             <h2 className="font-serif-display text-xl text-gold mb-3">4. Delivery and Pick-up</h2>
             <p className="mb-3">
+              Orders must be placed at least 48 hours in advance to allow for preparation.
+            </p>
+            <p className="mb-3">
               We currently serve the Brisbane, Queensland area. Delivery dates and times are arranged
               by mutual agreement after order confirmation. Specific delivery times cannot be guaranteed
               but we will do our best to accommodate your preferred window.
@@ -113,7 +116,14 @@ function TermsPage() {
           </section>
 
           <section>
-            <h2 className="font-serif-display text-xl text-gold mb-3">7. Intellectual Property</h2>
+            <h2 className="font-serif-display text-xl text-gold mb-3">7. Product Storage and Transport</h2>
+            <p>
+              Our desserts are freshly made and must be kept refrigerated at 2–4°C. They are best consumed within 24 hours of pick-up or delivery. Avoid prolonged exposure to heat or direct sunlight during transport.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-serif-display text-xl text-gold mb-3">8. Intellectual Property</h2>
             <p>
               All content on this website — including images, product descriptions, logos and design — is the
               property of L&A Sweet and is protected by copyright and other intellectual property laws.
@@ -122,7 +132,7 @@ function TermsPage() {
           </section>
 
           <section>
-            <h2 className="font-serif-display text-xl text-gold mb-3">8. Limitation of Liability</h2>
+            <h2 className="font-serif-display text-xl text-gold mb-3">9. Limitation of Liability</h2>
             <p>
               To the extent permitted by Australian consumer law, L&A Sweet's liability for any loss or damage
               arising from your use of our website or products is limited to the amount you paid for the
@@ -131,7 +141,7 @@ function TermsPage() {
           </section>
 
           <section>
-            <h2 className="font-serif-display text-xl text-gold mb-3">9. Governing Law</h2>
+            <h2 className="font-serif-display text-xl text-gold mb-3">10. Governing Law</h2>
             <p>
               These Terms &amp; Conditions are governed by the laws of Queensland, Australia.
               Any disputes arising from these terms will be resolved in the courts of Queensland.
@@ -139,7 +149,7 @@ function TermsPage() {
           </section>
 
           <section>
-            <h2 className="font-serif-display text-xl text-gold mb-3">10. Changes to These Terms</h2>
+            <h2 className="font-serif-display text-xl text-gold mb-3">11. Changes to These Terms</h2>
             <p>
               We may update these Terms &amp; Conditions from time to time. The current version will always
               be available on this page. Continued use of our website and services constitutes acceptance of the latest terms.

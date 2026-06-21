@@ -23,10 +23,13 @@ function PrivacyPage() {
         <div className="space-y-10 text-sm leading-relaxed text-[color:var(--foreground)]/85">
           <section>
             <h2 className="font-serif-display text-xl text-gold mb-3">1. Introduction</h2>
-            <p>
+            <p className="mb-3">
               L&A Sweet respects your privacy and is committed to protecting your personal information.
               This Privacy Policy explains how we collect, use, store and disclose the information you provide
               when you visit our website or place an order with us.
+            </p>
+            <p>
+              This Privacy Policy is governed by the Privacy Act 1988 (Cth) and the Australian Privacy Principles (APPs).
             </p>
           </section>
 
@@ -78,7 +81,8 @@ function PrivacyPage() {
           <section>
             <h2 className="font-serif-display text-xl text-gold mb-3">5. Data Storage and Security</h2>
             <p>
-              Your order information is stored securely in our database, hosted by our cloud infrastructure provider.
+              We use Supabase (hosted on AWS) as our database and authentication provider, and Stripe for
+              payment processing. Data may be stored or processed outside of Australia.
               We implement reasonable technical and organisational measures to protect your data from unauthorised
               access, alteration or disclosure. Access to order records is restricted to authorised personnel only.
             </p>
@@ -102,18 +106,19 @@ function PrivacyPage() {
 
           <section>
             <h2 className="font-serif-display text-xl text-gold mb-3">7. Your Rights</h2>
-            <p>
+            <p className="mb-3">
               You have the right to access, correct or request deletion of your personal information held by us.
               To exercise these rights, please contact us using the details below. We will respond within a reasonable timeframe.
+            </p>
+            <p>
+              You have the right to lodge a complaint with the Office of the Australian Information Commissioner (OAIC) at oaic.gov.au if you believe your privacy has been breached.
             </p>
           </section>
 
           <section>
             <h2 className="font-serif-display text-xl text-gold mb-3">8. Data Retention</h2>
             <p>
-              We retain your order information for as long as necessary to fulfil the purposes outlined in this policy,
-              including for legal, tax and accounting obligations. Once no longer required, your data is securely deleted
-              or anonymised.
+              Order and customer data is retained for 7 years to comply with Australian tax and accounting obligations. After this period, data is deleted or anonymised.
             </p>
           </section>
 
@@ -128,8 +133,7 @@ function PrivacyPage() {
           <section>
             <h2 className="font-serif-display text-xl text-gold mb-3">10. Contact Us</h2>
             <p>
-              If you have any questions or concerns about this Privacy Policy or how we handle your personal information,
-              please reach out via the Contact section on our website or through our social channels.
+              For any privacy-related request, contact us at l.asweetbne@gmail.com.
             </p>
           </section>
 
