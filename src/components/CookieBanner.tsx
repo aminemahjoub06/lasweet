@@ -41,13 +41,7 @@ export function CookieBanner() {
         </p>
         <button
           onClick={handleAccept}
-          className="shrink-0 rounded-md px-5 py-2 text-sm font-medium transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--ink-2)]"
-          style={{
-            background: "var(--gold)",
-            color: "var(--ink)",
-            fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
-            focusRingColor: "var(--gold-soft)",
-          }}
+          className="shrink-0 rounded-md px-5 py-2 text-sm font-medium transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--gold-soft)] focus:ring-offset-2 focus:ring-offset-[var(--ink-2)]"
         >
           Got it
         </button>
