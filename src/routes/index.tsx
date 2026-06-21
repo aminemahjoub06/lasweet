@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import * as React from "react";
 import { ShoppingBag, X, Minus, Plus, Trash2, Check, ChefHat, Sparkles } from "lucide-react";
