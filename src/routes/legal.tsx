@@ -24,9 +24,10 @@ function LegalPage() {
           <section>
             <h2 className="font-serif-display text-xl text-gold mb-3">Business Information</h2>
             <div className="space-y-2">
-              <p><strong>Trading name:</strong> L&amp;A Sweet</p>
+              <p><strong>Business name:</strong> L&amp;A Sweet</p>
+              <p><strong>ABN:</strong> to be provided</p>
               <p><strong>Location:</strong> Brisbane, Queensland, Australia</p>
-              <p><strong>Contact:</strong> Via the Contact section on our website or through our social channels</p>
+              <p><strong>Contact:</strong> l.asweetbne@gmail.com</p>
             </div>
             <p className="mt-3">
               L&amp;A Sweet is a small handcrafted dessert business operating from Brisbane, Queensland.
@@ -100,7 +101,7 @@ function LegalPage() {
             <h2 className="font-serif-display text-xl text-gold mb-3">Complaints and Dispute Resolution</h2>
             <p>
               If you have a complaint about our products or services, please contact us directly
-              via the Contact section on our website or through our social channels.
+              at l.asweetbne@gmail.com.
               We are committed to resolving issues fairly and promptly.
             </p>
           </section>
