@@ -170,6 +170,87 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_allowlist: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          note: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          note?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          note?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
+      rate_limit_attempts: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          identifier: string
+          scope: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          identifier: string
+          scope: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          identifier?: string
+          scope?: string
+        }
+        Relationships: []
+      }
+      rate_limit_log: {
+        Row: {
+          created_at: string
+          email: string | null
+          email_count: number | null
+          endpoint: string
+          id: string
+          ip: string | null
+          ip_count: number | null
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          email_count?: number | null
+          endpoint: string
+          id?: string
+          ip?: string | null
+          ip_count?: number | null
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          email_count?: number | null
+          endpoint?: string
+          id?: string
+          ip?: string | null
+          ip_count?: number | null
+          reason?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
