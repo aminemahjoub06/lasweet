@@ -5,8 +5,8 @@ import * as React from "react";
 import { render } from "@react-email/components";
 import { TEMPLATES } from "@/lib/email-templates/registry";
 
-const SENDER_DOMAIN = "notify.lasweet.org";
-const FROM_DOMAIN = "lasweet.org";
+const SENDER_DOMAIN = "notify.la-sweet-bne.com";
+const FROM_DOMAIN = "la-sweet-bne.com";
 const SITE_NAME = "L&A Sweet";
 
 type NotifyArgs = {
