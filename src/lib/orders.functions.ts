@@ -65,6 +65,8 @@ function computeTotals(items: OrderPayload["items"], delivery: "delivery" | "pic
 export const createCashOrder = createServerFn({ method: "POST" })
   .inputValidator((input) => orderPayloadSchema.parse(input))
   .handler(async ({ data }) => {
+    const { enforceOrderRateLimit } = await import("./rate-limit.server");
+    await enforceOrderRateLimit({ endpoint: "createCashOrder", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { subtotal, deliveryFee, total } = computeTotals(data.items, data.customer.delivery);
     const orderNumber = generateOrderNumber();
@@ -120,6 +122,8 @@ export const createCashOrder = createServerFn({ method: "POST" })
 export const createStripeCheckout = createServerFn({ method: "POST" })
   .inputValidator((input) => stripeCheckoutSchema.parse(input))
   .handler(async ({ data }) => {
+    const { enforceOrderRateLimit } = await import("./rate-limit.server");
+    await enforceOrderRateLimit({ endpoint: "createStripeCheckout", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { subtotal, deliveryFee, total } = computeTotals(data.items, data.customer.delivery);
     const orderNumber = generateOrderNumber();
