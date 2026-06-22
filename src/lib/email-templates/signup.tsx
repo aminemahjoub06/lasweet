@@ -30,6 +30,7 @@ export const SignupEmail = ({
     <Preview>Confirm your email for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Text style={brand}>{siteName}</Text>
         <Heading style={h1}>Confirm your email</Heading>
         <Text style={text}>
           Thanks for signing up for{' '}
@@ -58,27 +59,53 @@ export const SignupEmail = ({
 
 export default SignupEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
+const main: React.CSSProperties = {
+  backgroundColor: '#ffffff',
+  fontFamily: 'Inter, Arial, sans-serif',
+}
+const container: React.CSSProperties = {
+  padding: '32px 24px',
+  maxWidth: '520px',
+  margin: '0 auto',
+}
+const brand: React.CSSProperties = {
+  fontFamily: '"Cormorant Garamond", Georgia, serif',
+  fontSize: '14px',
+  fontWeight: 500,
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  color: '#c9a14a',
+  margin: '0 0 24px',
+}
+const h1: React.CSSProperties = {
+  fontFamily: '"Cormorant Garamond", Georgia, serif',
+  fontSize: '26px',
+  fontWeight: 500,
+  color: '#0a0806',
   margin: '0 0 20px',
 }
-const text = {
+const text: React.CSSProperties = {
   fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
+  color: '#444',
+  lineHeight: '1.6',
+  margin: '0 0 20px',
 }
-const link = { color: 'inherit', textDecoration: 'underline' }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
+const link: React.CSSProperties = {
+  color: '#c9a14a',
+  textDecoration: 'underline',
+}
+const button: React.CSSProperties = {
+  backgroundColor: '#c9a14a',
+  color: '#0a0806',
   fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
+  fontWeight: 500,
+  borderRadius: '6px',
+  padding: '14px 28px',
   textDecoration: 'none',
+  display: 'inline-block',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const footer: React.CSSProperties = {
+  fontSize: '12px',
+  color: '#888',
+  margin: '28px 0 0',
+}
