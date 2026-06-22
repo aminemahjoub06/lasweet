@@ -1,4 +1,4 @@
-import { getHeaders } from "@tanstack/react-start/server";
+import { getRequest } from "@tanstack/react-start/server";
 
 const WINDOW_MS = 60 * 60 * 1000; // 1h
 const IP_MAX = 5;
@@ -9,16 +9,16 @@ const MESSAGE =
 
 export function getClientIp(): string | null {
   try {
-    const h = getHeaders();
-    const pick = (v: unknown): string | null => {
-      if (!v) return null;
-      const s = Array.isArray(v) ? v[0] : String(v);
-      return s ? s.split(",")[0]!.trim() : null;
+    const req = getRequest();
+    const h = req.headers;
+    const pick = (name: string): string | null => {
+      const v = h.get(name);
+      return v ? v.split(",")[0]!.trim() : null;
     };
     return (
-      pick(h["cf-connecting-ip"]) ??
-      pick(h["x-real-ip"]) ??
-      pick(h["x-forwarded-for"]) ??
+      pick("cf-connecting-ip") ??
+      pick("x-real-ip") ??
+      pick("x-forwarded-for") ??
       null
     );
   } catch {
