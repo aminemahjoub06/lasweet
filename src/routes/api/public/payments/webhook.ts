@@ -127,6 +127,110 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               ? q.eq("order_number", orderNumber)
               : q.eq("stripe_session_id", sessionId!));
           }
+        } else if (event.type === "charge.refunded") {
+          try {
+            const charge = event.data.object as {
+              id?: string;
+              amount?: number;
+              amount_refunded?: number;
+              payment_intent?: string | null;
+              refunds?: {
+                data?: Array<{ reason?: string | null; created?: number }>;
+              };
+              created?: number;
+            };
+            const paymentIntent = charge.payment_intent ?? null;
+            const amount = Number(charge.amount ?? 0);
+            const amountRefunded = Number(charge.amount_refunded ?? 0);
+            if (!paymentIntent || amountRefunded <= 0) {
+              return new Response("ok", { status: 200 });
+            }
+            // Find the Checkout Session linked to this PaymentIntent via the Stripe API.
+            // We can't trust the event payload alone — orders are keyed on stripe_session_id.
+            const stripeEnv = (envParam === "live" ? "live" : "sandbox") as
+              | "live"
+              | "sandbox";
+            const { listSessionsByPaymentIntent } = await import("@/lib/stripe.server");
+            let resolvedSessionId: string | null = null;
+            try {
+              const sessions = await listSessionsByPaymentIntent(stripeEnv, paymentIntent);
+              resolvedSessionId = sessions.data?.[0]?.id ?? null;
+            } catch (err) {
+              console.error("[stripe-webhook] session lookup failed", err);
+            }
+            if (!resolvedSessionId) {
+              console.warn("[stripe-webhook] no session for refunded charge", {
+                paymentIntent,
+              });
+              return new Response("ok", { status: 200 });
+            }
+            const { data: order, error: findErr } = await supabaseAdmin
+              .from("orders")
+              .select("*")
+              .eq("stripe_session_id", resolvedSessionId)
+              .maybeSingle();
+            if (findErr) {
+              console.error("[stripe-webhook] order lookup error", findErr);
+              return new Response("DB error", { status: 500 });
+            }
+            if (!order) {
+              console.warn("[stripe-webhook] no order matches refunded session", {
+                resolvedSessionId,
+              });
+              return new Response("ok", { status: 200 });
+            }
+
+            const refundedAmountAud = amountRefunded / 100;
+            const isFull = amountRefunded >= amount;
+            const newStatus = isFull ? "refunded" : "partially_refunded";
+            const existingRefunded = Number(order.refunded_amount ?? 0);
+
+            // Idempotency: skip if status already matches AND refunded_amount already covers this event.
+            if (
+              order.payment_status === newStatus &&
+              Math.abs(existingRefunded - refundedAmountAud) < 0.01
+            ) {
+              return new Response("ok", { status: 200 });
+            }
+
+            const refundedAt = charge.created
+              ? new Date(charge.created * 1000).toISOString()
+              : new Date().toISOString();
+
+            const { error: updErr } = await supabaseAdmin
+              .from("orders")
+              .update({
+                payment_status: newStatus,
+                // Compare-and-set, never sum: amount_refunded is the cumulative
+                // total Stripe holds, so this is the authoritative value.
+                refunded_amount: refundedAmountAud,
+                refunded_at: refundedAt,
+              })
+              .eq("id", order.id);
+            if (updErr) {
+              console.error("[stripe-webhook] refund update error", updErr);
+              return new Response("DB error", { status: 500 });
+            }
+
+            try {
+              const { notifyOwnerOrderRefunded } = await import(
+                "@/lib/notifications.server"
+              );
+              const reason = charge.refunds?.data?.[0]?.reason ?? undefined;
+              await notifyOwnerOrderRefunded({
+                orderNumber: order.order_number,
+                customerEmail: order.customer_email,
+                refundedAmount: refundedAmountAud,
+                originalTotal: Number(order.total),
+                reason: reason ?? undefined,
+                refundType: isFull ? "full" : "partial",
+              });
+            } catch (e) {
+              console.error("[stripe-webhook] refund notify error", e);
+            }
+          } catch (err) {
+            console.error("[stripe-webhook] charge.refunded handler error", err);
+          }
         }
 
         return new Response("ok", { status: 200 });
