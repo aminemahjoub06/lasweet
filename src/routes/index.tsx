@@ -750,7 +750,7 @@ function Index() {
 
           <div className="mt-10 flex items-center justify-between">
             <div className="font-serif-display italic text-sm text-[color:var(--foreground)]/60">
-              <span className="text-gold">{String(idx + 1).padStart(2, "0")}</span> / 04
+              <span className="text-gold">{String(idx + 1).padStart(2, "0")}</span> / {String(flavours.length).padStart(2, "0")}
             </div>
             <div className="flex items-center gap-2">
               {flavours.map((_, i) => (
@@ -774,7 +774,7 @@ function Index() {
       <section className="border-y border-line bg-ink-2">
         <div className="mx-auto max-w-[1000px] px-6 md:px-10 py-8 md:py-10 grid grid-cols-2 md:grid-cols-4 gap-0 items-center text-center">
           {[
-            { v: "4", l: "Flavours" },
+            { v: "2", l: "Flavours" },
             { v: "50 km", l: "Brisbane delivery" },
             { v: "15+ pcs", l: "Preparation time may apply" },
             { v: "$10", l: "Delivery under 8 pcs · free from 8" },
@@ -1099,7 +1099,7 @@ function Index() {
           <div className="text-center mb-16">
             <div className="eyebrow justify-center mb-6 inline-flex">The Collection</div>
             <h2 className="font-serif-display text-5xl md:text-6xl leading-tight">
-              Four flavours, one <span className="italic text-gold">experience</span>
+              Two flavours, one <span className="italic text-gold">experience</span>
             </h2>
           </div>
 
