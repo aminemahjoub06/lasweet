@@ -1,17 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import * as React from "react";
-import { ShoppingBag, X, Minus, Plus, Trash2, Check, ChefHat, Sparkles } from "lucide-react";
+import { ShoppingBag, X, Minus, Plus, Trash2, Check, ChefHat, Sparkles, Volume2, VolumeX, Instagram } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createCashOrder, createStripeCheckout } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PICKUP_ADDRESS, getAvailableSlots } from "@/lib/config";
 import raspberryImg from "@/assets/raspberry.png";
-import mangoImg from "@/assets/mango.png";
-import pistachioNewAsset from "@/assets/pistachio-new.png.asset.json";
 import lemonImg from "@/assets/lemon.png";
-const pistachioImg = pistachioNewAsset.url;
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -81,42 +78,15 @@ const flavours: Flavour[] = [
     available: true,
     price: 18,
   },
-  {
-    no: "03",
-    name: "Pistachio",
-    prefix: "Pista",
-    suffix: "chio",
-    label: "Nutty Flavour",
-    description:
-      "A refined pistachio trompe-l'œil with a smooth white chocolate shell, a soft homemade biscuit and a rich homemade pistachio cream centre — nutty, delicate and elegantly indulgent.",
-    short: "White chocolate shell, homemade biscuit and homemade pistachio cream.",
-    image: pistachioImg,
-    available: false,
-  },
-  {
-    no: "04",
-    name: "Mango",
-    prefix: "Man",
-    suffix: "go",
-    label: "Signature Flavour",
-    description:
-      "A tropical trompe-l'œil with a smooth white chocolate shell, revealing a soft homemade biscuit, real vanilla bean ganache and a bright mango compotée for a fresh, sunny and indulgent finish.",
-    short: "White chocolate shell, homemade vanilla ganache, homemade biscuit and mango compote.",
-    image: mangoImg,
-    available: false,
-    price: 20,
-  },
 ];
 
 function StoryShowcase() {
-  const showcase = [raspberryImg, lemonImg, pistachioImg, mangoImg];
-  const labels = ["Raspberry", "Lemon", "Pistachio", "Mango"];
+  const showcase = [raspberryImg, lemonImg];
+  const labels = ["Raspberry", "Lemon"];
   // Subtle flavour auras (low opacity, dark-friendly)
   const auras = [
     "radial-gradient(ellipse at 50% 50%, rgba(220,60,110,0.28), rgba(160,30,70,0.10) 42%, transparent 72%)", // Raspberry
     "radial-gradient(ellipse at 50% 50%, rgba(245,220,90,0.28), rgba(210,180,60,0.10) 42%, transparent 72%)", // Lemon
-    "radial-gradient(ellipse at 50% 50%, rgba(180,210,90,0.28), rgba(120,160,60,0.10) 42%, transparent 72%)", // Pistachio
-    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.30), rgba(255,140,40,0.10) 40%, transparent 70%)", // Mango
   ];
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
@@ -225,12 +195,10 @@ function StoryShowcase() {
 }
 
 function StoryShowcaseMobileBg() {
-  const showcase = [raspberryImg, lemonImg, pistachioImg, mangoImg];
+  const showcase = [raspberryImg, lemonImg];
   const auras = [
     "radial-gradient(ellipse at 50% 50%, rgba(220,60,110,0.30), rgba(160,30,70,0.10) 44%, transparent 74%)",
     "radial-gradient(ellipse at 50% 50%, rgba(245,220,90,0.30), rgba(210,180,60,0.10) 44%, transparent 74%)",
-    "radial-gradient(ellipse at 50% 50%, rgba(180,210,90,0.30), rgba(120,160,60,0.10) 44%, transparent 74%)",
-    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.32), rgba(255,140,40,0.10) 42%, transparent 72%)",
   ];
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
@@ -279,6 +247,159 @@ function StoryShowcaseMobileBg() {
         }}
       />
     </div>
+  );
+}
+
+// ---- Hero video (vertical 9:16, autoplay/muted/loop). Uploads to public/videos/.
+function HeroVideo() {
+  const candidates = ["/videos/hero-1.mp4", "/videos/hero-2.mp4"];
+  const [src] = React.useState(() => candidates[Math.floor(Math.random() * candidates.length)]);
+  const [muted, setMuted] = React.useState(true);
+  const [available, setAvailable] = React.useState(true);
+  const videoRef = React.useRef<HTMLVideoElement | null>(null);
+  const bgVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  if (!available) return null;
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      {/* Blurred background clone — fills the hero on desktop with a soft, on-brand backdrop */}
+      <div className="absolute inset-0 overflow-hidden">
+        <video
+          ref={bgVideoRef}
+          src={src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover scale-110 opacity-40"
+          style={{ filter: "blur(38px) saturate(120%)" }}
+          onError={() => setAvailable(false)}
+        />
+        {/* Gold + dark wash to keep it editorial, not amateur */}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 40%, rgba(201,161,74,0.18), transparent 65%), linear-gradient(180deg, rgba(8,6,3,0.55) 0%, rgba(8,6,3,0.35) 50%, rgba(8,6,3,0.85) 100%)",
+          }}
+        />
+      </div>
+      {/* Centered vertical video */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="relative h-full md:h-[78vh] aspect-[9/16] max-h-[100vh] pointer-events-auto">
+          <video
+            ref={videoRef}
+            src={src}
+            autoPlay
+            muted={muted}
+            loop
+            playsInline
+            preload="auto"
+            className="h-full w-full object-cover md:rounded-sm md:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)] md:border md:border-gold/25"
+            onError={() => setAvailable(false)}
+          />
+          {/* Text-readability gradient (bottom→top) */}
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none md:rounded-sm"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(8,6,3,0.55) 0%, rgba(8,6,3,0.15) 30%, rgba(8,6,3,0.15) 60%, rgba(8,6,3,0.75) 100%)",
+            }}
+          />
+          {/* Mute / unmute */}
+          <button
+            type="button"
+            onClick={() => {
+              setMuted((m) => {
+                const next = !m;
+                if (videoRef.current) videoRef.current.muted = next;
+                return next;
+              });
+            }}
+            aria-label={muted ? "Unmute hero video" : "Mute hero video"}
+            className="absolute bottom-4 right-4 z-20 h-10 w-10 inline-flex items-center justify-center border border-gold/40 bg-ink/55 backdrop-blur-md text-gold hover:bg-gold hover:text-ink transition"
+          >
+            {muted ? <VolumeX size={16} strokeWidth={1.6} /> : <Volume2 size={16} strokeWidth={1.6} />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Instagram feed (Behold.so widget). Requires VITE_BEHOLD_FEED_ID.
+function InstagramSection() {
+  const feedId = (import.meta.env.VITE_BEHOLD_FEED_ID as string | undefined) ?? "";
+  React.useEffect(() => {
+    if (!feedId) return;
+    if (document.querySelector('script[data-behold="1"]')) return;
+    const s = document.createElement("script");
+    s.src = "https://w.behold.so/widget.js";
+    s.type = "module";
+    s.dataset.behold = "1";
+    document.head.appendChild(s);
+  }, [feedId]);
+  return (
+    <section id="instagram" className="bg-ink-2 border-t border-line">
+      <div className="mx-auto max-w-7xl px-6 md:px-10 py-20 md:py-28">
+        <div className="text-center mb-12">
+          <div className="eyebrow justify-center mb-6 inline-flex">Instagram</div>
+          <h2 className="font-serif-display text-4xl md:text-5xl leading-tight">
+            Follow our latest <span className="italic text-gold">creations</span>
+          </h2>
+          <p className="mt-4 text-sm text-[color:var(--foreground)]/60 italic max-w-xl mx-auto">
+            New trompe-l'œil pieces, behind-the-scenes and seasonal favourites.
+          </p>
+        </div>
+
+        {feedId ? (
+          <div className="behold-frame relative rounded-sm border border-gold/20 bg-ink/40 backdrop-blur p-3 md:p-5">
+            {/* @ts-expect-error custom element */}
+            <behold-widget feed-id={feedId}></behold-widget>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <a
+                key={i}
+                href="https://www.instagram.com/l.a.sweet.bne/"
+                target="_blank"
+                rel="noopener noreferrer external"
+                aria-label="Open L&A Sweet on Instagram"
+                className="group relative aspect-square overflow-hidden border border-gold/20 bg-ink-2/70 hover:border-gold/60 transition-colors"
+              >
+                <div
+                  aria-hidden
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse at 50% 40%, rgba(201,161,74,0.18), transparent 65%), linear-gradient(135deg, rgba(40,28,14,0.6), rgba(10,8,6,0.9))",
+                  }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center text-gold/60 group-hover:text-gold transition-colors">
+                  <Instagram size={28} strokeWidth={1.2} />
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-10 flex justify-center">
+          <a
+            href="https://www.instagram.com/l.a.sweet.bne/"
+            target="_blank"
+            rel="noopener noreferrer external"
+            className="inline-flex items-center gap-3 border border-gold text-gold text-[11px] tracking-[0.28em] uppercase px-6 py-4 hover:bg-gold hover:text-ink transition"
+          >
+            <Instagram size={16} strokeWidth={1.6} />
+            Follow @l.a.sweet.bne on Instagram
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -701,6 +822,10 @@ function Index() {
         <div className="absolute inset-0 diamond-bg opacity-40 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-ink pointer-events-none" />
 
+        {/* Trompe-l'œil hero video — vertical 9:16, autoplay/muted/loop. Sits above
+            flavour backdrop, below the content card. Gracefully hides if no file. */}
+        <HeroVideo />
+
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 pt-32 md:pt-40 pb-16 md:pb-24 min-h-[100vh] flex flex-col">
           <div className="flex-1 flex items-center justify-center md:justify-end">
             <div className="flex items-center gap-6 md:gap-10 w-full">
@@ -782,7 +907,7 @@ function Index() {
 
           <div className="mt-10 flex items-center justify-between">
             <div className="font-serif-display italic text-sm text-[color:var(--foreground)]/60">
-              <span className="text-gold">{String(idx + 1).padStart(2, "0")}</span> / 04
+              <span className="text-gold">{String(idx + 1).padStart(2, "0")}</span> / {String(flavours.length).padStart(2, "0")}
             </div>
             <div className="flex items-center gap-2">
               {flavours.map((_, i) => (
@@ -806,7 +931,7 @@ function Index() {
       <section className="border-y border-line bg-ink-2">
         <div className="mx-auto max-w-[1000px] px-6 md:px-10 py-8 md:py-10 grid grid-cols-2 md:grid-cols-4 gap-0 items-center text-center">
           {[
-            { v: "4", l: "Flavours" },
+            { v: "2", l: "Flavours" },
             { v: "50 km", l: "Brisbane delivery" },
             { v: "15+ pcs", l: "Preparation time may apply" },
             { v: "$10", l: "Delivery under 8 pcs · free from 8" },
@@ -1131,7 +1256,7 @@ function Index() {
           <div className="text-center mb-16">
             <div className="eyebrow justify-center mb-6 inline-flex">The Collection</div>
             <h2 className="font-serif-display text-5xl md:text-6xl leading-tight">
-              Four flavours, one <span className="italic text-gold">experience</span>
+              Two flavours, one <span className="italic text-gold">experience</span>
             </h2>
           </div>
 
@@ -1177,6 +1302,8 @@ function Index() {
       </section>
 
       {/* WHOLESALE / EVENTS */}
+      <InstagramSection />
+
       <section className="bg-ink border-t border-line">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32">
           <div className="text-center mb-16">
@@ -1408,44 +1535,6 @@ function Index() {
               </div>
             </div>
 
-            {/* Pistachio */}
-            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
-              <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
-                <div className="absolute inset-0 rounded-full bg-gold/10 blur-md" />
-                <img src={pistachioImg} alt="Pistachio" className="relative w-full h-full object-contain drop-shadow-sm" />
-              </div>
-              <h3 className="font-serif-display text-xl mb-4 text-gold pr-16">Pistachio</h3>
-              <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
-              <ul className="space-y-2 text-sm text-[color:var(--foreground)]/85 mb-4">
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Soy</li>
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Gluten</li>
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Eggs</li>
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Tree nuts, including pistachio</li>
-              </ul>
-              <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
-                Milk and soy are present in the white chocolate. Gluten and eggs are present in the homemade biscuit. Tree nuts are present in the homemade pistachio cream.
-              </div>
-            </div>
-
-            {/* Mango */}
-            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
-              <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
-                <div className="absolute inset-0 rounded-full bg-gold/10 blur-md" />
-                <img src={mangoImg} alt="Mango" className="relative w-full h-full object-contain drop-shadow-sm" />
-              </div>
-              <h3 className="font-serif-display text-xl mb-4 text-gold pr-16">Mango</h3>
-              <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
-              <ul className="space-y-2 text-sm text-[color:var(--foreground)]/85 mb-4">
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Soy</li>
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Gluten</li>
-                <li className="flex items-center gap-2"><span className="text-gold">·</span> Eggs</li>
-              </ul>
-              <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
-                Milk and soy are present in the white chocolate. Gluten and eggs are present in the homemade biscuit.
-              </div>
-            </div>
           </div>
 
           <div className="rounded-2xl border border-gold/20 bg-ink-2/50 p-6 md:p-8 text-center">
