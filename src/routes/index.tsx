@@ -535,6 +535,7 @@ function Index() {
           business: form.business,
           orderType: form.orderType,
           date: form.date,
+          time: form.time,
           delivery: form.delivery,
           address: form.address,
           notes: form.notes,
