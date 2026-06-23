@@ -250,6 +250,159 @@ function StoryShowcaseMobileBg() {
   );
 }
 
+// ---- Hero video (vertical 9:16, autoplay/muted/loop). Uploads to public/videos/.
+function HeroVideo() {
+  const candidates = ["/videos/hero-1.mp4", "/videos/hero-2.mp4"];
+  const [src] = React.useState(() => candidates[Math.floor(Math.random() * candidates.length)]);
+  const [muted, setMuted] = React.useState(true);
+  const [available, setAvailable] = React.useState(true);
+  const videoRef = React.useRef<HTMLVideoElement | null>(null);
+  const bgVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  if (!available) return null;
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      {/* Blurred background clone — fills the hero on desktop with a soft, on-brand backdrop */}
+      <div className="absolute inset-0 overflow-hidden">
+        <video
+          ref={bgVideoRef}
+          src={src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover scale-110 opacity-40"
+          style={{ filter: "blur(38px) saturate(120%)" }}
+          onError={() => setAvailable(false)}
+        />
+        {/* Gold + dark wash to keep it editorial, not amateur */}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 40%, rgba(201,161,74,0.18), transparent 65%), linear-gradient(180deg, rgba(8,6,3,0.55) 0%, rgba(8,6,3,0.35) 50%, rgba(8,6,3,0.85) 100%)",
+          }}
+        />
+      </div>
+      {/* Centered vertical video */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="relative h-full md:h-[78vh] aspect-[9/16] max-h-[100vh] pointer-events-auto">
+          <video
+            ref={videoRef}
+            src={src}
+            autoPlay
+            muted={muted}
+            loop
+            playsInline
+            preload="auto"
+            className="h-full w-full object-cover md:rounded-sm md:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)] md:border md:border-gold/25"
+            onError={() => setAvailable(false)}
+          />
+          {/* Text-readability gradient (bottom→top) */}
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none md:rounded-sm"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(8,6,3,0.55) 0%, rgba(8,6,3,0.15) 30%, rgba(8,6,3,0.15) 60%, rgba(8,6,3,0.75) 100%)",
+            }}
+          />
+          {/* Mute / unmute */}
+          <button
+            type="button"
+            onClick={() => {
+              setMuted((m) => {
+                const next = !m;
+                if (videoRef.current) videoRef.current.muted = next;
+                return next;
+              });
+            }}
+            aria-label={muted ? "Unmute hero video" : "Mute hero video"}
+            className="absolute bottom-4 right-4 z-20 h-10 w-10 inline-flex items-center justify-center border border-gold/40 bg-ink/55 backdrop-blur-md text-gold hover:bg-gold hover:text-ink transition"
+          >
+            {muted ? <VolumeX size={16} strokeWidth={1.6} /> : <Volume2 size={16} strokeWidth={1.6} />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Instagram feed (Behold.so widget). Requires VITE_BEHOLD_FEED_ID.
+function InstagramSection() {
+  const feedId = (import.meta.env.VITE_BEHOLD_FEED_ID as string | undefined) ?? "";
+  React.useEffect(() => {
+    if (!feedId) return;
+    if (document.querySelector('script[data-behold="1"]')) return;
+    const s = document.createElement("script");
+    s.src = "https://w.behold.so/widget.js";
+    s.type = "module";
+    s.dataset.behold = "1";
+    document.head.appendChild(s);
+  }, [feedId]);
+  return (
+    <section id="instagram" className="bg-ink-2 border-t border-line">
+      <div className="mx-auto max-w-7xl px-6 md:px-10 py-20 md:py-28">
+        <div className="text-center mb-12">
+          <div className="eyebrow justify-center mb-6 inline-flex">Instagram</div>
+          <h2 className="font-serif-display text-4xl md:text-5xl leading-tight">
+            Follow our latest <span className="italic text-gold">creations</span>
+          </h2>
+          <p className="mt-4 text-sm text-[color:var(--foreground)]/60 italic max-w-xl mx-auto">
+            New trompe-l'œil pieces, behind-the-scenes and seasonal favourites.
+          </p>
+        </div>
+
+        {feedId ? (
+          <div className="behold-frame relative rounded-sm border border-gold/20 bg-ink/40 backdrop-blur p-3 md:p-5">
+            {/* @ts-expect-error custom element */}
+            <behold-widget feed-id={feedId}></behold-widget>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <a
+                key={i}
+                href="https://www.instagram.com/l.a.sweet.bne/"
+                target="_blank"
+                rel="noopener noreferrer external"
+                aria-label="Open L&A Sweet on Instagram"
+                className="group relative aspect-square overflow-hidden border border-gold/20 bg-ink-2/70 hover:border-gold/60 transition-colors"
+              >
+                <div
+                  aria-hidden
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse at 50% 40%, rgba(201,161,74,0.18), transparent 65%), linear-gradient(135deg, rgba(40,28,14,0.6), rgba(10,8,6,0.9))",
+                  }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center text-gold/60 group-hover:text-gold transition-colors">
+                  <Instagram size={28} strokeWidth={1.2} />
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-10 flex justify-center">
+          <a
+            href="https://www.instagram.com/l.a.sweet.bne/"
+            target="_blank"
+            rel="noopener noreferrer external"
+            className="inline-flex items-center gap-3 border border-gold text-gold text-[11px] tracking-[0.28em] uppercase px-6 py-4 hover:bg-gold hover:text-ink transition"
+          >
+            <Instagram size={16} strokeWidth={1.6} />
+            Follow @l.a.sweet.bne on Instagram
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Index() {
   const [idx, setIdx] = useState(0); // raspberry default per brief (now first)
   const f = flavours[idx];
