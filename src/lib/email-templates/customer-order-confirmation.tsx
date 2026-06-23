@@ -12,6 +12,7 @@ import {
   Text,
 } from '@react-email/components'
 import type { TemplateEntry } from './registry'
+import { PICKUP_ADDRESS } from '@/lib/config'
 
 interface Item {
   name: string
@@ -26,6 +27,7 @@ interface Props {
   deliveryMethod?: 'delivery' | 'pickup'
   deliveryAddress?: string
   deliveryDate?: string
+  deliveryTime?: string
   items?: Item[]
   subtotal?: number
   deliveryFee?: number
@@ -93,6 +95,14 @@ const CustomerOrderConfirmation = (p: Props) => {
               {isDelivery ? 'Delivery date' : 'Pick-up date'}: {formatDateAu(p.deliveryDate)}
             </Text>
           ) : null}
+          {p.deliveryTime ? (
+            <Text style={value}>
+              {isDelivery ? 'Delivery time' : 'Pick-up time'}: {p.deliveryTime}
+            </Text>
+          ) : null}
+          {!isDelivery ? (
+            <Text style={value}>Pick-up address: {PICKUP_ADDRESS}</Text>
+          ) : null}
           {isDelivery && p.deliveryAddress ? (
             <Text style={value}>Delivery address: {p.deliveryAddress}</Text>
           ) : null}
@@ -154,6 +164,7 @@ export const template = {
     deliveryMethod: 'delivery',
     deliveryAddress: '1 Queen St, Brisbane',
     deliveryDate: '2026-06-28',
+    deliveryTime: '14:00',
     items: [{ name: 'Raspberry', qty: 4, price: 18 }],
     subtotal: 72,
     deliveryFee: 10,
