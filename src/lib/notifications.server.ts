@@ -180,3 +180,28 @@ export async function notifyOwnerNewOrder(args: NotifyArgs) {
     }),
   ]);
 }
+/**
+ * Sends owner email when an order has been refunded (full or partial) via Stripe.
+ * Best-effort; never throws.
+ */
+export async function notifyOwnerOrderRefunded(args: {
+  orderNumber: string;
+  customerEmail: string;
+  refundedAmount: number;
+  originalTotal: number;
+  reason?: string;
+  refundType: "full" | "partial";
+}) {
+  try {
+    await enqueueTemplate({
+      templateName: "owner-order-refunded",
+      to: "l.asweetbne@gmail.com",
+      data: args,
+      // Idempotency keyed on amount so repeated webhooks for the same refund total don't duplicate emails,
+      // but a follow-up refund (different amount) will still notify.
+      idempotencyKey: `owner-refund-${args.orderNumber}-${args.refundedAmount.toFixed(2)}`,
+    });
+  } catch (e) {
+    console.error("[notifications] refund notify error", e);
+  }
+}
