@@ -2208,9 +2208,15 @@ function CheckoutModal({
                 <div className="text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 pt-2">
                   {form.orderType} · {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
                   {form.date ? ` · ${fmtDate(form.date)}` : ""}
+                  {form.time ? ` · ${form.time}` : ""}
                 </div>
                 {form.delivery === "delivery" && form.address && (
                   <div className="text-[color:var(--foreground)]/70 pt-1">{form.address}</div>
+                )}
+                {form.delivery === "pickup" && (
+                  <div className="text-[color:var(--foreground)]/70 pt-1">
+                    Pick-up address: {PICKUP_ADDRESS}
+                  </div>
                 )}
                 {form.notes && (
                   <p className="text-[color:var(--foreground)]/65 italic pt-2 border-t border-line mt-2">
