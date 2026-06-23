@@ -117,7 +117,7 @@ export const template = {
   subject: (d: Record<string, any>) =>
     `New order — ${d.orderNumber ?? ''} (${d.paymentMethod === 'online' ? 'Online' : 'Cash'})`,
   displayName: 'Owner — new order',
-  to: 'amahjoub0589@gmail.com',
+  to: 'l.asweetbne@gmail.com',
   previewData: {
     orderNumber: 'LAS-26-ABCDE',
     customerName: 'Jane Doe',
