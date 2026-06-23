@@ -822,6 +822,10 @@ function Index() {
         <div className="absolute inset-0 diamond-bg opacity-40 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-ink pointer-events-none" />
 
+        {/* Trompe-l'œil hero video — vertical 9:16, autoplay/muted/loop. Sits above
+            flavour backdrop, below the content card. Gracefully hides if no file. */}
+        <HeroVideo />
+
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 pt-32 md:pt-40 pb-16 md:pb-24 min-h-[100vh] flex flex-col">
           <div className="flex-1 flex items-center justify-center md:justify-end">
             <div className="flex items-center gap-6 md:gap-10 w-full">
