@@ -168,7 +168,7 @@ export async function notifyOwnerNewOrder(args: NotifyArgs) {
   await Promise.allSettled([
     enqueueTemplate({
       templateName: "owner-new-order",
-      to: "amahjoub0589@gmail.com",
+      to: "l.asweetbne@gmail.com",
       data: templateData,
       idempotencyKey: `owner-${args.orderNumber}`,
     }),
