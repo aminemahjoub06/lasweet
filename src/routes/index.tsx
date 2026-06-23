@@ -1941,7 +1941,14 @@ function CheckoutModal({
                     type="date"
                     value={form.date}
                     min={new Date().toISOString().slice(0, 10)}
-                    onChange={(e) => updateForm("date", e.target.value)}
+                    onChange={(e) => {
+                      updateForm("date", e.target.value);
+                      // Reset time if no longer valid for the new date.
+                      const allowed = getAvailableSlots(e.target.value);
+                      if (form.time && !allowed.includes(form.time as (typeof allowed)[number])) {
+                        updateForm("time", "");
+                      }
+                    }}
                     className={inputCls}
                   />
                 </FieldLA>
@@ -1971,6 +1978,51 @@ function CheckoutModal({
                   Under 15 pcs: may be available immediately depending on stock ·
                   15+ pcs: preparation time may be required unless stock is available ·
                   Final availability confirmed after order request.
+                </p>
+              </FieldLA>
+
+              {form.delivery === "pickup" && (
+                <div className="border border-gold/40 bg-ink-3/50 px-4 py-3">
+                  <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
+                    Pick-up address
+                  </div>
+                  <div className="text-sm text-[color:var(--foreground)]/85 leading-relaxed">
+                    {PICKUP_ADDRESS}
+                  </div>
+                </div>
+              )}
+
+              <FieldLA label={form.delivery === "delivery" ? "Delivery time" : "Pick-up time"} required>
+                {(() => {
+                  const allowed = getAvailableSlots(form.date);
+                  if (allowed.length === 0) {
+                    return (
+                      <p className="text-[11px] tracking-wide text-[color:var(--foreground)]/65 border border-gold/30 bg-ink-3/40 px-3 py-3">
+                        No more slots available today — please choose another date.
+                      </p>
+                    );
+                  }
+                  return (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {allowed.map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => updateForm("time", slot)}
+                          className={`text-[11px] tracking-[0.18em] py-2 border transition-colors ${
+                            form.time === slot
+                              ? "bg-gold text-ink border-gold"
+                              : "text-gold border-gold/40 hover:border-gold"
+                          }`}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+                <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
+                  Times shown in 24-hour format. Same-day orders: earliest slot is 2 hours from now.
                 </p>
               </FieldLA>
 
