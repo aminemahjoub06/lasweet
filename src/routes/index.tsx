@@ -195,12 +195,10 @@ function StoryShowcase() {
 }
 
 function StoryShowcaseMobileBg() {
-  const showcase = [raspberryImg, lemonImg, pistachioImg, mangoImg];
+  const showcase = [raspberryImg, lemonImg];
   const auras = [
     "radial-gradient(ellipse at 50% 50%, rgba(220,60,110,0.30), rgba(160,30,70,0.10) 44%, transparent 74%)",
     "radial-gradient(ellipse at 50% 50%, rgba(245,220,90,0.30), rgba(210,180,60,0.10) 44%, transparent 74%)",
-    "radial-gradient(ellipse at 50% 50%, rgba(180,210,90,0.30), rgba(120,160,60,0.10) 44%, transparent 74%)",
-    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.32), rgba(255,140,40,0.10) 42%, transparent 72%)",
   ];
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
