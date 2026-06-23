@@ -18,6 +18,7 @@ type NotifyArgs = {
     business?: string;
     orderType?: string;
     date?: string;
+    time?: string;
     delivery: "delivery" | "pickup";
     address?: string;
     notes?: string;
@@ -153,6 +154,7 @@ export async function notifyOwnerNewOrder(args: NotifyArgs) {
     deliveryMethod: args.customer.delivery,
     deliveryAddress: args.customer.address,
     deliveryDate: args.customer.date,
+    deliveryTime: args.customer.time,
     orderType: args.customer.orderType,
     notes: args.customer.notes,
     items: args.items,

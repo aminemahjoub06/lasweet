@@ -112,6 +112,7 @@ export type Database = {
           delivery_date: string | null
           delivery_fee: number
           delivery_method: string
+          delivery_time: string | null
           id: string
           items: Json
           notes: string | null
@@ -134,6 +135,7 @@ export type Database = {
           delivery_date?: string | null
           delivery_fee?: number
           delivery_method: string
+          delivery_time?: string | null
           id?: string
           items: Json
           notes?: string | null
@@ -156,6 +158,7 @@ export type Database = {
           delivery_date?: string | null
           delivery_fee?: number
           delivery_method?: string
+          delivery_time?: string | null
           id?: string
           items?: Json
           notes?: string | null

@@ -24,6 +24,10 @@ const customerSchema = z.object({
   business: z.string().max(120).optional().default(""),
   orderType: z.string().max(60).optional().default(""),
   date: z.string().max(40).optional().default(""),
+  time: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Please choose a time slot.")
+    .max(5),
   delivery: z.enum(["delivery", "pickup"]),
   address: z.string().max(400).optional().default(""),
   notes: z.string().max(1000).optional().default(""),
@@ -80,6 +84,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
       delivery_method: data.customer.delivery,
       delivery_address: data.customer.delivery === "delivery" ? data.customer.address : null,
       delivery_date: data.customer.date || null,
+      delivery_time: data.customer.time,
       order_type: data.customer.orderType || null,
       notes: data.customer.notes || null,
       items: data.items,
@@ -140,6 +145,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         delivery_method: data.customer.delivery,
         delivery_address: data.customer.delivery === "delivery" ? data.customer.address : null,
         delivery_date: data.customer.date || null,
+        delivery_time: data.customer.time,
         order_type: data.customer.orderType || null,
         notes: data.customer.notes || null,
         items: data.items,
@@ -266,7 +272,7 @@ export const getOrderStatus = createServerFn({ method: "GET" })
     const { data: row, error } = await supabaseAdmin
       .from("orders")
       .select(
-        "order_number, customer_name, customer_email, customer_phone, business, delivery_method, delivery_address, delivery_date, order_type, notes, total, payment_method, payment_status, items, subtotal, delivery_fee, created_at",
+        "order_number, customer_name, customer_email, customer_phone, business, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, items, subtotal, delivery_fee, created_at",
       )
       .eq("order_number", data.orderNumber)
       .maybeSingle();

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createCashOrder, createStripeCheckout } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { PICKUP_ADDRESS, getAvailableSlots } from "@/lib/config";
 import raspberryImg from "@/assets/raspberry.png";
 import mangoImg from "@/assets/mango.png";
 import pistachioNewAsset from "@/assets/pistachio-new.png.asset.json";
@@ -411,6 +412,7 @@ function Index() {
     business: string;
     orderType: string;
     date: string;
+    time: string;
     delivery: "delivery" | "pickup";
     address: string;
     notes: string;
@@ -425,6 +427,7 @@ function Index() {
     business: "",
     orderType: "Other",
     date: new Date().toISOString().slice(0, 10),
+    time: "",
     delivery: "delivery",
     address: "",
     notes: "",
@@ -475,6 +478,17 @@ function Index() {
     if (form.business.length > 120) return setFormError("Business name is too long.");
     if (form.delivery === "delivery" && form.address.trim().length < 5)
       return setFormError("Please enter a delivery address.");
+    if (!form.time)
+      return setFormError(
+        form.delivery === "delivery"
+          ? "Please choose a delivery time."
+          : "Please choose a pick-up time.",
+      );
+    const allowedSlots = getAvailableSlots(form.date);
+    if (!allowedSlots.includes(form.time as (typeof allowedSlots)[number]))
+      return setFormError(
+        "That time is too soon — please choose a slot at least 2 hours from now.",
+      );
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     if (form.createAccount) {
@@ -521,6 +535,7 @@ function Index() {
           business: form.business,
           orderType: form.orderType,
           date: form.date,
+          time: form.time,
           delivery: form.delivery,
           address: form.address,
           notes: form.notes,
@@ -1666,6 +1681,7 @@ type OrderForm = {
   business: string;
   orderType: string;
   date: string;
+  time: string;
   delivery: "delivery" | "pickup";
   address: string;
   notes: string;
@@ -1925,7 +1941,14 @@ function CheckoutModal({
                     type="date"
                     value={form.date}
                     min={new Date().toISOString().slice(0, 10)}
-                    onChange={(e) => updateForm("date", e.target.value)}
+                    onChange={(e) => {
+                      updateForm("date", e.target.value);
+                      // Reset time if no longer valid for the new date.
+                      const allowed = getAvailableSlots(e.target.value);
+                      if (form.time && !allowed.includes(form.time as (typeof allowed)[number])) {
+                        updateForm("time", "");
+                      }
+                    }}
                     className={inputCls}
                   />
                 </FieldLA>
@@ -1955,6 +1978,51 @@ function CheckoutModal({
                   Under 15 pcs: may be available immediately depending on stock ·
                   15+ pcs: preparation time may be required unless stock is available ·
                   Final availability confirmed after order request.
+                </p>
+              </FieldLA>
+
+              {form.delivery === "pickup" && (
+                <div className="border border-gold/40 bg-ink-3/50 px-4 py-3">
+                  <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-1">
+                    Pick-up address
+                  </div>
+                  <div className="text-sm text-[color:var(--foreground)]/85 leading-relaxed">
+                    {PICKUP_ADDRESS}
+                  </div>
+                </div>
+              )}
+
+              <FieldLA label={form.delivery === "delivery" ? "Delivery time" : "Pick-up time"} required>
+                {(() => {
+                  const allowed = getAvailableSlots(form.date);
+                  if (allowed.length === 0) {
+                    return (
+                      <p className="text-[11px] tracking-wide text-[color:var(--foreground)]/65 border border-gold/30 bg-ink-3/40 px-3 py-3">
+                        No more slots available today — please choose another date.
+                      </p>
+                    );
+                  }
+                  return (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {allowed.map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => updateForm("time", slot)}
+                          className={`text-[11px] tracking-[0.18em] py-2 border transition-colors ${
+                            form.time === slot
+                              ? "bg-gold text-ink border-gold"
+                              : "text-gold border-gold/40 hover:border-gold"
+                          }`}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+                <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
+                  Times shown in 24-hour format. Same-day orders: earliest slot is 2 hours from now.
                 </p>
               </FieldLA>
 
@@ -2140,9 +2208,15 @@ function CheckoutModal({
                 <div className="text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 pt-2">
                   {form.orderType} · {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
                   {form.date ? ` · ${fmtDate(form.date)}` : ""}
+                  {form.time ? ` · ${form.time}` : ""}
                 </div>
                 {form.delivery === "delivery" && form.address && (
                   <div className="text-[color:var(--foreground)]/70 pt-1">{form.address}</div>
+                )}
+                {form.delivery === "pickup" && (
+                  <div className="text-[color:var(--foreground)]/70 pt-1">
+                    Pick-up address: {PICKUP_ADDRESS}
+                  </div>
                 )}
                 {form.notes && (
                   <p className="text-[color:var(--foreground)]/65 italic pt-2 border-t border-line mt-2">
@@ -2217,6 +2291,7 @@ function CheckoutModal({
                   <span>
                     {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
                     {form.date ? ` · ${fmtDate(form.date)}` : ""}
+                    {form.time ? ` · ${form.time}` : ""}
                   </span>
                   <span className="font-serif-display normal-case tracking-normal text-base">
                     <span className="text-gold">${snapshotTotal}</span>

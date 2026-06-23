@@ -101,6 +101,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                   business: updated.business ?? undefined,
                   orderType: updated.order_type ?? undefined,
                   date: updated.delivery_date ?? undefined,
+                  time: updated.delivery_time ?? undefined,
                   delivery: updated.delivery_method as "delivery" | "pickup",
                   address: updated.delivery_address ?? undefined,
                   notes: updated.notes ?? undefined,
