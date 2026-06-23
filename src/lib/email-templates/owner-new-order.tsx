@@ -11,6 +11,7 @@ import {
   Text,
 } from '@react-email/components'
 import type { TemplateEntry } from './registry'
+import { PICKUP_ADDRESS } from '@/lib/config'
 
 interface Item {
   name: string
@@ -28,6 +29,7 @@ interface Props {
   deliveryMethod?: 'delivery' | 'pickup'
   deliveryAddress?: string
   deliveryDate?: string
+  deliveryTime?: string
   orderType?: string
   notes?: string
   items?: Item[]
@@ -70,7 +72,11 @@ const OwnerNewOrderEmail = (p: Props) => {
             {p.deliveryMethod === 'delivery' && p.deliveryAddress ? (
               <Text style={value}>{p.deliveryAddress}</Text>
             ) : null}
+            {p.deliveryMethod !== 'delivery' ? (
+              <Text style={value}>Pick-up address: {PICKUP_ADDRESS}</Text>
+            ) : null}
             {p.deliveryDate ? <Text style={value}>Date: {p.deliveryDate}</Text> : null}
+            {p.deliveryTime ? <Text style={value}>Time: {p.deliveryTime}</Text> : null}
             {p.orderType ? <Text style={value}>Occasion: {p.orderType}</Text> : null}
             {p.notes ? <Text style={value}>Notes: {p.notes}</Text> : null}
           </Section>
