@@ -1680,6 +1680,7 @@ type OrderForm = {
   business: string;
   orderType: string;
   date: string;
+  time: string;
   delivery: "delivery" | "pickup";
   address: string;
   notes: string;
