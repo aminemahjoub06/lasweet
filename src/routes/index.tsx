@@ -78,42 +78,15 @@ const flavours: Flavour[] = [
     available: true,
     price: 18,
   },
-  {
-    no: "03",
-    name: "Pistachio",
-    prefix: "Pista",
-    suffix: "chio",
-    label: "Nutty Flavour",
-    description:
-      "A refined pistachio trompe-l'œil with a smooth white chocolate shell, a soft homemade biscuit and a rich homemade pistachio cream centre — nutty, delicate and elegantly indulgent.",
-    short: "White chocolate shell, homemade biscuit and homemade pistachio cream.",
-    image: pistachioImg,
-    available: false,
-  },
-  {
-    no: "04",
-    name: "Mango",
-    prefix: "Man",
-    suffix: "go",
-    label: "Signature Flavour",
-    description:
-      "A tropical trompe-l'œil with a smooth white chocolate shell, revealing a soft homemade biscuit, real vanilla bean ganache and a bright mango compotée for a fresh, sunny and indulgent finish.",
-    short: "White chocolate shell, homemade vanilla ganache, homemade biscuit and mango compote.",
-    image: mangoImg,
-    available: false,
-    price: 20,
-  },
 ];
 
 function StoryShowcase() {
-  const showcase = [raspberryImg, lemonImg, pistachioImg, mangoImg];
-  const labels = ["Raspberry", "Lemon", "Pistachio", "Mango"];
+  const showcase = [raspberryImg, lemonImg];
+  const labels = ["Raspberry", "Lemon"];
   // Subtle flavour auras (low opacity, dark-friendly)
   const auras = [
     "radial-gradient(ellipse at 50% 50%, rgba(220,60,110,0.28), rgba(160,30,70,0.10) 42%, transparent 72%)", // Raspberry
     "radial-gradient(ellipse at 50% 50%, rgba(245,220,90,0.28), rgba(210,180,60,0.10) 42%, transparent 72%)", // Lemon
-    "radial-gradient(ellipse at 50% 50%, rgba(180,210,90,0.28), rgba(120,160,60,0.10) 42%, transparent 72%)", // Pistachio
-    "radial-gradient(ellipse at 50% 50%, rgba(255,170,60,0.30), rgba(255,140,40,0.10) 40%, transparent 70%)", // Mango
   ];
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
