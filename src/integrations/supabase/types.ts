@@ -120,6 +120,8 @@ export type Database = {
           order_type: string | null
           payment_method: string
           payment_status: string
+          refunded_amount: number
+          refunded_at: string | null
           stripe_session_id: string | null
           subtotal: number
           total: number
@@ -143,6 +145,8 @@ export type Database = {
           order_type?: string | null
           payment_method: string
           payment_status?: string
+          refunded_amount?: number
+          refunded_at?: string | null
           stripe_session_id?: string | null
           subtotal: number
           total: number
@@ -166,10 +170,36 @@ export type Database = {
           order_type?: string | null
           payment_method?: string
           payment_status?: string
+          refunded_amount?: number
+          refunded_at?: string | null
           stripe_session_id?: string | null
           subtotal?: number
           total?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      pending_cleanup_log: {
+        Row: {
+          id: string
+          notes: string | null
+          rows_recovered: number
+          rows_updated: number
+          run_at: string
+        }
+        Insert: {
+          id?: string
+          notes?: string | null
+          rows_recovered?: number
+          rows_updated?: number
+          run_at?: string
+        }
+        Update: {
+          id?: string
+          notes?: string | null
+          rows_recovered?: number
+          rows_updated?: number
+          run_at?: string
         }
         Relationships: []
       }
