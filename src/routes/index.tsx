@@ -2291,6 +2291,7 @@ function CheckoutModal({
                   <span>
                     {form.delivery === "delivery" ? "Delivery" : "Pick-up"}
                     {form.date ? ` · ${fmtDate(form.date)}` : ""}
+                    {form.time ? ` · ${form.time}` : ""}
                   </span>
                   <span className="font-serif-display normal-case tracking-normal text-base">
                     <span className="text-gold">${snapshotTotal}</span>
