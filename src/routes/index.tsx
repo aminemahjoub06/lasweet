@@ -1007,6 +1007,11 @@ function Index() {
                       {/* Soft bottom gradient so caption stays readable */}
                       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ink via-ink/60 to-transparent pointer-events-none" />
 
+                      {/* Top-left number */}
+                      <div className="absolute top-4 left-4 text-[10px] tracking-[0.28em] uppercase text-gold">
+                        No. {fl.no}
+                      </div>
+
                       {/* Default small caption */}
                       <div
                         className={`absolute inset-x-0 bottom-0 p-4 md:p-5 transition-opacity duration-300 ${
@@ -1270,6 +1275,9 @@ function Index() {
                       className="absolute inset-0 m-auto h-full w-full object-contain p-6 md:p-8 transition-transform duration-[1200ms] ease-out group-hover/card:scale-[1.04]"
                     />
                   )}
+                  <div className="absolute top-4 left-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/60 backdrop-blur-md px-3 py-1.5 border border-gold/30">
+                    No. {fl.no}
+                  </div>
                   {fl.available === false && (
                     <div className="absolute top-4 right-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/70 backdrop-blur-md px-3 py-1.5 border border-gold/40">
                       Coming soon
