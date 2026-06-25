@@ -541,9 +541,6 @@ function Index() {
     delivery: "delivery" | "pickup";
     address: string;
     notes: string;
-    createAccount: boolean;
-    password: string;
-    confirmPassword: string;
   };
   const [form, setForm] = useState<OrderForm>({
     fullName: "",
@@ -556,9 +553,6 @@ function Index() {
     delivery: "delivery",
     address: "",
     notes: "",
-    createAccount: false,
-    password: "",
-    confirmPassword: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -591,9 +585,8 @@ function Index() {
   // Step-by-step checkout modal — only opens after the customer validates
   // the cart. Account choice → details → review → payment → confirmed.
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  type CheckoutStep = "account" | "details" | "review" | "payment" | "confirmed";
-  const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>("account");
-  const [accountMode, setAccountMode] = useState<"create" | "login" | "guest" | null>(null);
+  type CheckoutStep = "details" | "review" | "payment" | "confirmed";
+  const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>("details");
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cash" | null>(null);
@@ -643,10 +636,6 @@ function Index() {
       );
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
-    if (form.createAccount) {
-      if (form.password.length < 8) return setFormError("Password must be at least 8 characters.");
-      if (form.password !== form.confirmPassword) return setFormError("Passwords do not match.");
-    }
     // Lock in a snapshot of the cart so quantities can't change mid-review.
     setOrderSnapshot(
       cartEntries.map(({ variant, qty }) => ({
@@ -740,18 +729,15 @@ function Index() {
 
   const resetOrder = () => {
     setCheckoutOpen(false);
-    setCheckoutStep("account");
-    setAccountMode(null);
+    setCheckoutStep("details");
     setOrderRef(null);
     setOrderSnapshot([]);
-    setForm((f) => ({ ...f, password: "", confirmPassword: "" }));
   };
   const openCheckout = () => {
     if (cartEntries.length === 0) return;
     setCartOpen(false);
     setFormError(null);
-    setAccountMode(null);
-    setCheckoutStep("account");
+    setCheckoutStep("details");
     setCheckoutOpen(true);
   };
   const toggleExpand = (no: string) => {
