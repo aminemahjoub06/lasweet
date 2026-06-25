@@ -817,8 +817,9 @@ function Index() {
               <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
               {cartCount > 0 && (
                 <span
+                  key={bump}
                   aria-label={`${cartCount} item${cartCount > 1 ? "s" : ""} in cart`}
-                  className="absolute -top-2 -right-2 z-[60] min-w-[22px] h-[22px] px-1.5 inline-flex items-center justify-center bg-gold text-ink text-[11px] font-semibold leading-none rounded-full ring-2 ring-ink shadow-[0_2px_8px_rgba(0,0,0,0.6)] pointer-events-none"
+                  className="cart-badge-bump absolute -top-2.5 -right-2.5 z-[100] min-w-[28px] h-[28px] px-1.5 inline-flex items-center justify-center bg-gold text-ink text-sm font-bold leading-none rounded-full ring-2 ring-ink drop-shadow-lg shadow-[0_4px_14px_rgba(0,0,0,0.7)] pointer-events-none"
                 >
                   {cartCount > 9 ? "9+" : cartCount}
                 </span>
