@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as React from "react";
 import { ShoppingBag, X, Minus, Plus, Trash2, Check, ChefHat, Sparkles, Volume2, VolumeX, Instagram } from "lucide-react";
 import { toast } from "sonner";
@@ -488,6 +488,14 @@ function Index() {
   const [cartOpen, setCartOpen] = useState(false);
   const [addCount, setAddCount] = useState(0);
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
+  const [bump, setBump] = useState(0);
+  const prevCartCount = useRef(0);
+  useEffect(() => {
+    if (cartCount > prevCartCount.current) {
+      setBump((b) => b + 1);
+    }
+    prevCartCount.current = cartCount;
+  }, [cartCount]);
   const cartEntries = Object.entries(cart)
     .map(([key, qty]) => {
       const v = resolveVariant(key);
@@ -809,8 +817,9 @@ function Index() {
               <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
               {cartCount > 0 && (
                 <span
+                  key={bump}
                   aria-label={`${cartCount} item${cartCount > 1 ? "s" : ""} in cart`}
-                  className="absolute -top-2 -right-2 z-[60] min-w-[22px] h-[22px] px-1.5 inline-flex items-center justify-center bg-gold text-ink text-[11px] font-semibold leading-none rounded-full ring-2 ring-ink shadow-[0_2px_8px_rgba(0,0,0,0.6)] pointer-events-none"
+                  className="cart-badge-bump absolute -top-2.5 -right-2.5 z-[100] min-w-[28px] h-[28px] px-1.5 inline-flex items-center justify-center bg-gold text-ink text-sm font-bold leading-none rounded-full ring-2 ring-ink drop-shadow-lg shadow-[0_4px_14px_rgba(0,0,0,0.7)] pointer-events-none"
                 >
                   {cartCount > 9 ? "9+" : cartCount}
                 </span>
@@ -2050,22 +2059,27 @@ function CheckoutModal({
                 </FieldLA>
               </div>
 
-              <FieldLA label="Delivery or pick-up">
+              <FieldLA label="How would you like to receive your order?">
                 <div className="grid grid-cols-2 gap-3">
-                  {(["delivery", "pickup"] as const).map((opt) => (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => updateForm("delivery", opt)}
-                      className={`text-[10px] tracking-[0.24em] uppercase py-3 border transition-colors ${
-                        form.delivery === opt
-                          ? "bg-gold text-ink border-gold"
-                          : "text-gold border-gold/40 hover:border-gold"
-                      }`}
-                    >
-                      {opt === "delivery" ? "Delivery" : "Pick-up"}
-                    </button>
-                  ))}
+                  {(["delivery", "pickup"] as const).map((opt) => {
+                    const selected = form.delivery === opt;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => updateForm("delivery", opt)}
+                        className={`inline-flex items-center justify-center gap-2 text-xs tracking-[0.24em] uppercase py-3 transition-all ${
+                          selected
+                            ? "bg-gold text-ink border-2 border-gold font-bold shadow-[0_0_18px_rgba(212,175,55,0.45),inset_0_0_0_1px_rgba(0,0,0,0.15)]"
+                            : "bg-transparent text-gold border border-gold/40 hover:border-gold hover:shadow-[0_0_12px_rgba(212,175,55,0.25)]"
+                        }`}
+                      >
+                        {selected && <Check size={14} strokeWidth={2.6} />}
+                        {opt === "delivery" ? "Delivery" : "Pick-up"}
+                      </button>
+                    );
+                  })}
                 </div>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
                   Pick-up: free, no minimum · Delivery: $10 under 8 pcs, free from 8 pcs.
