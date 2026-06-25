@@ -1822,8 +1822,6 @@ function CheckoutModal({
   onClose,
   step,
   setStep,
-  accountMode,
-  setAccountMode,
   form,
   updateForm,
   formError,
