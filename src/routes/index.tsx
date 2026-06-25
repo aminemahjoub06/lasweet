@@ -2059,22 +2059,27 @@ function CheckoutModal({
                 </FieldLA>
               </div>
 
-              <FieldLA label="Delivery or pick-up">
+              <FieldLA label="How would you like to receive your order?">
                 <div className="grid grid-cols-2 gap-3">
-                  {(["delivery", "pickup"] as const).map((opt) => (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => updateForm("delivery", opt)}
-                      className={`text-[10px] tracking-[0.24em] uppercase py-3 border transition-colors ${
-                        form.delivery === opt
-                          ? "bg-gold text-ink border-gold"
-                          : "text-gold border-gold/40 hover:border-gold"
-                      }`}
-                    >
-                      {opt === "delivery" ? "Delivery" : "Pick-up"}
-                    </button>
-                  ))}
+                  {(["delivery", "pickup"] as const).map((opt) => {
+                    const selected = form.delivery === opt;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => updateForm("delivery", opt)}
+                        className={`inline-flex items-center justify-center gap-2 text-xs tracking-[0.24em] uppercase py-3 transition-all ${
+                          selected
+                            ? "bg-gold text-ink border-2 border-gold font-bold shadow-[0_0_18px_rgba(212,175,55,0.45),inset_0_0_0_1px_rgba(0,0,0,0.15)]"
+                            : "bg-transparent text-gold border border-gold/40 hover:border-gold hover:shadow-[0_0_12px_rgba(212,175,55,0.25)]"
+                        }`}
+                      >
+                        {selected && <Check size={14} strokeWidth={2.6} />}
+                        {opt === "delivery" ? "Delivery" : "Pick-up"}
+                      </button>
+                    );
+                  })}
                 </div>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
                   Pick-up: free, no minimum · Delivery: $10 under 8 pcs, free from 8 pcs.
