@@ -1932,59 +1932,19 @@ function CheckoutModal({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
-          {/* STEP: ACCOUNT */}
-          {step === "account" && (
-            <div className="space-y-5">
-              <div>
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Account</div>
-                <h3 className="font-serif-display text-2xl">
-                  How would you like to <span className="italic text-gold">continue</span>?
-                </h3>
-                <p className="mt-3 text-sm text-[color:var(--foreground)]/70 leading-relaxed">
-                  Create an account to track future orders, log in if you already have one, or
-                  continue as a guest.
-                </p>
-              </div>
-              <div className="grid gap-3">
-                {(
-                  [
-                    { k: "create", l: "Create an account", d: "Save your details for next time." },
-                    { k: "login", l: "Log in", d: "Returning customer." },
-                    { k: "guest", l: "Continue as guest", d: "No account, no password." },
-                  ] as const
-                ).map((opt) => (
-                  <button
-                    key={opt.k}
-                    type="button"
-                    onClick={() => chooseAccount(opt.k)}
-                    className="text-left border border-gold/40 bg-ink-3/40 px-5 py-4 hover:border-gold hover:bg-ink-3/70 transition-colors"
-                  >
-                    <div className="text-[11px] tracking-[0.24em] uppercase text-gold">{opt.l}</div>
-                    <div className="mt-1 text-sm text-[color:var(--foreground)]/70">{opt.d}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* STEP: DETAILS */}
           {step === "details" && (
             <form onSubmit={validateDetails} className="space-y-5" noValidate>
               <div>
                 <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">
-                  {accountMode === "login" ? "Log in" : "Your details"}
+                  Your details
                 </div>
                 <h3 className="font-serif-display text-2xl">
-                  {accountMode === "login" ? (
-                    <>
-                      Welcome <span className="italic text-gold">back</span>
-                    </>
-                  ) : (
-                    <>
-                      Your <span className="italic text-gold">information</span>
-                    </>
-                  )}
+                  Your <span className="italic text-gold">information</span>
                 </h3>
+                <p className="mt-3 text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
+                  Guest checkout — no account needed.
+                </p>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
