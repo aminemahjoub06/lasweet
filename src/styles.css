@@ -163,3 +163,13 @@ html, body {
     color: var(--color-foreground);
   }
 }
+
+@keyframes cart-badge-bump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.cart-badge-bump {
+  animation: cart-badge-bump 300ms ease-out;
+}
