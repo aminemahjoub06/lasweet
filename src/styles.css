@@ -92,6 +92,12 @@ html, body {
 .bg-ink-3 { background: var(--ink-3); }
 .border-gold { border-color: var(--gold); }
 .border-line { border-color: var(--line); }
+.bg-gold { background-color: var(--gold); }
+.hover\:bg-gold:hover { background-color: var(--gold); }
+.hover\:bg-gold\/80:hover { background-color: color-mix(in oklab, var(--gold) 80%, transparent); }
+.bg-gold\/25 { background-color: color-mix(in oklab, var(--gold) 25%, transparent); }
+.bg-gold\/50 { background-color: color-mix(in oklab, var(--gold) 50%, transparent); }
+.hover\:bg-gold\/50:hover { background-color: color-mix(in oklab, var(--gold) 50%, transparent); }
 
 .diamond-bg {
   background-image:
