@@ -14,6 +14,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LegalRouteImport } from './routes/legal'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OrdersLookupRouteImport } from './routes/orders.lookup'
 import { Route as OrderSuccessRouteImport } from './routes/order.success'
 import { Route as OrderCancelRouteImport } from './routes/order.cancel'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
@@ -50,6 +51,11 @@ const LegalRoute = LegalRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrdersLookupRoute = OrdersLookupRouteImport.update({
+  id: '/orders/lookup',
+  path: '/orders/lookup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrderSuccessRoute = OrderSuccessRouteImport.update({
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
+  '/orders/lookup': typeof OrdersLookupRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
+  '/orders/lookup': typeof OrdersLookupRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
+  '/orders/lookup': typeof OrdersLookupRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
+    | '/orders/lookup'
     | '/lovable/email/suppression'
     | '/api/public/hooks/cleanup-pending-orders'
     | '/api/public/payments/webhook'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
+    | '/orders/lookup'
     | '/lovable/email/suppression'
     | '/api/public/hooks/cleanup-pending-orders'
     | '/api/public/payments/webhook'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
+    | '/orders/lookup'
     | '/lovable/email/suppression'
     | '/api/public/hooks/cleanup-pending-orders'
     | '/api/public/payments/webhook'
@@ -246,6 +258,7 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   OrderCancelRoute: typeof OrderCancelRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
+  OrdersLookupRoute: typeof OrdersLookupRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksCleanupPendingOrdersRoute: typeof ApiPublicHooksCleanupPendingOrdersRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -291,6 +304,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orders/lookup': {
+      id: '/orders/lookup'
+      path: '/orders/lookup'
+      fullPath: '/orders/lookup'
+      preLoaderRoute: typeof OrdersLookupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/order/success': {
@@ -390,6 +410,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   OrderCancelRoute: OrderCancelRoute,
   OrderSuccessRoute: OrderSuccessRoute,
+  OrdersLookupRoute: OrdersLookupRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksCleanupPendingOrdersRoute:
     ApiPublicHooksCleanupPendingOrdersRoute,
