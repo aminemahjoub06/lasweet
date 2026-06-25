@@ -488,6 +488,14 @@ function Index() {
   const [cartOpen, setCartOpen] = useState(false);
   const [addCount, setAddCount] = useState(0);
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
+  const [bump, setBump] = useState(0);
+  const prevCartCount = useRef(0);
+  useEffect(() => {
+    if (cartCount > prevCartCount.current) {
+      setBump((b) => b + 1);
+    }
+    prevCartCount.current = cartCount;
+  }, [cartCount]);
   const cartEntries = Object.entries(cart)
     .map(([key, qty]) => {
       const v = resolveVariant(key);
