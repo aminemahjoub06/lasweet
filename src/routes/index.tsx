@@ -765,7 +765,7 @@ function Index() {
 
       {/* HEADER */}
       <header
-        className="absolute left-0 right-0 z-20"
+        className="absolute left-0 right-0 z-50"
         style={{ top: bannerOpen ? 44 : 0 }}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 md:px-10 md:py-8">
@@ -791,12 +791,15 @@ function Index() {
               type="button"
               aria-label="Open cart"
               onClick={() => setCartOpen(true)}
-              className="relative inline-flex items-center justify-center h-10 w-10 border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors"
+              className="relative z-50 inline-flex items-center justify-center h-10 w-10 border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors overflow-visible"
             >
               <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1 inline-flex items-center justify-center bg-gold text-ink text-[10px] font-medium rounded-full border border-ink">
-                  {cartCount}
+                <span
+                  aria-label={`${cartCount} item${cartCount > 1 ? "s" : ""} in cart`}
+                  className="absolute -top-2 -right-2 z-[60] min-w-[22px] h-[22px] px-1.5 inline-flex items-center justify-center bg-gold text-ink text-[11px] font-semibold leading-none rounded-full ring-2 ring-ink shadow-[0_2px_8px_rgba(0,0,0,0.6)] pointer-events-none"
+                >
+                  {cartCount > 9 ? "9+" : cartCount}
                 </span>
               )}
             </button>
