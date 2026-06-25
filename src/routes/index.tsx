@@ -561,6 +561,42 @@ function Index() {
     confirmPassword: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Daily stock for the currently selected delivery/pick-up date.
+  // Keys match the server-side stockKeyFor() = lowercased product `no` (e.g. "01").
+  const fetchStock = useServerFn(getDailyStockForDate);
+  const [dailyStock, setDailyStock] = useState<{
+    date: string;
+    defaultUnits: number;
+    stock: Record<string, { remaining: number; initial: number }>;
+  } | null>(null);
+  React.useEffect(() => {
+    let cancelled = false;
+    if (!form.date || !/^\d{4}-\d{2}-\d{2}$/.test(form.date)) {
+      setDailyStock(null);
+      return;
+    }
+    fetchStock({ data: { date: form.date } })
+      .then((res) => {
+        if (!cancelled) setDailyStock(res);
+      })
+      .catch(() => {
+        if (!cancelled) setDailyStock(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [form.date, fetchStock]);
+
+  // Helpers to read remaining stock for a given flavour key (no).
+  const remainingFor = React.useCallback(
+    (no: string) => {
+      const k = no.trim().toLowerCase();
+      if (!dailyStock) return null;
+      return dailyStock.stock[k]?.remaining ?? dailyStock.defaultUnits;
+    },
+    [dailyStock],
+  );
   // Step-by-step checkout modal — only opens after the customer validates
   // the cart. Account choice → details → review → payment → confirmed.
   const [checkoutOpen, setCheckoutOpen] = useState(false);
