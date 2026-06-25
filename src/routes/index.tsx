@@ -819,7 +819,8 @@ function Index() {
                 <span
                   key={bump}
                   aria-label={`${cartCount} item${cartCount > 1 ? "s" : ""} in cart`}
-                  className="cart-badge-bump absolute -top-2.5 -right-2.5 z-[100] min-w-[28px] h-[28px] px-1.5 inline-flex items-center justify-center bg-gold text-ink text-sm font-bold leading-none rounded-full ring-2 ring-ink drop-shadow-lg shadow-[0_4px_14px_rgba(0,0,0,0.7)] pointer-events-none"
+                  className="cart-badge-bump absolute -top-2 -right-2 z-[100] w-[22px] h-[22px] flex items-center justify-center bg-gold text-ink text-xs font-bold leading-none rounded-full drop-shadow-md pointer-events-none"
+                  style={{ color: "#1a1a1a" }}
                 >
                   {cartCount > 9 ? "9+" : cartCount}
                 </span>
