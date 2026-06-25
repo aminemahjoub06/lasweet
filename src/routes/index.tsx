@@ -1866,6 +1866,7 @@ function CheckoutModal({
   resetOrder,
   paymentMethod,
   setPaymentMethod,
+  stockByNo,
 }: {
   open: boolean;
   onClose: () => void;
