@@ -87,6 +87,7 @@ html, body {
 }
 
 .text-gold { color: var(--gold); }
+.text-ink { color: #1a1a1a; }
 .bg-ink { background: var(--ink); }
 .bg-ink-2 { background: var(--ink-2); }
 .bg-ink-3 { background: var(--ink-3); }
