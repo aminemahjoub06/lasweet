@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { DEFAULT_DAILY_STOCK } from "./config";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Schemas
