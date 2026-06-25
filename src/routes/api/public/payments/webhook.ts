@@ -122,10 +122,28 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           event.type === "transaction.payment_failed"
         ) {
           if (orderNumber || sessionId) {
-            const q = supabaseAdmin.from("orders").update({ payment_status: "failed" });
-            await (orderNumber
+            const q = supabaseAdmin
+              .from("orders")
+              .update({ payment_status: "failed" })
+              .select("items, delivery_date, payment_status");
+            const { data: updatedRow } = await (orderNumber
               ? q.eq("order_number", orderNumber)
-              : q.eq("stripe_session_id", sessionId!));
+              : q.eq("stripe_session_id", sessionId!)
+            ).maybeSingle();
+            // Release the daily-stock reservation now that payment failed.
+            try {
+              if (updatedRow?.delivery_date) {
+                const { restoreOrderStock } = await import(
+                  "@/lib/orders.functions"
+                );
+                await restoreOrderStock(
+                  updatedRow.items as unknown,
+                  updatedRow.delivery_date as string,
+                );
+              }
+            } catch (err) {
+              console.error("[stripe-webhook] restore stock failed", err);
+            }
           }
         } else if (event.type === "charge.refunded") {
           try {
