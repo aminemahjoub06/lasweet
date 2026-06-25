@@ -588,15 +588,6 @@ function Index() {
     };
   }, [form.date, fetchStock]);
 
-  // Helpers to read remaining stock for a given flavour key (no).
-  const remainingFor = React.useCallback(
-    (no: string) => {
-      const k = no.trim().toLowerCase();
-      if (!dailyStock) return null;
-      return dailyStock.stock[k]?.remaining ?? dailyStock.defaultUnits;
-    },
-    [dailyStock],
-  );
   // Step-by-step checkout modal — only opens after the customer validates
   // the cart. Account choice → details → review → payment → confirmed.
   const [checkoutOpen, setCheckoutOpen] = useState(false);
