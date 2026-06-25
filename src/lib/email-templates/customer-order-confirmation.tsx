@@ -144,6 +144,12 @@ const CustomerOrderConfirmation = (p: Props) => {
           <Hr style={hr} />
 
           <Text style={footer}>
+            Need to check your order?{' '}
+            <Link href={`${SITE_URL}/orders/lookup`} style={link}>Look it up here</Link>{' '}
+            with your email and order number.
+          </Text>
+
+          <Text style={footer}>
             By placing this order you accept our handling of your details as described in our{' '}
             <Link href={`${SITE_URL}/privacy`} style={link}>Privacy Policy</Link>.
           </Text>
