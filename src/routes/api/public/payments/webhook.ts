@@ -230,6 +230,21 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               return new Response("DB error", { status: 500 });
             }
 
+            // Return units to stock on full refund.
+            if (isFull) {
+              try {
+                const { restoreOrderStock } = await import(
+                  "@/lib/orders.functions"
+                );
+                await restoreOrderStock(order.items, order.delivery_date);
+              } catch (err) {
+                console.error(
+                  "[stripe-webhook] restore stock after refund failed",
+                  err,
+                );
+              }
+            }
+
             try {
               const { notifyOwnerOrderRefunded } = await import(
                 "@/lib/notifications.server"
