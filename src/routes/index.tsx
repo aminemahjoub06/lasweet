@@ -1401,7 +1401,7 @@ function Index() {
                   "Delivery: $10 under 8 pieces, free from 8 pieces",
                   "Choose one flavour or a mixed selection",
                   "Fresh products, subject to availability",
-                  "Final details confirmed after order request",
+                  "Made to order in small batches",
                 ].map((li) => (
                   <li key={li} className="flex gap-3 items-start">
                     <span className="mt-0.5 h-5 w-5 shrink-0 flex items-center justify-center border border-gold/50 rounded-full text-gold">
@@ -2071,9 +2071,7 @@ function CheckoutModal({
                   Pick-up: free, no minimum · Delivery: $10 under 8 pcs, free from 8 pcs.
                 </p>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
-                  Under 15 pcs: may be available immediately depending on stock ·
-                  15+ pcs: preparation time may be required unless stock is available ·
-                  Final availability confirmed after order request.
+                  Stock updates in real time · Choose any available date and time.
                 </p>
               </FieldLA>
 
