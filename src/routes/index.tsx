@@ -4,7 +4,11 @@ import * as React from "react";
 import { ShoppingBag, X, Minus, Plus, Trash2, Check, ChefHat, Sparkles, Volume2, VolumeX, Instagram } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { createCashOrder, createStripeCheckout } from "@/lib/orders.functions";
+import {
+  createCashOrder,
+  createStripeCheckout,
+  getDailyStockForDate,
+} from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PICKUP_ADDRESS, getAvailableSlots } from "@/lib/config";
 import raspberryImg from "@/assets/raspberry.png";
