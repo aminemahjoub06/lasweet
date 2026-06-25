@@ -96,7 +96,7 @@ async function reserveStockOrThrow(
       p_product_key: key,
       p_delivery_date: deliveryDate,
       p_qty: qty,
-      p_default_units: 18,
+      p_default_units: DEFAULT_DAILY_STOCK,
     });
     if (error) {
       // Roll back what we already reserved.
@@ -426,7 +426,7 @@ export const lookupOrderByEmail = createServerFn({ method: "POST" })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Read remaining daily stock for a given delivery date.
-// Returns { [productKey]: unitsRemaining }. Missing keys default to 18.
+// Returns { [productKey]: unitsRemaining }. Missing keys default to DEFAULT_DAILY_STOCK.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const getDailyStockForDate = createServerFn({ method: "GET" })
@@ -454,5 +454,5 @@ export const getDailyStockForDate = createServerFn({ method: "GET" })
         initial: r.initial_units,
       };
     }
-    return { date: data.date, defaultUnits: 18, stock };
+    return { date: data.date, defaultUnits: DEFAULT_DAILY_STOCK, stock };
   });
