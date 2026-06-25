@@ -384,3 +384,73 @@ export const getOrderStatus = createServerFn({ method: "GET" })
     }
     return row;
   });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Customer-facing order lookup: email + order number. Read-only.
+// Returns the order only if BOTH match — prevents enumeration.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const lookupOrderByEmail = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        email: z.string().email().max(255),
+        orderNumber: z.string().min(3).max(40),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("orders")
+      .select(
+        "order_number, customer_name, customer_email, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, items, subtotal, delivery_fee, created_at",
+      )
+      .eq("order_number", data.orderNumber.trim().toUpperCase())
+      .ilike("customer_email", data.email.trim())
+      .maybeSingle();
+    if (error) {
+      console.error("[lookupOrderByEmail] error", error);
+      throw new Error("Lookup failed. Please try again.");
+    }
+    if (!row) {
+      // Generic message — don't reveal whether order exists.
+      throw new Error(
+        "We couldn't find an order matching that email and order number.",
+      );
+    }
+    return row;
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Read remaining daily stock for a given delivery date.
+// Returns { [productKey]: unitsRemaining }. Missing keys default to 18.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const getDailyStockForDate = createServerFn({ method: "GET" })
+  .inputValidator((input) =>
+    z
+      .object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("daily_stock")
+      .select("product_key, units_remaining, initial_units")
+      .eq("delivery_date", data.date);
+    if (error) {
+      console.error("[getDailyStockForDate] error", error);
+      throw new Error("Could not load stock.");
+    }
+    const stock: Record<string, { remaining: number; initial: number }> = {};
+    for (const r of rows ?? []) {
+      stock[r.product_key] = {
+        remaining: r.units_remaining,
+        initial: r.initial_units,
+      };
+    }
+    return { date: data.date, defaultUnits: 18, stock };
+  });
