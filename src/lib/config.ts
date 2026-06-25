@@ -4,6 +4,9 @@
 export const PICKUP_ADDRESS =
   "803b Stanley Street, Woolloongabba QLD 4102 (next to Coles)";
 
+// Default daily stock per product (units available per delivery date).
+export const DEFAULT_DAILY_STOCK = 15;
+
 // Available pick-up / delivery time slots (24-hour, on the hour).
 export const TIME_SLOTS = [
   "10:00",
