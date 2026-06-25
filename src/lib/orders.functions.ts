@@ -62,6 +62,94 @@ function computeTotals(items: OrderPayload["items"], delivery: "delivery" | "pic
   return { subtotal, deliveryFee, total, totalQty };
 }
 
+// Stable per-flavour stock key. We use the product `no` ("01" Raspberry,
+// "02" Lemon, ...) because it is immutable across renames.
+function stockKeyFor(item: { no?: string; name: string }) {
+  return (item.no || item.name).trim().toLowerCase();
+}
+
+// Aggregate items into { stockKey: totalQty } for atomic decrement / restore.
+function aggregateStockUsage(items: OrderPayload["items"]) {
+  const out: Record<string, number> = {};
+  for (const it of items) {
+    const k = stockKeyFor(it);
+    out[k] = (out[k] || 0) + it.qty;
+  }
+  return out;
+}
+
+// Reserve daily stock for every line in the order. Throws if any product is
+// short. Already-decremented keys are restored if a later one fails so the
+// table stays consistent.
+async function reserveStockOrThrow(
+  items: OrderPayload["items"],
+  deliveryDate: string,
+) {
+  if (!deliveryDate) {
+    throw new Error("Please choose a delivery/pick-up date before ordering.");
+  }
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const usage = aggregateStockUsage(items);
+  const reserved: Array<{ key: string; qty: number }> = [];
+  for (const [key, qty] of Object.entries(usage)) {
+    const { data, error } = await supabaseAdmin.rpc("decrement_daily_stock", {
+      p_product_key: key,
+      p_delivery_date: deliveryDate,
+      p_qty: qty,
+      p_default_units: 18,
+    });
+    if (error) {
+      // Roll back what we already reserved.
+      for (const r of reserved) {
+        await supabaseAdmin.rpc("restore_daily_stock", {
+          p_product_key: r.key,
+          p_delivery_date: deliveryDate,
+          p_qty: r.qty,
+        });
+      }
+      console.error("[reserveStock] rpc error", error);
+      throw new Error("Could not reserve stock. Please try again.");
+    }
+    if (typeof data === "number" && data < 0) {
+      // Insufficient stock for this product on this date.
+      for (const r of reserved) {
+        await supabaseAdmin.rpc("restore_daily_stock", {
+          p_product_key: r.key,
+          p_delivery_date: deliveryDate,
+          p_qty: r.qty,
+        });
+      }
+      const friendly = items.find((it) => stockKeyFor(it) === key)?.name ?? key;
+      throw new Error(
+        `${friendly} is sold out for ${deliveryDate}. Please choose another day.`,
+      );
+    }
+    reserved.push({ key, qty });
+  }
+}
+
+// Restore stock when an order is cancelled/refunded/expired.
+export async function restoreOrderStock(
+  items: OrderPayload["items"] | unknown,
+  deliveryDate: string | null | undefined,
+) {
+  if (!deliveryDate) return;
+  if (!Array.isArray(items)) return;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const usage = aggregateStockUsage(items as OrderPayload["items"]);
+  for (const [key, qty] of Object.entries(usage)) {
+    try {
+      await supabaseAdmin.rpc("restore_daily_stock", {
+        p_product_key: key,
+        p_delivery_date: deliveryDate,
+        p_qty: qty,
+      });
+    } catch (err) {
+      console.error("[restoreOrderStock] failed", key, err);
+    }
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Cash order: save with payment_status = cash_pending
 // ─────────────────────────────────────────────────────────────────────────────
@@ -74,6 +162,9 @@ export const createCashOrder = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { subtotal, deliveryFee, total } = computeTotals(data.items, data.customer.delivery);
     const orderNumber = generateOrderNumber();
+
+    // Reserve stock atomically per (flavour, delivery date) before we save.
+    await reserveStockOrThrow(data.items, data.customer.date);
 
     const { error } = await supabaseAdmin.from("orders").insert({
       order_number: orderNumber,
@@ -97,6 +188,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
 
     if (error) {
       console.error("[createCashOrder] insert error", error);
+      await restoreOrderStock(data.items, data.customer.date);
       throw new Error("Could not save your order. Please try again.");
     }
 
@@ -133,6 +225,9 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const { subtotal, deliveryFee, total } = computeTotals(data.items, data.customer.delivery);
     const orderNumber = generateOrderNumber();
 
+    // Reserve stock atomically per (flavour, delivery date) before we save.
+    await reserveStockOrThrow(data.items, data.customer.date);
+
     // 1) Save the order as pending
     const { data: inserted, error: insertError } = await supabaseAdmin
       .from("orders")
@@ -160,6 +255,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
 
     if (insertError || !inserted) {
       console.error("[createStripeCheckout] insert error", insertError);
+      await restoreOrderStock(data.items, data.customer.date);
       throw new Error("Could not save your order. Please try again.");
     }
 
@@ -245,6 +341,12 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     if (!resp.ok) {
       const errText = await resp.text();
       console.error("[createStripeCheckout] gateway error", resp.status, errText);
+      // Stripe session creation failed — release the reservation.
+      await restoreOrderStock(data.items, data.customer.date);
+      await supabaseAdmin
+        .from("orders")
+        .update({ payment_status: "failed", notes: "Stripe session creation failed" })
+        .eq("id", inserted.id);
       throw new Error("Could not start secure payment. Please try again.");
     }
 
@@ -281,4 +383,74 @@ export const getOrderStatus = createServerFn({ method: "GET" })
       throw new Error("Order lookup failed.");
     }
     return row;
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Customer-facing order lookup: email + order number. Read-only.
+// Returns the order only if BOTH match — prevents enumeration.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const lookupOrderByEmail = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        email: z.string().email().max(255),
+        orderNumber: z.string().min(3).max(40),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("orders")
+      .select(
+        "order_number, customer_name, customer_email, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, items, subtotal, delivery_fee, created_at",
+      )
+      .eq("order_number", data.orderNumber.trim().toUpperCase())
+      .ilike("customer_email", data.email.trim())
+      .maybeSingle();
+    if (error) {
+      console.error("[lookupOrderByEmail] error", error);
+      throw new Error("Lookup failed. Please try again.");
+    }
+    if (!row) {
+      // Generic message — don't reveal whether order exists.
+      throw new Error(
+        "We couldn't find an order matching that email and order number.",
+      );
+    }
+    return row;
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Read remaining daily stock for a given delivery date.
+// Returns { [productKey]: unitsRemaining }. Missing keys default to 18.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const getDailyStockForDate = createServerFn({ method: "GET" })
+  .inputValidator((input) =>
+    z
+      .object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("daily_stock")
+      .select("product_key, units_remaining, initial_units")
+      .eq("delivery_date", data.date);
+    if (error) {
+      console.error("[getDailyStockForDate] error", error);
+      throw new Error("Could not load stock.");
+    }
+    const stock: Record<string, { remaining: number; initial: number }> = {};
+    for (const r of rows ?? []) {
+      stock[r.product_key] = {
+        remaining: r.units_remaining,
+        initial: r.initial_units,
+      };
+    }
+    return { date: data.date, defaultUnits: 18, stock };
   });

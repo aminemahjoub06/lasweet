@@ -4,7 +4,11 @@ import * as React from "react";
 import { ShoppingBag, X, Minus, Plus, Trash2, Check, ChefHat, Sparkles, Volume2, VolumeX, Instagram } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { createCashOrder, createStripeCheckout } from "@/lib/orders.functions";
+import {
+  createCashOrder,
+  createStripeCheckout,
+  getDailyStockForDate,
+} from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PICKUP_ADDRESS, getAvailableSlots } from "@/lib/config";
 import raspberryImg from "@/assets/raspberry.png";
@@ -557,6 +561,33 @@ function Index() {
     confirmPassword: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Daily stock for the currently selected delivery/pick-up date.
+  // Keys match the server-side stockKeyFor() = lowercased product `no` (e.g. "01").
+  const fetchStock = useServerFn(getDailyStockForDate);
+  const [dailyStock, setDailyStock] = useState<{
+    date: string;
+    defaultUnits: number;
+    stock: Record<string, { remaining: number; initial: number }>;
+  } | null>(null);
+  React.useEffect(() => {
+    let cancelled = false;
+    if (!form.date || !/^\d{4}-\d{2}-\d{2}$/.test(form.date)) {
+      setDailyStock(null);
+      return;
+    }
+    fetchStock({ data: { date: form.date } })
+      .then((res) => {
+        if (!cancelled) setDailyStock(res);
+      })
+      .catch(() => {
+        if (!cancelled) setDailyStock(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [form.date, fetchStock]);
+
   // Step-by-step checkout modal — only opens after the customer validates
   // the cart. Account choice → details → review → payment → confirmed.
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -761,7 +792,7 @@ function Index() {
 
       {/* HEADER */}
       <header
-        className="absolute left-0 right-0 z-20"
+        className="absolute left-0 right-0 z-50"
         style={{ top: bannerOpen ? 44 : 0 }}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 md:px-10 md:py-8">
@@ -787,12 +818,15 @@ function Index() {
               type="button"
               aria-label="Open cart"
               onClick={() => setCartOpen(true)}
-              className="relative inline-flex items-center justify-center h-10 w-10 border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors"
+              className="relative z-50 inline-flex items-center justify-center h-10 w-10 border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors overflow-visible"
             >
               <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1 inline-flex items-center justify-center bg-gold text-ink text-[10px] font-medium rounded-full border border-ink">
-                  {cartCount}
+                <span
+                  aria-label={`${cartCount} item${cartCount > 1 ? "s" : ""} in cart`}
+                  className="absolute -top-2 -right-2 z-[60] min-w-[22px] h-[22px] px-1.5 inline-flex items-center justify-center bg-gold text-ink text-[11px] font-semibold leading-none rounded-full ring-2 ring-ink shadow-[0_2px_8px_rgba(0,0,0,0.6)] pointer-events-none"
+                >
+                  {cartCount > 9 ? "9+" : cartCount}
                 </span>
               )}
             </button>
@@ -1749,6 +1783,23 @@ function Index() {
         resetOrder={resetOrder}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
+        stockByNo={
+          dailyStock
+            ? Object.fromEntries(
+                flavours
+                  .filter((fl) => fl.available !== false)
+                  .map((fl) => [
+                    fl.no,
+                    {
+                      name: fl.name,
+                      remaining:
+                        dailyStock.stock[fl.no.toLowerCase()]?.remaining ??
+                        dailyStock.defaultUnits,
+                    },
+                  ]),
+              )
+            : null
+        }
       />
     </main>
   );
@@ -1806,6 +1857,7 @@ function CheckoutModal({
   resetOrder,
   paymentMethod,
   setPaymentMethod,
+  stockByNo,
 }: {
   open: boolean;
   onClose: () => void;
@@ -1827,6 +1879,7 @@ function CheckoutModal({
   resetOrder: () => void;
   paymentMethod: "online" | "cash" | null;
   setPaymentMethod: (m: "online" | "cash" | null) => void;
+  stockByNo: Record<string, { name: string; remaining: number }> | null;
 }) {
   const steps: { k: CheckoutStep; l: string }[] = [
     { k: "account", l: "1 · Account" },
@@ -2035,6 +2088,34 @@ function CheckoutModal({
                     }}
                     className={inputCls}
                   />
+                  {form.date && stockByNo && (
+                    <div className="mt-2 space-y-1">
+                      {Object.entries(stockByNo).map(([no, info]) => {
+                        const remaining = info.remaining;
+                        const soldOut = remaining <= 0;
+                        const low = !soldOut && remaining <= 5;
+                        return (
+                          <p
+                            key={no}
+                            className={`text-[10px] tracking-[0.18em] uppercase leading-relaxed ${
+                              soldOut
+                                ? "text-[color:var(--destructive)]"
+                                : low
+                                  ? "text-gold"
+                                  : "text-[color:var(--foreground)]/55"
+                            }`}
+                          >
+                            {info.name}:{" "}
+                            {soldOut ? (
+                              <span>Sold out for this date — choose another day</span>
+                            ) : (
+                              <span>{remaining} left for this date</span>
+                            )}
+                          </p>
+                        );
+                      })}
+                    </div>
+                  )}
                 </FieldLA>
               </div>
 
