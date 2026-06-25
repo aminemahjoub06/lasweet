@@ -1007,11 +1007,6 @@ function Index() {
                       {/* Soft bottom gradient so caption stays readable */}
                       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ink via-ink/60 to-transparent pointer-events-none" />
 
-                      {/* Top-left number */}
-                      <div className="absolute top-4 left-4 text-[10px] tracking-[0.28em] uppercase text-gold">
-                        No. {fl.no}
-                      </div>
-
                       {/* Default small caption */}
                       <div
                         className={`absolute inset-x-0 bottom-0 p-4 md:p-5 transition-opacity duration-300 ${
