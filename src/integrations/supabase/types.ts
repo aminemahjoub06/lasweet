@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_stock: {
+        Row: {
+          delivery_date: string
+          initial_units: number
+          product_key: string
+          units_remaining: number
+          updated_at: string
+        }
+        Insert: {
+          delivery_date: string
+          initial_units?: number
+          product_key: string
+          units_remaining?: number
+          updated_at?: string
+        }
+        Update: {
+          delivery_date?: string
+          initial_units?: number
+          product_key?: string
+          units_remaining?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -313,12 +337,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement_daily_stock: {
+        Args: {
+          p_default_units?: number
+          p_delivery_date: string
+          p_product_key: string
+          p_qty: number
+        }
+        Returns: number
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
+        Returns: number
+      }
+      get_or_init_daily_stock: {
+        Args: {
+          p_default_units?: number
+          p_delivery_date: string
+          p_product_key: string
+        }
         Returns: number
       }
       move_to_dlq: {
@@ -337,6 +378,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      restore_daily_stock: {
+        Args: { p_delivery_date: string; p_product_key: string; p_qty: number }
+        Returns: number
       }
     }
     Enums: {
