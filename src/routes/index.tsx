@@ -1844,8 +1844,6 @@ function CheckoutModal({
   onClose: () => void;
   step: CheckoutStep;
   setStep: (s: CheckoutStep) => void;
-  accountMode: "create" | "login" | "guest" | null;
-  setAccountMode: (m: "create" | "login" | "guest" | null) => void;
   form: OrderForm;
   updateForm: <K extends keyof OrderForm>(k: K, v: OrderForm[K]) => void;
   formError: string | null;
@@ -1863,23 +1861,16 @@ function CheckoutModal({
   stockByNo: Record<string, { name: string; remaining: number }> | null;
 }) {
   const steps: { k: CheckoutStep; l: string }[] = [
-    { k: "account", l: "1 · Account" },
-    { k: "details", l: "2 · Details" },
-    { k: "review", l: "3 · Review" },
-    { k: "payment", l: "4 · Payment" },
+    { k: "details", l: "1 · Details" },
+    { k: "review", l: "2 · Review" },
+    { k: "payment", l: "3 · Payment" },
   ];
-  const order: CheckoutStep[] = ["account", "details", "review", "payment", "confirmed"];
+  const order: CheckoutStep[] = ["details", "review", "payment", "confirmed"];
 
   const fmtDate = (iso: string) => {
     if (!iso) return "";
     const [y, m, d] = iso.split("-");
     return d && m && y ? `${d}/${m}/${y}` : iso;
-  };
-
-  const chooseAccount = (m: "create" | "login" | "guest") => {
-    setAccountMode(m);
-    updateForm("createAccount", m === "create");
-    setStep("details");
   };
 
   // No card details collected — this is a request-only flow. Real payment
