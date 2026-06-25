@@ -2097,17 +2097,15 @@ function CheckoutModal({
                     }}
                     className={inputCls}
                   />
-                  {form.date && (
+                  {form.date && stockByNo && (
                     <div className="mt-2 space-y-1">
-                      {flavours.map((fl) => {
-                        if (!fl.available) return null;
-                        const remaining = remainingFor(fl.no);
-                        if (remaining === null) return null;
+                      {Object.entries(stockByNo).map(([no, info]) => {
+                        const remaining = info.remaining;
                         const soldOut = remaining <= 0;
                         const low = !soldOut && remaining <= 5;
                         return (
                           <p
-                            key={fl.no}
+                            key={no}
                             className={`text-[10px] tracking-[0.18em] uppercase leading-relaxed ${
                               soldOut
                                 ? "text-[color:var(--destructive)]"
@@ -2116,7 +2114,7 @@ function CheckoutModal({
                                   : "text-[color:var(--foreground)]/55"
                             }`}
                           >
-                            {fl.name}:{" "}
+                            {info.name}:{" "}
                             {soldOut ? (
                               <span>Sold out for this date — choose another day</span>
                             ) : (
