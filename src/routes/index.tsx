@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as React from "react";
 import { ShoppingBag, X, Minus, Plus, Trash2, Check, ChefHat, Sparkles, Volume2, VolumeX, Instagram } from "lucide-react";
 import { toast } from "sonner";
