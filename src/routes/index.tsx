@@ -2146,37 +2146,6 @@ function CheckoutModal({
                 />
               </FieldLA>
 
-              {(accountMode === "create" || accountMode === "login") && (
-                <div className="grid sm:grid-cols-2 gap-4 border-t border-line pt-5">
-                  <FieldLA label="Password" required>
-                    <input
-                      type="password"
-                      required
-                      minLength={8}
-                      maxLength={128}
-                      autoComplete={accountMode === "create" ? "new-password" : "current-password"}
-                      value={form.password}
-                      onChange={(e) => updateForm("password", e.target.value)}
-                      className={inputCls}
-                    />
-                  </FieldLA>
-                  {accountMode === "create" && (
-                    <FieldLA label="Confirm password" required>
-                      <input
-                        type="password"
-                        required
-                        minLength={8}
-                        maxLength={128}
-                        autoComplete="new-password"
-                        value={form.confirmPassword}
-                        onChange={(e) => updateForm("confirmPassword", e.target.value)}
-                        className={inputCls}
-                      />
-                    </FieldLA>
-                  )}
-                </div>
-              )}
-
               {formError && (
                 <p className="text-xs tracking-wide text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-4 py-3">
                   {formError}
@@ -2188,11 +2157,11 @@ function CheckoutModal({
                   type="button"
                   onClick={() => {
                     setFormError(null);
-                    setStep("account");
+                    onClose();
                   }}
                   className="sm:w-1/3 border border-gold/40 text-gold text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-gold hover:text-ink transition-colors"
                 >
-                  ← Back
+                  ← Back to cart
                 </button>
                 <button
                   type="submit"
@@ -2510,11 +2479,6 @@ function CheckoutModal({
                   {orderRef}
                 </div>
               </div>
-              {form.createAccount && (
-                <p className="mt-6 text-[11px] italic text-[color:var(--foreground)]/55">
-                  Saved to your account · {form.email}
-                </p>
-              )}
               <div className="mt-8">
                 <button
                   type="button"
