@@ -517,7 +517,7 @@ function Index() {
     // Always open the cart first — the customer must validate the cart
     // before the checkout flow begins.
     setCheckoutOpen(false);
-    setCheckoutStep("account");
+    setCheckoutStep("details");
     setCartOpen(true);
   };
   const setCartQty = (key: string, n: number) => {
@@ -1753,8 +1753,6 @@ function Index() {
         onClose={() => setCheckoutOpen(false)}
         step={checkoutStep}
         setStep={setCheckoutStep}
-        accountMode={accountMode}
-        setAccountMode={setAccountMode}
         form={form}
         updateForm={updateForm}
         formError={formError}
@@ -1794,7 +1792,7 @@ function Index() {
 // ─────────────────────────────────────────────────────────────────────────────
 // CHECKOUT MODAL
 // ─────────────────────────────────────────────────────────────────────────────
-type CheckoutStep = "account" | "details" | "review" | "payment" | "confirmed";
+type CheckoutStep = "details" | "review" | "payment" | "confirmed";
 type OrderForm = {
   fullName: string;
   email: string;
@@ -1806,9 +1804,6 @@ type OrderForm = {
   delivery: "delivery" | "pickup";
   address: string;
   notes: string;
-  createAccount: boolean;
-  password: string;
-  confirmPassword: string;
 };
 type SnapshotItem = {
   key: string;
