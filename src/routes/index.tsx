@@ -1887,6 +1887,7 @@ function CheckoutModal({
   resetOrder: () => void;
   paymentMethod: "online" | "cash" | null;
   setPaymentMethod: (m: "online" | "cash" | null) => void;
+  stockByNo: Record<string, { name: string; remaining: number }> | null;
 }) {
   const steps: { k: CheckoutStep; l: string }[] = [
     { k: "account", l: "1 · Account" },
