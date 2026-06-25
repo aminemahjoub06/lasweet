@@ -1401,7 +1401,7 @@ function Index() {
                   "Delivery: $10 under 8 pieces, free from 8 pieces",
                   "Choose one flavour or a mixed selection",
                   "Fresh products, subject to availability",
-                  "Final details confirmed after order request",
+                  "Made to order in small batches",
                 ].map((li) => (
                   <li key={li} className="flex gap-3 items-start">
                     <span className="mt-0.5 h-5 w-5 shrink-0 flex items-center justify-center border border-gold/50 rounded-full text-gold">
@@ -2071,9 +2071,7 @@ function CheckoutModal({
                   Pick-up: free, no minimum · Delivery: $10 under 8 pcs, free from 8 pcs.
                 </p>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
-                  Under 15 pcs: may be available immediately depending on stock ·
-                  15+ pcs: preparation time may be required unless stock is available ·
-                  Final availability confirmed after order request.
+                  Stock updates in real time · Choose any available date and time.
                 </p>
               </FieldLA>
 
@@ -2463,22 +2461,40 @@ function CheckoutModal({
               <div className="mx-auto mb-6 inline-flex h-14 w-14 items-center justify-center border border-gold/50 text-gold text-xl">
                 ✓
               </div>
-              <div className="eyebrow justify-center mb-4 inline-flex">Request Received</div>
+              <div className="eyebrow justify-center mb-4 inline-flex">Order Confirmed</div>
               <h3 className="font-serif-display text-3xl mb-4">
-                Thank you — your <span className="italic text-gold">order request</span> has been received.
+                Thank you — your <span className="italic text-gold">order is confirmed</span>.
               </h3>
               <p className="text-sm text-[color:var(--foreground)]/75 max-w-md mx-auto leading-relaxed">
-                We&apos;ll contact you shortly at{" "}
-                <span className="text-gold">{form.email}</span> to confirm
-                availability, final pricing and payment details.
+                A confirmation has been sent to{" "}
+                <span className="text-gold">{form.email}</span>. Payment will be
+                collected in cash on {form.delivery === "delivery" ? "delivery" : "pick-up"}.
               </p>
               <div className="mt-8 inline-block border border-gold/40 bg-ink-3/60 px-6 py-4">
                 <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-1">
-                  Request reference
+                  Order reference
                 </div>
                 <div className="font-serif-display text-2xl text-gold tracking-wider">
                   {orderRef}
                 </div>
+              </div>
+              <div className="mt-6 mx-auto max-w-sm border border-gold/30 bg-ink-3/40 px-5 py-4 text-left text-[12px] leading-relaxed text-[color:var(--foreground)]/80">
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">
+                  {form.delivery === "delivery" ? "Delivery" : "Pick-up"} details
+                </div>
+                {form.delivery === "pickup" ? (
+                  <p>
+                    Pick-up at <span className="text-gold">{PICKUP_ADDRESS}</span>
+                    {form.date ? <> on <span className="text-gold">{fmtDate(form.date)}</span></> : null}
+                    {form.time ? <> at <span className="text-gold">{form.time}</span></> : null}.
+                  </p>
+                ) : (
+                  <p>
+                    Delivery to <span className="text-gold">{form.address}</span>
+                    {form.date ? <> on <span className="text-gold">{fmtDate(form.date)}</span></> : null}
+                    {form.time ? <> at <span className="text-gold">{form.time}</span></> : null}.
+                  </p>
+                )}
               </div>
               <div className="mt-8">
                 <button
