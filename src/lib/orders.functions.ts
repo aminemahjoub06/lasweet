@@ -370,6 +370,8 @@ export const getOrderStatus = createServerFn({ method: "GET" })
     z.object({ orderNumber: z.string().min(3).max(40) }).parse(input),
   )
   .handler(async ({ data }) => {
+    const { enforceIpRateLimit } = await import("./rate-limit.server");
+    await enforceIpRateLimit({ endpoint: "lookupOrderByEmail", max: 5 });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("orders")

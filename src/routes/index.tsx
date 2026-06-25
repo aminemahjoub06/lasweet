@@ -517,7 +517,7 @@ function Index() {
     // Always open the cart first — the customer must validate the cart
     // before the checkout flow begins.
     setCheckoutOpen(false);
-    setCheckoutStep("account");
+    setCheckoutStep("details");
     setCartOpen(true);
   };
   const setCartQty = (key: string, n: number) => {
@@ -541,9 +541,6 @@ function Index() {
     delivery: "delivery" | "pickup";
     address: string;
     notes: string;
-    createAccount: boolean;
-    password: string;
-    confirmPassword: string;
   };
   const [form, setForm] = useState<OrderForm>({
     fullName: "",
@@ -556,9 +553,6 @@ function Index() {
     delivery: "delivery",
     address: "",
     notes: "",
-    createAccount: false,
-    password: "",
-    confirmPassword: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -591,9 +585,8 @@ function Index() {
   // Step-by-step checkout modal — only opens after the customer validates
   // the cart. Account choice → details → review → payment → confirmed.
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  type CheckoutStep = "account" | "details" | "review" | "payment" | "confirmed";
-  const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>("account");
-  const [accountMode, setAccountMode] = useState<"create" | "login" | "guest" | null>(null);
+  type CheckoutStep = "details" | "review" | "payment" | "confirmed";
+  const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>("details");
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cash" | null>(null);
@@ -643,10 +636,6 @@ function Index() {
       );
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
-    if (form.createAccount) {
-      if (form.password.length < 8) return setFormError("Password must be at least 8 characters.");
-      if (form.password !== form.confirmPassword) return setFormError("Passwords do not match.");
-    }
     // Lock in a snapshot of the cart so quantities can't change mid-review.
     setOrderSnapshot(
       cartEntries.map(({ variant, qty }) => ({
@@ -740,18 +729,15 @@ function Index() {
 
   const resetOrder = () => {
     setCheckoutOpen(false);
-    setCheckoutStep("account");
-    setAccountMode(null);
+    setCheckoutStep("details");
     setOrderRef(null);
     setOrderSnapshot([]);
-    setForm((f) => ({ ...f, password: "", confirmPassword: "" }));
   };
   const openCheckout = () => {
     if (cartEntries.length === 0) return;
     setCartOpen(false);
     setFormError(null);
-    setAccountMode(null);
-    setCheckoutStep("account");
+    setCheckoutStep("details");
     setCheckoutOpen(true);
   };
   const toggleExpand = (no: string) => {
@@ -1594,6 +1580,7 @@ function Index() {
             <a href="#wholesale" className="hover:text-gold transition">Wholesale</a>
             <a href="#events" className="hover:text-gold transition">Events</a>
             <a href="#allergens" className="hover:text-gold transition">Allergens</a>
+            <Link to="/orders/lookup" className="hover:text-gold transition">Find my order</Link>
             <Link to="/privacy" className="hover:text-gold transition">Privacy</Link>
             <Link to="/terms" className="hover:text-gold transition">Terms</Link>
             <Link to="/legal" className="hover:text-gold transition">Legal</Link>
@@ -1767,8 +1754,6 @@ function Index() {
         onClose={() => setCheckoutOpen(false)}
         step={checkoutStep}
         setStep={setCheckoutStep}
-        accountMode={accountMode}
-        setAccountMode={setAccountMode}
         form={form}
         updateForm={updateForm}
         formError={formError}
@@ -1808,7 +1793,7 @@ function Index() {
 // ─────────────────────────────────────────────────────────────────────────────
 // CHECKOUT MODAL
 // ─────────────────────────────────────────────────────────────────────────────
-type CheckoutStep = "account" | "details" | "review" | "payment" | "confirmed";
+type CheckoutStep = "details" | "review" | "payment" | "confirmed";
 type OrderForm = {
   fullName: string;
   email: string;
@@ -1820,9 +1805,6 @@ type OrderForm = {
   delivery: "delivery" | "pickup";
   address: string;
   notes: string;
-  createAccount: boolean;
-  password: string;
-  confirmPassword: string;
 };
 type SnapshotItem = {
   key: string;
@@ -1841,8 +1823,6 @@ function CheckoutModal({
   onClose,
   step,
   setStep,
-  accountMode,
-  setAccountMode,
   form,
   updateForm,
   formError,
@@ -1863,8 +1843,6 @@ function CheckoutModal({
   onClose: () => void;
   step: CheckoutStep;
   setStep: (s: CheckoutStep) => void;
-  accountMode: "create" | "login" | "guest" | null;
-  setAccountMode: (m: "create" | "login" | "guest" | null) => void;
   form: OrderForm;
   updateForm: <K extends keyof OrderForm>(k: K, v: OrderForm[K]) => void;
   formError: string | null;
@@ -1882,23 +1860,16 @@ function CheckoutModal({
   stockByNo: Record<string, { name: string; remaining: number }> | null;
 }) {
   const steps: { k: CheckoutStep; l: string }[] = [
-    { k: "account", l: "1 · Account" },
-    { k: "details", l: "2 · Details" },
-    { k: "review", l: "3 · Review" },
-    { k: "payment", l: "4 · Payment" },
+    { k: "details", l: "1 · Details" },
+    { k: "review", l: "2 · Review" },
+    { k: "payment", l: "3 · Payment" },
   ];
-  const order: CheckoutStep[] = ["account", "details", "review", "payment", "confirmed"];
+  const order: CheckoutStep[] = ["details", "review", "payment", "confirmed"];
 
   const fmtDate = (iso: string) => {
     if (!iso) return "";
     const [y, m, d] = iso.split("-");
     return d && m && y ? `${d}/${m}/${y}` : iso;
-  };
-
-  const chooseAccount = (m: "create" | "login" | "guest") => {
-    setAccountMode(m);
-    updateForm("createAccount", m === "create");
-    setStep("details");
   };
 
   // No card details collected — this is a request-only flow. Real payment
@@ -1962,59 +1933,19 @@ function CheckoutModal({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
-          {/* STEP: ACCOUNT */}
-          {step === "account" && (
-            <div className="space-y-5">
-              <div>
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Account</div>
-                <h3 className="font-serif-display text-2xl">
-                  How would you like to <span className="italic text-gold">continue</span>?
-                </h3>
-                <p className="mt-3 text-sm text-[color:var(--foreground)]/70 leading-relaxed">
-                  Create an account to track future orders, log in if you already have one, or
-                  continue as a guest.
-                </p>
-              </div>
-              <div className="grid gap-3">
-                {(
-                  [
-                    { k: "create", l: "Create an account", d: "Save your details for next time." },
-                    { k: "login", l: "Log in", d: "Returning customer." },
-                    { k: "guest", l: "Continue as guest", d: "No account, no password." },
-                  ] as const
-                ).map((opt) => (
-                  <button
-                    key={opt.k}
-                    type="button"
-                    onClick={() => chooseAccount(opt.k)}
-                    className="text-left border border-gold/40 bg-ink-3/40 px-5 py-4 hover:border-gold hover:bg-ink-3/70 transition-colors"
-                  >
-                    <div className="text-[11px] tracking-[0.24em] uppercase text-gold">{opt.l}</div>
-                    <div className="mt-1 text-sm text-[color:var(--foreground)]/70">{opt.d}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* STEP: DETAILS */}
           {step === "details" && (
             <form onSubmit={validateDetails} className="space-y-5" noValidate>
               <div>
                 <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">
-                  {accountMode === "login" ? "Log in" : "Your details"}
+                  Your details
                 </div>
                 <h3 className="font-serif-display text-2xl">
-                  {accountMode === "login" ? (
-                    <>
-                      Welcome <span className="italic text-gold">back</span>
-                    </>
-                  ) : (
-                    <>
-                      Your <span className="italic text-gold">information</span>
-                    </>
-                  )}
+                  Your <span className="italic text-gold">information</span>
                 </h3>
+                <p className="mt-3 text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
+                  Guest checkout — no account needed.
+                </p>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
@@ -2216,37 +2147,6 @@ function CheckoutModal({
                 />
               </FieldLA>
 
-              {(accountMode === "create" || accountMode === "login") && (
-                <div className="grid sm:grid-cols-2 gap-4 border-t border-line pt-5">
-                  <FieldLA label="Password" required>
-                    <input
-                      type="password"
-                      required
-                      minLength={8}
-                      maxLength={128}
-                      autoComplete={accountMode === "create" ? "new-password" : "current-password"}
-                      value={form.password}
-                      onChange={(e) => updateForm("password", e.target.value)}
-                      className={inputCls}
-                    />
-                  </FieldLA>
-                  {accountMode === "create" && (
-                    <FieldLA label="Confirm password" required>
-                      <input
-                        type="password"
-                        required
-                        minLength={8}
-                        maxLength={128}
-                        autoComplete="new-password"
-                        value={form.confirmPassword}
-                        onChange={(e) => updateForm("confirmPassword", e.target.value)}
-                        className={inputCls}
-                      />
-                    </FieldLA>
-                  )}
-                </div>
-              )}
-
               {formError && (
                 <p className="text-xs tracking-wide text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-4 py-3">
                   {formError}
@@ -2258,11 +2158,11 @@ function CheckoutModal({
                   type="button"
                   onClick={() => {
                     setFormError(null);
-                    setStep("account");
+                    onClose();
                   }}
                   className="sm:w-1/3 border border-gold/40 text-gold text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-gold hover:text-ink transition-colors"
                 >
-                  ← Back
+                  ← Back to cart
                 </button>
                 <button
                   type="submit"
@@ -2580,11 +2480,6 @@ function CheckoutModal({
                   {orderRef}
                 </div>
               </div>
-              {form.createAccount && (
-                <p className="mt-6 text-[11px] italic text-[color:var(--foreground)]/55">
-                  Saved to your account · {form.email}
-                </p>
-              )}
               <div className="mt-8">
                 <button
                   type="button"
