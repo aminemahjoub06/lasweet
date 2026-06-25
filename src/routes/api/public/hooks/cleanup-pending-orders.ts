@@ -24,7 +24,7 @@ async function handleCleanup(request: Request) {
 
   const { data: candidates, error: selErr } = await supabaseAdmin
     .from("orders")
-    .select("id, order_number, stripe_session_id, notes, total")
+    .select("id, order_number, stripe_session_id, notes, total, items, delivery_date")
     .eq("payment_method", "online")
     .eq("payment_status", "pending")
     .lt("created_at", cutoff);
@@ -82,6 +82,13 @@ async function handleCleanup(request: Request) {
         .eq("id", order.id);
       if (updErr) throw updErr;
       rowsUpdated++;
+      // Release reserved stock so other customers can book this date.
+      try {
+        const { restoreOrderStock } = await import("@/lib/orders.functions");
+        await restoreOrderStock(order.items, order.delivery_date);
+      } catch (err) {
+        console.error("[cleanup-pending] restore stock failed", order.order_number, err);
+      }
     } catch (err) {
       console.error("[cleanup-pending] row error", order.order_number, err);
       errors.push(order.order_number);
