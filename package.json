@@ -96,5 +96,9 @@
     "overrides": {
       "entities": "4.5.0"
     }
+  },
+  "overrides": {
+    "undici": "^7.16.0",
+    "ws": "^8.18.3"
   }
 }
