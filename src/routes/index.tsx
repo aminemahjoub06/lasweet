@@ -1792,6 +1792,23 @@ function Index() {
         resetOrder={resetOrder}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
+        stockByNo={
+          dailyStock
+            ? Object.fromEntries(
+                flavours
+                  .filter((fl) => fl.available !== false)
+                  .map((fl) => [
+                    fl.no,
+                    {
+                      name: fl.name,
+                      remaining:
+                        dailyStock.stock[fl.no.toLowerCase()]?.remaining ??
+                        dailyStock.defaultUnits,
+                    },
+                  ]),
+              )
+            : null
+        }
       />
     </main>
   );
