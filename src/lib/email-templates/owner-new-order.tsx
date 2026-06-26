@@ -38,6 +38,9 @@ interface Props {
   total?: number
   paymentMethod?: 'cash' | 'online'
   paymentStatus?: string
+  paymentPlan?: 'full' | 'deposit_50'
+  amountPaidOnline?: number
+  balanceDueCash?: number
 }
 
 const OwnerNewOrderEmail = (p: Props) => {
@@ -106,6 +109,21 @@ const OwnerNewOrderEmail = (p: Props) => {
           <Text style={value}>
             Payment: {(p.paymentMethod ?? '').toUpperCase()} — {p.paymentStatus}
           </Text>
+          {p.paymentPlan === 'deposit_50' ? (
+            <>
+              <Text style={value}>Plan: 50% deposit</Text>
+              <Text style={value}>Paid online (Stripe): ${(p.amountPaidOnline ?? 0).toFixed(2)}</Text>
+              <Text style={total}>
+                Cash to collect on {p.deliveryMethod === 'delivery' ? 'delivery' : 'pick-up'}: ${(p.balanceDueCash ?? 0).toFixed(2)}
+              </Text>
+            </>
+          ) : p.paymentMethod === 'online' ? (
+            <Text style={value}>Paid in full online: ${(p.amountPaidOnline ?? p.total ?? 0).toFixed(2)} — nothing to collect</Text>
+          ) : (
+            <Text style={total}>
+              Cash to collect on {p.deliveryMethod === 'delivery' ? 'delivery' : 'pick-up'}: ${(p.balanceDueCash ?? p.total ?? 0).toFixed(2)}
+            </Text>
+          )}
         </Container>
       </Body>
     </Html>
