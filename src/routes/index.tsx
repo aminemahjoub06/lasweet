@@ -1768,8 +1768,8 @@ function Index() {
         payOrder={payOrder}
         orderRef={orderRef}
         resetOrder={resetOrder}
-        paymentMethod={paymentMethod}
-        setPaymentMethod={setPaymentMethod}
+        paymentPlan={paymentPlan}
+        setPaymentPlan={setPaymentPlan}
         stockByNo={
           dailyStock
             ? Object.fromEntries(
