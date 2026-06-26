@@ -485,3 +485,44 @@ export const getDailyStockForDate = createServerFn({ method: "GET" })
     }
     return { date: data.date, defaultUnits: DEFAULT_DAILY_STOCK, stock };
   });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin: mark a deposit order's cash balance as collected.
+// Password-protected the same way as listAdminOrders.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const markBalanceCollected = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        password: z.string().min(1).max(200),
+        orderNumber: z.string().min(3).max(40),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const expected = process.env.ADMIN_DASHBOARD_PASSWORD;
+    if (!expected || data.password !== expected) {
+      throw new Error("Invalid admin password.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("orders")
+      .update({
+        payment_status: "paid",
+        balance_due_cash: 0,
+        balance_collected_at: new Date().toISOString(),
+      })
+      .eq("order_number", data.orderNumber)
+      .eq("payment_status", "deposit_paid")
+      .select("order_number, balance_collected_at")
+      .maybeSingle();
+    if (error) {
+      console.error("[markBalanceCollected] error", error);
+      throw new Error("Could not mark balance as collected.");
+    }
+    if (!row) {
+      throw new Error("Order not found or balance already collected.");
+    }
+    return { ok: true, orderNumber: row.order_number };
+  });
