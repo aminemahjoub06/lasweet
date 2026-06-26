@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Fragment, useState } from "react";
 import { listAdminOrders } from "@/lib/admin.functions";
+import { markBalanceCollected } from "@/lib/orders.functions";
 
 export const Route = createFileRoute("/admin/orders")({
   component: AdminOrdersPage,
@@ -31,16 +32,22 @@ type Order = {
   total: number;
   payment_method: string;
   payment_status: string;
+  payment_plan?: string | null;
+  amount_paid_online?: number | null;
+  balance_due_cash?: number | null;
+  balance_collected_at?: string | null;
   created_at: string;
 };
 
 function AdminOrdersPage() {
   const fetchOrders = useServerFn(listAdminOrders);
+  const collectBalance = useServerFn(markBalanceCollected);
   const [password, setPassword] = useState("");
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [collectingId, setCollectingId] = useState<string | null>(null);
 
   async function load(e?: React.FormEvent) {
     e?.preventDefault();
@@ -54,6 +61,22 @@ function AdminOrdersPage() {
       setOrders(null);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleCollect(o: Order) {
+    if (collectingId) return;
+    if (!confirm(`Mark balance of A$${Number(o.balance_due_cash ?? 0).toFixed(2)} as collected for ${o.order_number}?`)) {
+      return;
+    }
+    setCollectingId(o.id);
+    try {
+      await collectBalance({ data: { password, orderNumber: o.order_number } });
+      await load();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to mark balance collected.");
+    } finally {
+      setCollectingId(null);
     }
   }
 
@@ -108,6 +131,7 @@ function AdminOrdersPage() {
                   <th className="text-left px-3 py-2">Pay</th>
                   <th className="text-left px-3 py-2">Status</th>
                   <th className="text-right px-3 py-2">Total</th>
+                  <th className="text-right px-3 py-2">Balance to collect</th>
                 </tr>
               </thead>
               <tbody>
@@ -124,25 +148,48 @@ function AdminOrdersPage() {
                         <div className="text-[11px] text-[color:var(--foreground)]/60">{o.customer_email}</div>
                       </td>
                       <td className="px-3 py-2">{o.delivery_method}</td>
-                      <td className="px-3 py-2">{o.payment_method}</td>
+                      <td className="px-3 py-2">
+                        {o.payment_plan === "deposit_50" ? "deposit 50%" : o.payment_method}
+                      </td>
                       <td className="px-3 py-2">
                         <span
                           className={
                             o.payment_status === "paid"
                               ? "text-green-400"
-                              : o.payment_status === "pending"
+                              : o.payment_status === "deposit_paid"
                                 ? "text-yellow-400"
-                                : "text-[color:var(--foreground)]/70"
+                                : o.payment_status === "pending"
+                                  ? "text-yellow-400"
+                                  : "text-[color:var(--foreground)]/70"
                           }
                         >
                           {o.payment_status}
                         </span>
                       </td>
                       <td className="px-3 py-2 text-right text-gold">${Number(o.total).toFixed(2)}</td>
+                      <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
+                        {o.payment_status === "deposit_paid" && Number(o.balance_due_cash ?? 0) > 0 ? (
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="text-gold font-semibold">
+                              ${Number(o.balance_due_cash).toFixed(2)}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={collectingId === o.id}
+                              onClick={() => handleCollect(o)}
+                              className="text-[9px] tracking-[0.22em] uppercase text-ink bg-gold px-2 py-1 hover:bg-[color:var(--gold-soft)] disabled:opacity-50"
+                            >
+                              {collectingId === o.id ? "Saving…" : "Mark balance collected"}
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[color:var(--foreground)]/40">—</span>
+                        )}
+                      </td>
                     </tr>
                     {openId === o.id && (
                       <tr className="bg-ink-3/40">
-                        <td colSpan={7} className="px-3 py-4 text-xs">
+                        <td colSpan={8} className="px-3 py-4 text-xs">
                           <div className="grid sm:grid-cols-2 gap-4">
                             <div>
                               <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80 mb-1">Customer</div>
@@ -190,7 +237,7 @@ function AdminOrdersPage() {
                 ))}
                 {orders.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-3 py-6 text-center text-[color:var(--foreground)]/60">
+                    <td colSpan={8} className="px-3 py-6 text-center text-[color:var(--foreground)]/60">
                       No orders yet.
                     </td>
                   </tr>
