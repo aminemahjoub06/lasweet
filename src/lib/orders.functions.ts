@@ -41,6 +41,7 @@ const orderPayloadSchema = z.object({
 
 const stripeCheckoutSchema = orderPayloadSchema.extend({
   origin: z.string().url().max(2048).optional(),
+  paymentPlan: z.enum(["full", "deposit_50"]).default("full"),
 });
 
 export type OrderPayload = z.infer<typeof orderPayloadSchema>;
@@ -226,6 +227,13 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const { subtotal, deliveryFee, total } = computeTotals(data.items, data.customer.delivery);
     const orderNumber = generateOrderNumber();
 
+    const paymentPlan = data.paymentPlan ?? "full";
+    const totalCents = Math.round(total * 100);
+    const chargeCents =
+      paymentPlan === "deposit_50" ? Math.round(totalCents / 2) : totalCents;
+    const chargeAud = chargeCents / 100;
+    const balanceDueAud = Math.max(0, total - chargeAud);
+
     // Reserve stock atomically per (flavour, delivery date) before we save.
     await reserveStockOrThrow(data.items, data.customer.date);
 
@@ -250,6 +258,9 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         total,
         payment_method: "online",
         payment_status: "pending",
+        payment_plan: paymentPlan,
+        amount_paid_online: 0,
+        balance_due_cash: 0,
       })
       .select("id")
       .single();
@@ -302,28 +313,45 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     params.append("client_reference_id", orderNumber);
     params.append("metadata[order_number]", orderNumber);
     params.append("metadata[order_id]", inserted.id);
+    params.append("metadata[payment_plan]", paymentPlan);
 
-    let lineIndex = 0;
-    for (const item of data.items) {
-      const label = [item.prefix, item.suffix].filter(Boolean).join("").trim() || item.name;
-      const nameWithSize = item.sizeLabel ? `${label} (Size ${item.sizeLabel})` : label;
-      params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
-      params.append(`line_items[${lineIndex}][price_data][product_data][name]`, nameWithSize);
+    if (paymentPlan === "deposit_50") {
+      // Single line covering the 50% deposit. The remaining balance is
+      // collected in cash on pick-up/delivery.
+      params.append(`line_items[0][price_data][currency]`, "aud");
       params.append(
-        `line_items[${lineIndex}][price_data][unit_amount]`,
-        String(Math.round(item.price * 100)),
+        `line_items[0][price_data][product_data][name]`,
+        `Deposit (50%) — Order ${orderNumber}`,
       );
-      params.append(`line_items[${lineIndex}][quantity]`, String(item.qty));
-      lineIndex++;
-    }
-    if (deliveryFee > 0) {
-      params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
-      params.append(`line_items[${lineIndex}][price_data][product_data][name]`, "Delivery fee");
       params.append(
-        `line_items[${lineIndex}][price_data][unit_amount]`,
-        String(Math.round(deliveryFee * 100)),
+        `line_items[0][price_data][product_data][description]`,
+        `50% deposit on your L&A Sweet order. Balance of A$${balanceDueAud.toFixed(2)} payable in cash on ${data.customer.delivery === "delivery" ? "delivery" : "pick-up"}.`,
       );
-      params.append(`line_items[${lineIndex}][quantity]`, "1");
+      params.append(`line_items[0][price_data][unit_amount]`, String(chargeCents));
+      params.append(`line_items[0][quantity]`, "1");
+    } else {
+      let lineIndex = 0;
+      for (const item of data.items) {
+        const label = [item.prefix, item.suffix].filter(Boolean).join("").trim() || item.name;
+        const nameWithSize = item.sizeLabel ? `${label} (Size ${item.sizeLabel})` : label;
+        params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
+        params.append(`line_items[${lineIndex}][price_data][product_data][name]`, nameWithSize);
+        params.append(
+          `line_items[${lineIndex}][price_data][unit_amount]`,
+          String(Math.round(item.price * 100)),
+        );
+        params.append(`line_items[${lineIndex}][quantity]`, String(item.qty));
+        lineIndex++;
+      }
+      if (deliveryFee > 0) {
+        params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
+        params.append(`line_items[${lineIndex}][price_data][product_data][name]`, "Delivery fee");
+        params.append(
+          `line_items[${lineIndex}][price_data][unit_amount]`,
+          String(Math.round(deliveryFee * 100)),
+        );
+        params.append(`line_items[${lineIndex}][quantity]`, "1");
+      }
     }
 
     const resp = await fetch(
