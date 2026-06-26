@@ -1837,8 +1837,8 @@ function CheckoutModal({
   payOrder,
   orderRef,
   resetOrder,
-  paymentMethod,
-  setPaymentMethod,
+  paymentPlan,
+  setPaymentPlan,
   stockByNo,
 }: {
   open: boolean;
@@ -1857,8 +1857,8 @@ function CheckoutModal({
   payOrder: () => void;
   orderRef: string | null;
   resetOrder: () => void;
-  paymentMethod: "online" | "cash" | null;
-  setPaymentMethod: (m: "online" | "cash" | null) => void;
+  paymentPlan: "full" | "deposit_50" | null;
+  setPaymentPlan: (m: "full" | "deposit_50" | null) => void;
   stockByNo: Record<string, { name: string; remaining: number }> | null;
 }) {
   const steps: { k: CheckoutStep; l: string }[] = [
