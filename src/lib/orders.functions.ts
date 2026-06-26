@@ -206,6 +206,9 @@ export const createCashOrder = createServerFn({ method: "POST" })
         total,
         paymentMethod: "cash",
         paymentStatus: "cash_pending",
+        paymentPlan: "full",
+        amountPaidOnline: 0,
+        balanceDueCash: total,
       });
     } catch (e) {
       console.error("[notifyOwner] failed", e);
