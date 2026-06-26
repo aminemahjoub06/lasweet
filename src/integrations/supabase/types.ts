@@ -127,6 +127,9 @@ export type Database = {
       }
       orders: {
         Row: {
+          amount_paid_online: number
+          balance_collected_at: string | null
+          balance_due_cash: number
           business: string | null
           created_at: string
           customer_email: string
@@ -143,6 +146,7 @@ export type Database = {
           order_number: string
           order_type: string | null
           payment_method: string
+          payment_plan: string
           payment_status: string
           refunded_amount: number
           refunded_at: string | null
@@ -152,6 +156,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          amount_paid_online?: number
+          balance_collected_at?: string | null
+          balance_due_cash?: number
           business?: string | null
           created_at?: string
           customer_email: string
@@ -168,6 +175,7 @@ export type Database = {
           order_number: string
           order_type?: string | null
           payment_method: string
+          payment_plan?: string
           payment_status?: string
           refunded_amount?: number
           refunded_at?: string | null
@@ -177,6 +185,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          amount_paid_online?: number
+          balance_collected_at?: string | null
+          balance_due_cash?: number
           business?: string | null
           created_at?: string
           customer_email?: string
@@ -193,6 +204,7 @@ export type Database = {
           order_number?: string
           order_type?: string | null
           payment_method?: string
+          payment_plan?: string
           payment_status?: string
           refunded_amount?: number
           refunded_at?: string | null
