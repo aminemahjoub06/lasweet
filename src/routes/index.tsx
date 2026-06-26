@@ -2387,48 +2387,83 @@ function CheckoutModal({
                 })()}
               </div>
 
-              {/* Payment method selector */}
-              <div className="space-y-3">
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold">
-                  Payment method
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("online")}
-                    className={`text-left border p-4 transition-colors ${
-                      paymentMethod === "online"
-                        ? "border-gold bg-gold/10"
-                        : "border-gold/30 hover:border-gold/60"
-                    }`}
-                  >
-                    <div className="text-[11px] tracking-[0.24em] uppercase text-gold mb-1">
-                      Pay online
+              {/* Payment options — 50% deposit or pay in full. */}
+              {(() => {
+                const snapQty = orderSnapshot.reduce((s, i) => s + i.qty, 0);
+                const fee = form.delivery === "delivery" && snapQty < 8 ? 10 : 0;
+                const orderTotal = snapshotTotal + fee;
+                const deposit = Math.round((orderTotal / 2) * 100) / 100;
+                const balance = Math.round((orderTotal - deposit) * 100) / 100;
+                const fulfilWord = form.delivery === "delivery" ? "delivery" : "pick-up";
+                return (
+                  <div className="space-y-3">
+                    <div className="text-[10px] tracking-[0.28em] uppercase text-gold">
+                      How would you like to pay?
                     </div>
-                    <div className="font-serif-display text-lg">Card payment</div>
-                    <p className="mt-1 text-[12px] text-[color:var(--foreground)]/70 leading-relaxed">
-                      Secure online payment by card.
-                    </p>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("cash")}
-                    className={`text-left border p-4 transition-colors ${
-                      paymentMethod === "cash"
-                        ? "border-gold bg-gold/10"
-                        : "border-gold/30 hover:border-gold/60"
-                    }`}
-                  >
-                    <div className="text-[11px] tracking-[0.24em] uppercase text-gold mb-1">
-                      Pay cash
+                    <div className="grid grid-cols-1 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentPlan("deposit_50")}
+                        className={`text-left border p-4 transition-colors ${
+                          paymentPlan === "deposit_50"
+                            ? "border-gold bg-gold text-ink"
+                            : "border-gold/30 hover:border-gold/60"
+                        }`}
+                      >
+                        <div
+                          className={`text-[11px] tracking-[0.24em] uppercase mb-1 ${
+                            paymentPlan === "deposit_50" ? "text-ink" : "text-gold"
+                          }`}
+                        >
+                          {paymentPlan === "deposit_50" ? "✓ " : ""}Option A
+                        </div>
+                        <div className="font-serif-display text-lg">
+                          Pay 50% deposit now — A${deposit.toFixed(2)}
+                        </div>
+                        <p
+                          className={`mt-1 text-[12px] leading-relaxed ${
+                            paymentPlan === "deposit_50"
+                              ? "text-ink/80"
+                              : "text-[color:var(--foreground)]/70"
+                          }`}
+                        >
+                          Secure your order with a 50% deposit. The remaining
+                          A${balance.toFixed(2)} is collected in cash on {fulfilWord}.
+                        </p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentPlan("full")}
+                        className={`text-left border p-4 transition-colors ${
+                          paymentPlan === "full"
+                            ? "border-gold bg-gold text-ink"
+                            : "border-gold/30 hover:border-gold/60"
+                        }`}
+                      >
+                        <div
+                          className={`text-[11px] tracking-[0.24em] uppercase mb-1 ${
+                            paymentPlan === "full" ? "text-ink" : "text-gold"
+                          }`}
+                        >
+                          {paymentPlan === "full" ? "✓ " : ""}Option B
+                        </div>
+                        <div className="font-serif-display text-lg">
+                          Pay full amount now — A${orderTotal.toFixed(2)}
+                        </div>
+                        <p
+                          className={`mt-1 text-[12px] leading-relaxed ${
+                            paymentPlan === "full"
+                              ? "text-ink/80"
+                              : "text-[color:var(--foreground)]/70"
+                          }`}
+                        >
+                          Pay in full now and nothing to settle later.
+                        </p>
+                      </button>
                     </div>
-                    <div className="font-serif-display text-lg">On pick-up / delivery</div>
-                    <p className="mt-1 text-[12px] text-[color:var(--foreground)]/70 leading-relaxed">
-                      Cash payment available on pick-up or delivery.
-                    </p>
-                  </button>
-                </div>
-              </div>
+                  </div>
+                );
+              })()}
 
               {formError && (
                 <p className="text-xs tracking-wide text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-4 py-3">
@@ -2452,11 +2487,9 @@ function CheckoutModal({
                 >
                   {paying
                     ? "Processing…"
-                    : paymentMethod === "online"
+                    : paymentPlan
                       ? "Continue to Secure Payment →"
-                      : paymentMethod === "cash"
-                        ? "Confirm Order"
-                        : "Choose a payment method"}
+                      : "Choose a payment option"}
                 </button>
               </div>
             </div>
