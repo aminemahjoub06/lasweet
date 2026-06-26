@@ -754,7 +754,7 @@ function Index() {
             <Sparkles className="hidden sm:block h-3.5 w-3.5 text-gold shrink-0" strokeWidth={1.5} />
             <p className="flex-1 text-[11px] md:text-[12px] leading-snug tracking-wide text-[color:var(--foreground)]/85">
               <span className="text-gold uppercase tracking-[0.22em] mr-2">Now open</span>
-              <span className="hidden md:inline">Orders are available online — choose pick-up or delivery, select your preferred date, and pay by card or cash.</span>
+              <span className="hidden md:inline">Orders are available online — choose pick-up or delivery, secure your order with a 50% deposit or pay in full.</span>
               <span className="md:hidden">Orders are now open online.</span>
             </p>
             <button
