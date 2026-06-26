@@ -405,7 +405,7 @@ export const getOrderStatus = createServerFn({ method: "GET" })
     const { data: row, error } = await supabaseAdmin
       .from("orders")
       .select(
-        "order_number, customer_name, customer_email, customer_phone, business, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, items, subtotal, delivery_fee, created_at",
+        "order_number, customer_name, customer_email, customer_phone, business, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, payment_plan, amount_paid_online, balance_due_cash, balance_collected_at, items, subtotal, delivery_fee, created_at",
       )
       .eq("order_number", data.orderNumber)
       .maybeSingle();
@@ -435,7 +435,7 @@ export const lookupOrderByEmail = createServerFn({ method: "POST" })
     const { data: row, error } = await supabaseAdmin
       .from("orders")
       .select(
-        "order_number, customer_name, customer_email, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, items, subtotal, delivery_fee, created_at",
+        "order_number, customer_name, customer_email, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, payment_plan, amount_paid_online, balance_due_cash, balance_collected_at, items, subtotal, delivery_fee, created_at",
       )
       .eq("order_number", data.orderNumber.trim().toUpperCase())
       .ilike("customer_email", data.email.trim())
