@@ -597,8 +597,7 @@ function Index() {
   const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>("details");
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash" | null>(null);
-  const submitCashOrder = useServerFn(createCashOrder);
+  const [paymentPlan, setPaymentPlan] = useState<"full" | "deposit_50" | null>(null);
   const submitOnlineOrder = useServerFn(createStripeCheckout);
   // Snapshot of the cart at the moment the customer advances to payment,
   // so quantities can't change mid-checkout.
@@ -669,8 +668,8 @@ function Index() {
 
   const payOrder = async () => {
     if (paying || orderSnapshot.length === 0) return;
-    if (!paymentMethod) {
-      setFormError("Please choose a payment method.");
+    if (!paymentPlan) {
+      setFormError("Please choose a payment option.");
       return;
     }
     setPaying(true);
@@ -702,29 +701,22 @@ function Index() {
         })),
       };
 
-      if (paymentMethod === "online") {
-        const { url } = await submitOnlineOrder({
-          data: { ...payload, origin: window.location.origin },
-        });
-        setCart({});
-        // Break out of the Lovable preview iframe — Stripe Checkout refuses to load in iframes.
-        try {
-          if (window.top && window.top !== window.self) {
-            window.top.location.href = url;
-            return;
-          }
-        } catch {
-          // Cross-origin top — fall back to opening in a new tab.
-          window.open(url, "_blank", "noopener,noreferrer");
+      const { url } = await submitOnlineOrder({
+        data: { ...payload, origin: window.location.origin, paymentPlan },
+      });
+      setCart({});
+      // Break out of the Lovable preview iframe — Stripe Checkout refuses to load in iframes.
+      try {
+        if (window.top && window.top !== window.self) {
+          window.top.location.href = url;
           return;
         }
-        window.location.href = url;
+      } catch {
+        window.open(url, "_blank", "noopener,noreferrer");
         return;
       }
-      const { orderNumber } = await submitCashOrder({ data: payload });
-      setOrderRef(orderNumber);
-      setCart({});
-      setCheckoutStep("confirmed");
+      window.location.href = url;
+      return;
     } catch (err) {
       console.error(err);
       setFormError(
