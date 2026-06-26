@@ -76,14 +76,40 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             return new Response("ok", { status: 200 });
           }
 
-          const query = supabaseAdmin
-            .from("orders")
-            .update({ payment_status: "paid" });
-          const filtered = orderNumber
-            ? query.eq("order_number", orderNumber)
-            : query.eq("stripe_session_id", sessionId!);
+          // Look up the order first so we know the plan (deposit_50 vs full)
+          // before deciding what status to set.
+          const lookupQ = supabaseAdmin.from("orders").select("*");
+          const { data: existing, error: lookupErr } = await (orderNumber
+            ? lookupQ.eq("order_number", orderNumber)
+            : lookupQ.eq("stripe_session_id", sessionId!)
+          ).maybeSingle();
+          if (lookupErr) {
+            console.error("[stripe-webhook] lookup error", lookupErr);
+            return new Response("DB error", { status: 500 });
+          }
+          if (!existing) {
+            return new Response("ok", { status: 200 });
+          }
 
-          const { data: updated, error } = await filtered.select("*").maybeSingle();
+          const total = Number(existing.total);
+          const plan = (existing.payment_plan as string) ?? "full";
+          const isDeposit = plan === "deposit_50";
+          const totalCents = Math.round(total * 100);
+          const paidCents = isDeposit ? Math.round(totalCents / 2) : totalCents;
+          const amountPaidOnline = paidCents / 100;
+          const balanceDueCash = Math.max(0, total - amountPaidOnline);
+          const newStatus = isDeposit ? "deposit_paid" : "paid";
+
+          const { data: updated, error } = await supabaseAdmin
+            .from("orders")
+            .update({
+              payment_status: newStatus,
+              amount_paid_online: amountPaidOnline,
+              balance_due_cash: balanceDueCash,
+            })
+            .eq("id", existing.id)
+            .select("*")
+            .maybeSingle();
           if (error) {
             console.error("[stripe-webhook] update error", error);
             return new Response("DB error", { status: 500 });
@@ -111,7 +137,10 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 deliveryFee: Number(updated.delivery_fee),
                 total: Number(updated.total),
                 paymentMethod: "online",
-                paymentStatus: "paid",
+                paymentStatus: newStatus,
+                paymentPlan: plan as "full" | "deposit_50",
+                amountPaidOnline,
+                balanceDueCash,
               });
             } catch (e) {
               console.error("[stripe-webhook] notify error", e);
@@ -223,6 +252,9 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 // total Stripe holds, so this is the authoritative value.
                 refunded_amount: refundedAmountAud,
                 refunded_at: refundedAt,
+                // For deposit orders, the remaining cash balance is no longer
+                // owed once the deposit is refunded — the order is cancelled.
+                ...(isFull ? { balance_due_cash: 0 } : {}),
               })
               .eq("id", order.id);
             if (updErr) {
