@@ -43,11 +43,19 @@ function OrderSuccessPage() {
     queryFn: () => (order ? fetchStatus({ data: { orderNumber: order } }) : Promise.resolve(null)),
     enabled: !!order,
     refetchInterval: (q) =>
-      q.state.data && q.state.data.payment_status === "paid" ? false : 3000,
+      q.state.data &&
+      (q.state.data.payment_status === "paid" ||
+        q.state.data.payment_status === "deposit_paid")
+        ? false
+        : 3000,
     refetchIntervalInBackground: false,
   });
 
   const paid = data?.payment_status === "paid";
+  const depositPaid = data?.payment_status === "deposit_paid";
+  const amountPaidOnline = Number((data as unknown as { amount_paid_online?: number })?.amount_paid_online ?? 0);
+  const balanceDueCash = Number((data as unknown as { balance_due_cash?: number })?.balance_due_cash ?? 0);
+  const isDelivery = data?.delivery_method === "delivery";
   const items: OrderItem[] = Array.isArray(data?.items) ? (data!.items as OrderItem[]) : [];
   const createdAt = data?.created_at ? new Date(data.created_at).toLocaleString("en-GB") : "";
 
@@ -58,7 +66,7 @@ function OrderSuccessPage() {
           ✓
         </div>
         <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-3">
-          {paid ? "Payment confirmed" : "Order received"}
+          {paid ? "Payment confirmed" : depositPaid ? "Deposit confirmed" : "Order received"}
         </div>
         <h1 className="font-serif-display text-3xl sm:text-4xl mb-4">
           Thank you for your <span className="italic text-gold">order</span>
@@ -80,6 +88,24 @@ function OrderSuccessPage() {
         <p className="mt-4 text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
           Order saved successfully.
         </p>
+
+        {data && (paid || depositPaid) && (
+          <div className="mt-6 mx-auto max-w-md border border-gold/40 bg-ink-3/60 px-5 py-4 text-left text-sm leading-relaxed">
+            {depositPaid ? (
+              <>
+                <p className="text-gold font-serif-display text-base mb-2">
+                  Deposit of A${amountPaidOnline.toFixed(2)} received.
+                </p>
+                <p>
+                  Please bring <span className="text-gold">A${balanceDueCash.toFixed(2)}</span> in
+                  cash on {isDelivery ? "delivery" : "pick-up"}.
+                </p>
+              </>
+            ) : (
+              <p className="text-gold">Payment received in full. Nothing else to pay.</p>
+            )}
+          </div>
+        )}
 
         {isLoading && !data && (
           <p className="mt-6 text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">

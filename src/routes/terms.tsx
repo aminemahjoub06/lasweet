@@ -51,12 +51,12 @@ function TermsPage() {
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>
-                <strong>Online payment:</strong> Pay securely by card via Stripe at checkout. Your payment
-                is processed immediately and a confirmation is sent once the transaction is complete.
+                <strong>Pay in full now:</strong> Pay 100% securely by card via Stripe at checkout.
+                Nothing else to settle on pick-up or delivery.
               </li>
               <li>
-                <strong>Cash payment:</strong> Select "Pay cash" at checkout and settle the total amount
-                in cash on pick-up or delivery. Your order request will be held pending our confirmation.
+                <strong>50% deposit:</strong> Pay a 50% deposit securely by card via Stripe at checkout
+                to secure your order. The remaining 50% is collected in cash at pick-up or delivery.
               </li>
             </ul>
             <p className="mt-3">
@@ -91,11 +91,13 @@ function TermsPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li>
                 Cancellations made at least 48 hours before the agreed delivery or pick-up date are eligible
-                for a full refund (for online payments) or cancellation without charge (for cash orders).
+                for a full refund of any amount paid online (deposit or full payment).
               </li>
               <li>
-                Cancellations made less than 48 hours before the agreed date may not be eligible for a refund,
-                as production may already be underway.
+                Cancellations made less than 48 hours before the agreed pick-up or delivery time are
+                <strong> not eligible for a refund</strong>, as production has already begun. This applies to
+                both deposits and full payments — <strong>deposits are non-refundable</strong> within this
+                48-hour window.
               </li>
               <li>
                 If you are dissatisfied with your order due to a defect or error on our part, please contact us

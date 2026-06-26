@@ -41,6 +41,7 @@ const orderPayloadSchema = z.object({
 
 const stripeCheckoutSchema = orderPayloadSchema.extend({
   origin: z.string().url().max(2048).optional(),
+  paymentPlan: z.enum(["full", "deposit_50"]).default("full"),
 });
 
 export type OrderPayload = z.infer<typeof orderPayloadSchema>;
@@ -205,6 +206,9 @@ export const createCashOrder = createServerFn({ method: "POST" })
         total,
         paymentMethod: "cash",
         paymentStatus: "cash_pending",
+        paymentPlan: "full",
+        amountPaidOnline: 0,
+        balanceDueCash: total,
       });
     } catch (e) {
       console.error("[notifyOwner] failed", e);
@@ -225,6 +229,13 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { subtotal, deliveryFee, total } = computeTotals(data.items, data.customer.delivery);
     const orderNumber = generateOrderNumber();
+
+    const paymentPlan = data.paymentPlan ?? "full";
+    const totalCents = Math.round(total * 100);
+    const chargeCents =
+      paymentPlan === "deposit_50" ? Math.round(totalCents / 2) : totalCents;
+    const chargeAud = chargeCents / 100;
+    const balanceDueAud = Math.max(0, total - chargeAud);
 
     // Reserve stock atomically per (flavour, delivery date) before we save.
     await reserveStockOrThrow(data.items, data.customer.date);
@@ -250,6 +261,9 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         total,
         payment_method: "online",
         payment_status: "pending",
+        payment_plan: paymentPlan,
+        amount_paid_online: 0,
+        balance_due_cash: 0,
       })
       .select("id")
       .single();
@@ -302,28 +316,45 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     params.append("client_reference_id", orderNumber);
     params.append("metadata[order_number]", orderNumber);
     params.append("metadata[order_id]", inserted.id);
+    params.append("metadata[payment_plan]", paymentPlan);
 
-    let lineIndex = 0;
-    for (const item of data.items) {
-      const label = [item.prefix, item.suffix].filter(Boolean).join("").trim() || item.name;
-      const nameWithSize = item.sizeLabel ? `${label} (Size ${item.sizeLabel})` : label;
-      params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
-      params.append(`line_items[${lineIndex}][price_data][product_data][name]`, nameWithSize);
+    if (paymentPlan === "deposit_50") {
+      // Single line covering the 50% deposit. The remaining balance is
+      // collected in cash on pick-up/delivery.
+      params.append(`line_items[0][price_data][currency]`, "aud");
       params.append(
-        `line_items[${lineIndex}][price_data][unit_amount]`,
-        String(Math.round(item.price * 100)),
+        `line_items[0][price_data][product_data][name]`,
+        `Deposit (50%) — Order ${orderNumber}`,
       );
-      params.append(`line_items[${lineIndex}][quantity]`, String(item.qty));
-      lineIndex++;
-    }
-    if (deliveryFee > 0) {
-      params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
-      params.append(`line_items[${lineIndex}][price_data][product_data][name]`, "Delivery fee");
       params.append(
-        `line_items[${lineIndex}][price_data][unit_amount]`,
-        String(Math.round(deliveryFee * 100)),
+        `line_items[0][price_data][product_data][description]`,
+        `50% deposit on your L&A Sweet order. Balance of A$${balanceDueAud.toFixed(2)} payable in cash on ${data.customer.delivery === "delivery" ? "delivery" : "pick-up"}.`,
       );
-      params.append(`line_items[${lineIndex}][quantity]`, "1");
+      params.append(`line_items[0][price_data][unit_amount]`, String(chargeCents));
+      params.append(`line_items[0][quantity]`, "1");
+    } else {
+      let lineIndex = 0;
+      for (const item of data.items) {
+        const label = [item.prefix, item.suffix].filter(Boolean).join("").trim() || item.name;
+        const nameWithSize = item.sizeLabel ? `${label} (Size ${item.sizeLabel})` : label;
+        params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
+        params.append(`line_items[${lineIndex}][price_data][product_data][name]`, nameWithSize);
+        params.append(
+          `line_items[${lineIndex}][price_data][unit_amount]`,
+          String(Math.round(item.price * 100)),
+        );
+        params.append(`line_items[${lineIndex}][quantity]`, String(item.qty));
+        lineIndex++;
+      }
+      if (deliveryFee > 0) {
+        params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
+        params.append(`line_items[${lineIndex}][price_data][product_data][name]`, "Delivery fee");
+        params.append(
+          `line_items[${lineIndex}][price_data][unit_amount]`,
+          String(Math.round(deliveryFee * 100)),
+        );
+        params.append(`line_items[${lineIndex}][quantity]`, "1");
+      }
     }
 
     const resp = await fetch(
@@ -377,7 +408,7 @@ export const getOrderStatus = createServerFn({ method: "GET" })
     const { data: row, error } = await supabaseAdmin
       .from("orders")
       .select(
-        "order_number, customer_name, customer_email, customer_phone, business, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, items, subtotal, delivery_fee, created_at",
+        "order_number, customer_name, customer_email, customer_phone, business, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, payment_plan, amount_paid_online, balance_due_cash, balance_collected_at, items, subtotal, delivery_fee, created_at",
       )
       .eq("order_number", data.orderNumber)
       .maybeSingle();
@@ -407,7 +438,7 @@ export const lookupOrderByEmail = createServerFn({ method: "POST" })
     const { data: row, error } = await supabaseAdmin
       .from("orders")
       .select(
-        "order_number, customer_name, customer_email, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, items, subtotal, delivery_fee, created_at",
+        "order_number, customer_name, customer_email, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, payment_plan, amount_paid_online, balance_due_cash, balance_collected_at, items, subtotal, delivery_fee, created_at",
       )
       .eq("order_number", data.orderNumber.trim().toUpperCase())
       .ilike("customer_email", data.email.trim())
@@ -456,4 +487,45 @@ export const getDailyStockForDate = createServerFn({ method: "GET" })
       };
     }
     return { date: data.date, defaultUnits: DEFAULT_DAILY_STOCK, stock };
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin: mark a deposit order's cash balance as collected.
+// Password-protected the same way as listAdminOrders.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const markBalanceCollected = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        password: z.string().min(1).max(200),
+        orderNumber: z.string().min(3).max(40),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const expected = process.env.ADMIN_DASHBOARD_PASSWORD;
+    if (!expected || data.password !== expected) {
+      throw new Error("Invalid admin password.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("orders")
+      .update({
+        payment_status: "paid",
+        balance_due_cash: 0,
+        balance_collected_at: new Date().toISOString(),
+      })
+      .eq("order_number", data.orderNumber)
+      .eq("payment_status", "deposit_paid")
+      .select("order_number, balance_collected_at")
+      .maybeSingle();
+    if (error) {
+      console.error("[markBalanceCollected] error", error);
+      throw new Error("Could not mark balance as collected.");
+    }
+    if (!row) {
+      throw new Error("Order not found or balance already collected.");
+    }
+    return { ok: true, orderNumber: row.order_number };
   });

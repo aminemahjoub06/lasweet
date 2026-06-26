@@ -31,6 +31,10 @@ type OrderRow = {
   total: number;
   payment_method: string;
   payment_status: string;
+  payment_plan?: string;
+  amount_paid_online?: number;
+  balance_due_cash?: number;
+  balance_collected_at?: string | null;
   items: unknown;
   subtotal: number;
   delivery_fee: number;
@@ -42,6 +46,7 @@ const STATUS_LABEL: Record<string, string> = {
   pending: "Awaiting payment",
   failed: "Payment failed",
   cash_pending: "Cash — to be paid on collection / delivery",
+  deposit_paid: "Deposit paid — balance due in cash",
   refunded: "Refunded",
   partially_refunded: "Partially refunded",
 };
@@ -229,6 +234,31 @@ function OrderLookupPage() {
                 <span>${Number(order.total).toFixed(2)}</span>
               </div>
             </div>
+
+            {order.payment_plan === "deposit_50" && (
+              <div className="mt-4 border border-gold/40 bg-ink-3/60 px-4 py-3 text-sm space-y-1">
+                <div className="text-[10px] tracking-[0.24em] uppercase text-gold mb-1">
+                  Deposit breakdown
+                </div>
+                <div className="flex justify-between">
+                  <span>Deposit paid online</span>
+                  <span>A${Number(order.amount_paid_online ?? 0).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gold">
+                  <span>
+                    Balance due in cash on{" "}
+                    {order.delivery_method === "delivery" ? "delivery" : "pick-up"}
+                  </span>
+                  <span>A${Number(order.balance_due_cash ?? 0).toFixed(2)}</span>
+                </div>
+                {order.balance_collected_at && (
+                  <div className="text-[11px] text-[color:var(--foreground)]/60 pt-1">
+                    Balance collected on{" "}
+                    {new Date(order.balance_collected_at).toLocaleDateString("en-AU")}.
+                  </div>
+                )}
+              </div>
+            )}
 
             {order.notes && (
               <div className="mt-5 text-[12px] text-[color:var(--foreground)]/60 italic border-t border-line pt-3">

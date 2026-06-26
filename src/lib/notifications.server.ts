@@ -34,6 +34,9 @@ type NotifyArgs = {
   total: number;
   paymentMethod: "cash" | "online";
   paymentStatus: string;
+  paymentPlan?: "full" | "deposit_50";
+  amountPaidOnline?: number;
+  balanceDueCash?: number;
 };
 
 function generateToken(): string {
@@ -163,6 +166,9 @@ export async function notifyOwnerNewOrder(args: NotifyArgs) {
     total: args.total,
     paymentMethod: args.paymentMethod,
     paymentStatus: args.paymentStatus,
+    paymentPlan: args.paymentPlan ?? "full",
+    amountPaidOnline: args.amountPaidOnline ?? (args.paymentMethod === "online" ? args.total : 0),
+    balanceDueCash: args.balanceDueCash ?? (args.paymentMethod === "cash" ? args.total : 0),
   };
 
   await Promise.allSettled([
