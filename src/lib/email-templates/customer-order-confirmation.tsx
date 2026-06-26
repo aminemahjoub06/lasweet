@@ -34,6 +34,9 @@ interface Props {
   total?: number
   paymentMethod?: 'cash' | 'online'
   paymentStatus?: string
+  paymentPlan?: 'full' | 'deposit_50'
+  amountPaidOnline?: number
+  balanceDueCash?: number
 }
 
 const SITE_URL = 'https://lasweet.lovable.app'
@@ -69,6 +72,9 @@ const CustomerOrderConfirmation = (p: Props) => {
   const isDelivery = p.deliveryMethod === 'delivery'
   const fulfilmentLabel = isDelivery ? 'Delivery' : 'Pick-up'
   const greetingName = firstName(p.customerName) || 'there'
+  const isDeposit = p.paymentPlan === 'deposit_50'
+  const paidOnline = p.amountPaidOnline ?? (isOnline && !isDeposit ? (p.total ?? 0) : 0)
+  const balanceCash = p.balanceDueCash ?? 0
   return (
     <Html lang="en" dir="ltr">
       <Head />
@@ -126,11 +132,21 @@ const CustomerOrderConfirmation = (p: Props) => {
           <Hr style={hr} />
 
           <Text style={label}>Payment</Text>
-          <Text style={value}>
-            {isOnline
-              ? 'Payment received — thank you.'
-              : `Payment will be collected at ${isDelivery ? 'delivery' : 'pick-up'}.`}
-          </Text>
+          {isDeposit ? (
+            <>
+              <Text style={value}>Deposit paid: {formatAud(paidOnline)}</Text>
+              <Text style={value}>
+                Balance due in cash on {isDelivery ? 'delivery' : 'pick-up'}: {formatAud(balanceCash)}
+              </Text>
+              <Text style={value}>Total: {formatAud(p.total ?? 0)}</Text>
+            </>
+          ) : isOnline ? (
+            <Text style={value}>Payment received in full — thank you.</Text>
+          ) : (
+            <Text style={value}>
+              Payment will be collected in cash at {isDelivery ? 'delivery' : 'pick-up'}.
+            </Text>
+          )}
 
           <Hr style={hr} />
 
