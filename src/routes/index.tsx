@@ -67,7 +67,7 @@ const flavours: Flavour[] = [
     short: "White chocolate shell, homemade vanilla ganache, raspberry coulis and homemade biscuit.",
     image: raspberryImg,
     available: true,
-    price: 18,
+    price: 15,
   },
   {
     no: "02",
@@ -80,7 +80,7 @@ const flavours: Flavour[] = [
     short: "White chocolate shell, homemade biscuit, lemon crémeux and vanilla ganache with lemon zest.",
     image: lemonImg,
     available: true,
-    price: 18,
+    price: 15,
   },
 ];
 
