@@ -123,6 +123,68 @@ export const Route = createFileRoute("/")({
                 "https://www.tiktok.com/@l.a.sweet.bne",
               ],
             },
+            {
+              "@type": "FAQPage",
+              "@id": "https://la-sweet-bne.com/#faq",
+              mainEntity: [
+                {
+                  "@type": "Question",
+                  name: "What are L&A Sweet's trompe-l'œil desserts?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "L&A Sweet's trompe-l'œil desserts are handcrafted French pâtisseries designed to look exactly like a piece of fruit — a raspberry or a lemon on the outside. When cut, they reveal a delicate mousse, a fruity insert and a soft homemade biscuit inside. Every piece is entirely made by hand in small batches, with no preservatives and no extra sugar added.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "Where is L&A Sweet located in Brisbane?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "L&A Sweet operates from Woolloongabba, Brisbane. Pick-up is at 803b Stanley Street, Woolloongabba QLD 4102 (next to Coles). Delivery is available across Brisbane.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "How much does a L&A Sweet dessert cost?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Each dessert is A$15. Two flavours are currently available: Raspberry and Lemon. Mango and Pistachio are coming soon. Pick-up is free. Delivery is A$10 across Brisbane for under 8 pieces, and free from 8 pieces.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "How do I order from L&A Sweet?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Orders are placed online at https://la-sweet-bne.com. Minimum 48 hours in advance. You can choose to pay a 50% deposit online and the balance in cash on collection, or pay in full online via Stripe.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "How should I store L&A Sweet desserts?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Refrigerate at 2–4°C and enjoy within 24 hours of pick-up or delivery. Avoid prolonged exposure to heat or direct sunlight during transport.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "What allergens are in L&A Sweet desserts?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "All current flavours contain milk, soy, gluten and eggs. Milk and soy are in the white chocolate shell. Gluten and eggs are in the homemade biscuit. The upcoming Pistachio flavour will also contain tree nuts (pistachio).",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "Does L&A Sweet do wholesale or private events?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Yes. L&A Sweet supplies cafés, restaurants and hotels, and caters for private events such as weddings and birthdays. Contact l.asweetbne@gmail.com for wholesale or event inquiries.",
+                  },
+                },
+              ],
+            },
           ],
         }),
       },
