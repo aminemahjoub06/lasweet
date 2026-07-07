@@ -982,7 +982,7 @@ function Index() {
       <section className="border-y border-line bg-ink-2">
         <div className="mx-auto max-w-[1000px] px-6 md:px-10 py-8 md:py-10 grid grid-cols-2 md:grid-cols-4 gap-0 items-center text-center">
           {[
-            { v: "2", l: "Flavours" },
+            { v: String(flavours.length), l: "Flavours" },
             { v: "50 km", l: "Brisbane delivery" },
             { v: "15+ pcs", l: "Preparation time may apply" },
             { v: "$10", l: "Delivery under 8 pcs · free from 8" },
