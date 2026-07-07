@@ -1338,18 +1338,19 @@ function Index() {
             {flavours.map((fl) => (
               <article
                 key={fl.no}
-                className="group/card relative overflow-hidden bg-ink-2 flex flex-col transition-transform duration-500 hover:-translate-y-1"
+                style={{ ["--ca" as string]: fl.accent }}
+                className="flavour-card group/card relative overflow-hidden flex flex-col"
               >
                 {/* Image on top, fully contained inside the card */}
-                <div className="relative aspect-square w-full overflow-hidden bg-ink p-6 md:p-8">
+                <div className="relative aspect-square w-full overflow-hidden flavour-halo p-6 md:p-8">
                   {fl.image && (
                     <img
                       src={fl.image}
                       alt={`${fl.prefix}${fl.suffix}`}
-                      className="absolute inset-0 m-auto h-full w-full object-contain p-6 md:p-8 transition-transform duration-[1200ms] ease-out group-hover/card:scale-[1.04]"
+                      className="flavour-img absolute inset-0 m-auto h-full w-full object-contain p-6 md:p-8 transition-transform duration-[1200ms] ease-out group-hover/card:scale-[1.04]"
                     />
                   )}
-                  <div className="absolute top-4 left-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/60 backdrop-blur-md px-3 py-1.5 border border-gold/30">
+                  <div className="flavour-no-badge absolute top-4 left-4 z-10 text-[10px] tracking-[0.28em] uppercase px-3 py-1.5">
                     No. {fl.no}
                   </div>
                   {fl.available === false && (
