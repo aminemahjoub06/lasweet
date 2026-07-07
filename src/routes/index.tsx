@@ -10,6 +10,7 @@ import {
   getDailyStockForDate,
 } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { PICKUP_ADDRESS, getAvailableSlots } from "@/lib/config";
 import raspberryImg from "@/assets/raspberry.png";
 import lemonImg from "@/assets/lemon.png";
@@ -859,20 +860,6 @@ function Index() {
 
       {/* HERO */}
       <section className="group/hero relative overflow-hidden">
-        {/* Background image layer — active flavour */}
-        {flavours.map((fl, i) => (
-          <div
-            key={fl.no}
-            aria-hidden
-            className={`absolute inset-0 bg-center bg-no-repeat bg-contain transition-[opacity,transform] duration-[1200ms] ease-out group-hover/hero:scale-[1.04] ${
-              i === idx ? "opacity-100" : "opacity-0"
-            }`}
-            style={{
-              backgroundImage: `url(${fl.image})`,
-              backgroundSize: "min(70vh, 560px) auto",
-            }}
-          />
-        ))}
         {/* Darkening + vignette layers for readability — reduced for glass showcase */}
         <div className="absolute inset-0 bg-ink/30 pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,8,6,0.25)_55%,var(--ink)_100%)] pointer-events-none" />
@@ -882,6 +869,13 @@ function Index() {
         {/* Trompe-l'œil hero video — vertical 9:16, autoplay/muted/loop. Sits above
             flavour backdrop, below the content card. Gracefully hides if no file. */}
         <HeroVideo />
+
+        {/* Flavour coverflow — floating 3D showcase behind the content card */}
+        <div className="absolute inset-0 hidden md:flex items-center justify-center pointer-events-none z-[1]">
+          <div className="pointer-events-auto">
+            <FlavourCoverflow flavours={flavours} idx={idx} onSelect={setIdx} />
+          </div>
+        </div>
 
         <div className="relative mx-auto max-w-7xl px-6 md:px-10 pt-32 md:pt-40 pb-16 md:pb-24 min-h-[100vh] flex flex-col">
           <div className="flex-1 flex items-center justify-center md:justify-end">
