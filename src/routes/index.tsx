@@ -208,7 +208,7 @@ const flavours: Flavour[] = [
     short: "White chocolate shell, mango-passion crémeux, homemade biscuit and vanilla ganache.",
     image: mangoImg,
     available: true,
-    price: 15,
+    price: 22,
     accent: "#f0872a",
   },
   {
@@ -222,7 +222,7 @@ const flavours: Flavour[] = [
     short: "White chocolate shell, roasted pistachio praliné, homemade biscuit and vanilla ganache.",
     image: pistachioImg,
     available: true,
-    price: 15,
+    price: 22,
     accent: "#8fb04a",
   },
 ];
