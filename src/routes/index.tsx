@@ -13,6 +13,8 @@ import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PICKUP_ADDRESS, getAvailableSlots } from "@/lib/config";
 import raspberryImg from "@/assets/raspberry.png";
 import lemonImg from "@/assets/lemon.png";
+import mangoImg from "@/assets/mango.png";
+import pistachioImg from "@/assets/pistachio.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -52,6 +54,7 @@ type Flavour = {
   image?: string;
   available?: boolean;
   price?: number;
+  accent?: string;
   sizes?: { label: string; price: number }[];
 };
 
@@ -68,6 +71,7 @@ const flavours: Flavour[] = [
     image: raspberryImg,
     available: true,
     price: 15,
+    accent: "#e5487f",
   },
   {
     no: "02",
@@ -81,16 +85,47 @@ const flavours: Flavour[] = [
     image: lemonImg,
     available: true,
     price: 15,
+    accent: "#ecc94b",
+  },
+  {
+    no: "03",
+    name: "Mango",
+    prefix: "Man",
+    suffix: "go",
+    label: "Tropical Flavour",
+    description:
+      "A sun-ripened mango illusion beneath a smooth white chocolate shell, with silky mango-passion crémeux, a soft homemade biscuit and vanilla bean ganache — a bright, tropical balance of sweetness and tang.",
+    short: "White chocolate shell, mango-passion crémeux, homemade biscuit and vanilla ganache.",
+    image: mangoImg,
+    available: true,
+    price: 15,
+    accent: "#f0872a",
+  },
+  {
+    no: "04",
+    name: "Pistachio",
+    prefix: "Pista",
+    suffix: "chio",
+    label: "Nutty Flavour",
+    description:
+      "A pistachio trompe-l'œil under a delicate white chocolate shell, with roasted pistachio praliné, a soft homemade biscuit and vanilla ganache — nutty, refined and quietly indulgent.",
+    short: "White chocolate shell, roasted pistachio praliné, homemade biscuit and vanilla ganache.",
+    image: pistachioImg,
+    available: true,
+    price: 15,
+    accent: "#8fb04a",
   },
 ];
 
 function StoryShowcase() {
-  const showcase = [raspberryImg, lemonImg];
-  const labels = ["Raspberry", "Lemon"];
+  const showcase = [raspberryImg, lemonImg, mangoImg, pistachioImg];
+  const labels = ["Raspberry", "Lemon", "Mango", "Pistachio"];
   // Subtle flavour auras (low opacity, dark-friendly)
   const auras = [
     "radial-gradient(ellipse at 50% 50%, rgba(220,60,110,0.28), rgba(160,30,70,0.10) 42%, transparent 72%)", // Raspberry
     "radial-gradient(ellipse at 50% 50%, rgba(245,220,90,0.28), rgba(210,180,60,0.10) 42%, transparent 72%)", // Lemon
+    "radial-gradient(ellipse at 50% 50%, rgba(240,135,42,0.28), rgba(200,90,20,0.10) 42%, transparent 72%)", // Mango
+    "radial-gradient(ellipse at 50% 50%, rgba(143,176,74,0.28), rgba(90,120,40,0.10) 42%, transparent 72%)", // Pistachio
   ];
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
@@ -1549,6 +1584,45 @@ function Index() {
               </ul>
               <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
                 Milk and soy are present in the white chocolate. Gluten and eggs are present in the homemade biscuit. Eggs are also present in the lemon crémeux.
+              </div>
+            </div>
+
+            {/* Mango */}
+            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
+                <div className="absolute inset-0 rounded-full bg-gold/10 blur-md" />
+                <img src={mangoImg} alt="Mango" className="relative w-full h-full object-contain drop-shadow-sm" />
+              </div>
+              <h3 className="font-serif-display text-xl mb-4 text-gold pr-16">Mango</h3>
+              <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
+              <ul className="space-y-2 text-sm text-[color:var(--foreground)]/85 mb-4">
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Soy</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Gluten</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Eggs</li>
+              </ul>
+              <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
+                Milk and soy are present in the white chocolate. Gluten and eggs are present in the homemade biscuit.
+              </div>
+            </div>
+
+            {/* Pistachio */}
+            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
+                <div className="absolute inset-0 rounded-full bg-gold/10 blur-md" />
+                <img src={pistachioImg} alt="Pistachio" className="relative w-full h-full object-contain drop-shadow-sm" />
+              </div>
+              <h3 className="font-serif-display text-xl mb-4 text-gold pr-16">Pistachio</h3>
+              <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
+              <ul className="space-y-2 text-sm text-[color:var(--foreground)]/85 mb-4">
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Milk</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Soy</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Gluten</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Eggs</li>
+                <li className="flex items-center gap-2"><span className="text-gold">·</span> Tree nuts (pistachio)</li>
+              </ul>
+              <div className="mt-auto text-xs text-[color:var(--foreground)]/60 leading-relaxed border-t border-gold/20 pt-3">
+                Contains pistachio (tree nuts). Milk and soy are present in the white chocolate; gluten and eggs in the homemade biscuit.
               </div>
             </div>
 
