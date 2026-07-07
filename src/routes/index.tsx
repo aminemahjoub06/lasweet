@@ -1379,7 +1379,7 @@ function Index() {
       {/* WHOLESALE / EVENTS */}
       <InstagramSection />
 
-      <section className="bg-ink border-t border-line">
+      <section className="pathways-warm border-t border-line">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32">
           <div className="text-center mb-16">
             <div className="eyebrow justify-center inline-flex mb-6">Two Dedicated Spaces</div>
@@ -1499,7 +1499,7 @@ function Index() {
       </section>
 
 
-      <section className="bg-ink">
+      <section className="quote-plum">
         <div className="mx-auto max-w-3xl px-6 md:px-10 py-24 md:py-32 text-center">
           <div className="font-serif-display text-5xl text-gold mb-8 leading-none">”</div>
           <blockquote className="font-serif-display italic text-2xl md:text-3xl leading-relaxed text-[color:var(--foreground)]/90">
