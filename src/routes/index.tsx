@@ -1064,19 +1064,20 @@ function Index() {
                     key={fl.no}
                     type="button"
                     onClick={() => toggleExpand(fl.no)}
-                    className={`group/prod relative overflow-hidden border bg-ink-2 text-left transition-all duration-500 ease-out ${
+                    style={{ ["--ca" as string]: fl.accent }}
+                    className={`flavour-card group/prod relative overflow-hidden text-left transition-all duration-500 ease-out ${
                       isExpanded
-                        ? "z-30 scale-[1.04] border-gold/60 shadow-[0_40px_120px_-20px_rgba(212,168,76,0.35),0_20px_60px_-10px_rgba(0,0,0,0.9)]"
+                        ? "z-30 scale-[1.04] shadow-[0_40px_120px_-20px_rgba(212,168,76,0.35),0_20px_60px_-10px_rgba(0,0,0,0.9)]"
                         : isDimmed
-                          ? "z-0 scale-[0.97] opacity-40 border-line"
-                          : "z-10 border-line hover:border-gold/40"
+                          ? "z-0 scale-[0.97] opacity-40"
+                          : "z-10"
                     }`}
                   >
-                    <div className="relative aspect-[4/3] w-full overflow-hidden">
+                    <div className="relative aspect-[4/3] w-full overflow-hidden flavour-halo">
                       {fl.image && (
                         <div
                           aria-hidden
-                          className={`absolute inset-0 bg-center bg-no-repeat bg-contain transition-transform duration-[1200ms] ease-out ${
+                          className={`flavour-img absolute inset-0 bg-center bg-no-repeat bg-contain transition-transform duration-[1200ms] ease-out ${
                             isExpanded ? "scale-110" : "group-hover/prod:scale-105"
                           }`}
                           style={{ backgroundImage: `url(${fl.image})` }}
