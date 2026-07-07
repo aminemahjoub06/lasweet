@@ -962,6 +962,27 @@ function Index() {
             </div>
           </div>
 
+          {/* MOBILE: floating fruits coverflow + flavour selector pills */}
+          <div className="md:hidden mt-10">
+            <FlavourCoverflow flavours={flavours} idx={idx} onSelect={setIdx} />
+            <div className="mt-8 grid grid-cols-2 gap-3">
+              {flavours.map((fl, i) => (
+                <button
+                  key={fl.no}
+                  onClick={() => setIdx(i)}
+                  className={`flex items-center justify-center gap-2 py-3 text-[11px] tracking-[0.22em] uppercase border transition ${
+                    i === idx
+                      ? "border-gold text-gold bg-gold/10"
+                      : "border-line text-[color:var(--foreground)]/65"
+                  }`}
+                >
+                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: fl.accent }} />
+                  {fl.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="mt-10 flex items-center justify-between">
             <div className="font-serif-display italic text-sm text-[color:var(--foreground)]/60">
               <span className="text-gold">{String(idx + 1).padStart(2, "0")}</span> / {String(flavours.length).padStart(2, "0")}
