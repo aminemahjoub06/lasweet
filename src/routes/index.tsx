@@ -1080,6 +1080,7 @@ function Index() {
               <div className="flex-1 max-w-lg mx-auto md:mx-0 md:ml-auto md:p-2">
                 <div className="eyebrow mb-5">{f.label}</div>
                 <h1 className="font-serif-display text-5xl md:text-6xl leading-[0.95] mb-5">
+                  <span className="sr-only">L&amp;A Sweet — Handcrafted French trompe-l'œil desserts in Brisbane. Current flavour: </span>
                   {f.prefix}
                   <span className="italic text-gold">{f.suffix}</span>
                 </h1>
