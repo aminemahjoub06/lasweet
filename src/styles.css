@@ -180,3 +180,13 @@ html, body {
 .cart-badge-bump {
   animation: cart-badge-bump 300ms ease-out;
 }
+
+@keyframes fruitFloat {
+  0%, 100% { transform: translateY(8px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes shadowPulse {
+  0%, 100% { transform: translateX(-50%) scaleX(1); opacity: .5; }
+  50% { transform: translateX(-50%) scaleX(.78); opacity: .26; }
+}
