@@ -4,10 +4,13 @@ export const Route = createFileRoute("/terms")({
   component: TermsPage,
   head: () => ({
     meta: [
-      { title: "Terms & Conditions — L&A Sweet" },
-      { name: "description", content: "L&A Sweet terms and conditions of sale, delivery and service." },
+      { title: "Terms & Conditions — L&A Sweet, Brisbane" },
+      { name: "description", content: "L&A Sweet terms and conditions of sale, delivery, pick-up, cancellations and refunds. Governed by the laws of Queensland, Australia." },
       { name: "robots", content: "index,follow" },
+      { property: "og:title", content: "Terms & Conditions — L&A Sweet" },
+      { property: "og:url", content: "https://la-sweet-bne.com/terms" },
     ],
+    links: [{ rel: "canonical", href: "https://la-sweet-bne.com/terms" }],
   }),
 });
 

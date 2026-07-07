@@ -19,6 +19,115 @@ import pistachioImg from "@/assets/pistachio.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
+  head: () => ({
+    meta: [
+      { title: "L&A Sweet — Handcrafted French Trompe-l'œil Desserts, Brisbane" },
+      { name: "description", content: "L&A Sweet is a French pâtisserie in Brisbane creating handmade trompe-l'œil desserts. Raspberry and Lemon available now, Mango and Pistachio coming soon. Pick-up in Woolloongabba or delivery across Brisbane." },
+      { property: "og:title", content: "L&A Sweet — Handcrafted French Trompe-l'œil Desserts, Brisbane" },
+      { property: "og:description", content: "Every dessert is entirely made by hand and looks like a piece of fruit — inside you'll find a delicate mousse, a fruity insert and a soft homemade biscuit." },
+      { property: "og:url", content: "https://la-sweet-bne.com/" },
+    ],
+    links: [{ rel: "canonical", href: "https://la-sweet-bne.com/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": ["LocalBusiness", "Bakery", "FoodEstablishment"],
+              "@id": "https://la-sweet-bne.com/#business",
+              name: "L&A Sweet",
+              alternateName: ["LA Sweet", "L and A Sweet", "L&A Sweet Brisbane"],
+              description: "Handcrafted French trompe-l'œil desserts made fresh in Brisbane by a young French couple. Every dessert is entirely made by hand and looks like a piece of fruit.",
+              url: "https://la-sweet-bne.com/",
+              image: "https://la-sweet-bne.com/og-image.jpg",
+              logo: "https://la-sweet-bne.com/icon-512.png",
+              email: "l.asweetbne@gmail.com",
+              priceRange: "$$",
+              servesCuisine: ["French", "Desserts", "Patisserie"],
+              paymentAccepted: ["Cash", "Credit Card"],
+              currenciesAccepted: "AUD",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "803b Stanley Street",
+                addressLocality: "Woolloongabba",
+                addressRegion: "QLD",
+                postalCode: "4102",
+                addressCountry: "AU",
+              },
+              geo: {
+                "@type": "GeoCoordinates",
+                latitude: -27.487,
+                longitude: 153.033,
+              },
+              areaServed: { "@type": "City", name: "Brisbane" },
+              openingHoursSpecification: [
+                {
+                  "@type": "OpeningHoursSpecification",
+                  dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                  opens: "10:00",
+                  closes: "22:00",
+                },
+              ],
+              sameAs: [
+                "https://www.instagram.com/l.a.sweet.bne/",
+                "https://www.tiktok.com/@l.a.sweet.bne",
+              ],
+              hasMenu: {
+                "@type": "Menu",
+                name: "Trompe-l'œil Desserts",
+                hasMenuItem: [
+                  {
+                    "@type": "MenuItem",
+                    name: "Raspberry Trompe-l'œil",
+                    description: "A vibrant raspberry illusion coated in smooth white chocolate, filled with real vanilla bean ganache, a soft homemade biscuit and a tangy raspberry coulis.",
+                    offers: {
+                      "@type": "Offer",
+                      price: "15.00",
+                      priceCurrency: "AUD",
+                      availability: "https://schema.org/InStock",
+                    },
+                  },
+                  {
+                    "@type": "MenuItem",
+                    name: "Lemon Trompe-l'œil",
+                    description: "A bright lemon trompe-l'œil with a smooth white chocolate shell, soft homemade biscuit, silky lemon crémeux and vanilla ganache lifted with fresh lemon zest.",
+                    offers: {
+                      "@type": "Offer",
+                      price: "15.00",
+                      priceCurrency: "AUD",
+                      availability: "https://schema.org/InStock",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://la-sweet-bne.com/#website",
+              url: "https://la-sweet-bne.com/",
+              name: "L&A Sweet",
+              publisher: { "@id": "https://la-sweet-bne.com/#business" },
+              inLanguage: "en-AU",
+            },
+            {
+              "@type": "Organization",
+              "@id": "https://la-sweet-bne.com/#organization",
+              name: "L&A Sweet",
+              url: "https://la-sweet-bne.com/",
+              logo: "https://la-sweet-bne.com/icon-512.png",
+              email: "l.asweetbne@gmail.com",
+              sameAs: [
+                "https://www.instagram.com/l.a.sweet.bne/",
+                "https://www.tiktok.com/@l.a.sweet.bne",
+              ],
+            },
+          ],
+        }),
+      },
+    ],
+  }),
 });
 
 const inputCls =

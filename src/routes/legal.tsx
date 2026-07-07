@@ -4,10 +4,13 @@ export const Route = createFileRoute("/legal")({
   component: LegalPage,
   head: () => ({
     meta: [
-      { title: "Legal Notice — L&A Sweet" },
-      { name: "description", content: "L&A Sweet legal notice and business information." },
+      { title: "Legal Notice — L&A Sweet, Brisbane pâtisserie" },
+      { name: "description", content: "L&A Sweet legal notice and business information — French pâtisserie in Brisbane, Australia." },
       { name: "robots", content: "index,follow" },
+      { property: "og:title", content: "Legal Notice — L&A Sweet" },
+      { property: "og:url", content: "https://la-sweet-bne.com/legal" },
     ],
+    links: [{ rel: "canonical", href: "https://la-sweet-bne.com/legal" }],
   }),
 });
 
