@@ -4,10 +4,13 @@ export const Route = createFileRoute("/privacy")({
   component: PrivacyPage,
   head: () => ({
     meta: [
-      { title: "Privacy Policy — L&A Sweet" },
-      { name: "description", content: "L&A Sweet privacy policy. How we collect, use and protect your personal information." },
+      { title: "Privacy Policy — L&A Sweet, Brisbane" },
+      { name: "description", content: "L&A Sweet privacy policy — how we collect, use and protect your personal information under the Australian Privacy Act 1988." },
       { name: "robots", content: "index,follow" },
+      { property: "og:title", content: "Privacy Policy — L&A Sweet" },
+      { property: "og:url", content: "https://la-sweet-bne.com/privacy" },
     ],
+    links: [{ rel: "canonical", href: "https://la-sweet-bne.com/privacy" }],
   }),
 });
 

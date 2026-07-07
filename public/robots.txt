@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /order/success
+Disallow: /order/cancel
+Disallow: /orders/lookup
+Disallow: /unsubscribe
+
+Sitemap: https://la-sweet-bne.com/sitemap.xml
