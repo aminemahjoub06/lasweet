@@ -1064,19 +1064,20 @@ function Index() {
                     key={fl.no}
                     type="button"
                     onClick={() => toggleExpand(fl.no)}
-                    className={`group/prod relative overflow-hidden border bg-ink-2 text-left transition-all duration-500 ease-out ${
+                    style={{ ["--ca" as string]: fl.accent }}
+                    className={`flavour-card group/prod relative overflow-hidden text-left transition-all duration-500 ease-out ${
                       isExpanded
-                        ? "z-30 scale-[1.04] border-gold/60 shadow-[0_40px_120px_-20px_rgba(212,168,76,0.35),0_20px_60px_-10px_rgba(0,0,0,0.9)]"
+                        ? "z-30 scale-[1.04] shadow-[0_40px_120px_-20px_rgba(212,168,76,0.35),0_20px_60px_-10px_rgba(0,0,0,0.9)]"
                         : isDimmed
-                          ? "z-0 scale-[0.97] opacity-40 border-line"
-                          : "z-10 border-line hover:border-gold/40"
+                          ? "z-0 scale-[0.97] opacity-40"
+                          : "z-10"
                     }`}
                   >
-                    <div className="relative aspect-[4/3] w-full overflow-hidden">
+                    <div className="relative aspect-[4/3] w-full overflow-hidden flavour-halo">
                       {fl.image && (
                         <div
                           aria-hidden
-                          className={`absolute inset-0 bg-center bg-no-repeat bg-contain transition-transform duration-[1200ms] ease-out ${
+                          className={`flavour-img absolute inset-0 bg-center bg-no-repeat bg-contain transition-transform duration-[1200ms] ease-out ${
                             isExpanded ? "scale-110" : "group-hover/prod:scale-105"
                           }`}
                           style={{ backgroundImage: `url(${fl.image})` }}
@@ -1337,18 +1338,19 @@ function Index() {
             {flavours.map((fl) => (
               <article
                 key={fl.no}
-                className="group/card relative overflow-hidden bg-ink-2 flex flex-col transition-transform duration-500 hover:-translate-y-1"
+                style={{ ["--ca" as string]: fl.accent }}
+                className="flavour-card group/card relative overflow-hidden flex flex-col"
               >
                 {/* Image on top, fully contained inside the card */}
-                <div className="relative aspect-square w-full overflow-hidden bg-ink p-6 md:p-8">
+                <div className="relative aspect-square w-full overflow-hidden flavour-halo p-6 md:p-8">
                   {fl.image && (
                     <img
                       src={fl.image}
                       alt={`${fl.prefix}${fl.suffix}`}
-                      className="absolute inset-0 m-auto h-full w-full object-contain p-6 md:p-8 transition-transform duration-[1200ms] ease-out group-hover/card:scale-[1.04]"
+                      className="flavour-img absolute inset-0 m-auto h-full w-full object-contain p-6 md:p-8 transition-transform duration-[1200ms] ease-out group-hover/card:scale-[1.04]"
                     />
                   )}
-                  <div className="absolute top-4 left-4 z-10 text-[10px] tracking-[0.28em] uppercase text-gold bg-ink/60 backdrop-blur-md px-3 py-1.5 border border-gold/30">
+                  <div className="flavour-no-badge absolute top-4 left-4 z-10 text-[10px] tracking-[0.28em] uppercase px-3 py-1.5">
                     No. {fl.no}
                   </div>
                   {fl.available === false && (
@@ -1377,7 +1379,7 @@ function Index() {
       {/* WHOLESALE / EVENTS */}
       <InstagramSection />
 
-      <section className="bg-ink border-t border-line">
+      <section className="pathways-warm border-t border-line">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32">
           <div className="text-center mb-16">
             <div className="eyebrow justify-center inline-flex mb-6">Two Dedicated Spaces</div>
@@ -1497,7 +1499,7 @@ function Index() {
       </section>
 
 
-      <section className="bg-ink">
+      <section className="quote-plum">
         <div className="mx-auto max-w-3xl px-6 md:px-10 py-24 md:py-32 text-center">
           <div className="font-serif-display text-5xl text-gold mb-8 leading-none">”</div>
           <blockquote className="font-serif-display italic text-2xl md:text-3xl leading-relaxed text-[color:var(--foreground)]/90">
@@ -1571,10 +1573,10 @@ function Index() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
             {/* Raspberry */}
-            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
-              <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
-                <div className="absolute inset-0 rounded-full bg-gold/10 blur-md" />
-                <img src={raspberryImg} alt="Raspberry" className="relative w-full h-full object-contain drop-shadow-sm" />
+            <div style={{ ["--ca" as string]: "#e5487f" }} className="allergen-card rounded-2xl p-6 flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 right-4 w-[72px] h-[72px] md:w-[96px] md:h-[96px] shrink-0 z-10">
+                <div className="allergen-halo absolute -inset-3 rounded-full blur-xl" />
+                <img src={raspberryImg} alt="Raspberry" className="flavour-img relative w-full h-full object-contain" />
               </div>
               <h3 className="font-serif-display text-xl mb-4 text-gold pr-16">Raspberry</h3>
               <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
@@ -1590,10 +1592,10 @@ function Index() {
             </div>
 
             {/* Lemon */}
-            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
-              <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
-                <div className="absolute inset-0 rounded-full bg-gold/10 blur-md" />
-                <img src={lemonImg} alt="Lemon" className="relative w-full h-full object-contain drop-shadow-sm" />
+            <div style={{ ["--ca" as string]: "#ecc94b" }} className="allergen-card rounded-2xl p-6 flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 right-4 w-[72px] h-[72px] md:w-[96px] md:h-[96px] shrink-0 z-10">
+                <div className="allergen-halo absolute -inset-3 rounded-full blur-xl" />
+                <img src={lemonImg} alt="Lemon" className="flavour-img relative w-full h-full object-contain" />
               </div>
               <h3 className="font-serif-display text-xl mb-4 text-gold pr-16">Lemon</h3>
               <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
@@ -1609,10 +1611,10 @@ function Index() {
             </div>
 
             {/* Mango */}
-            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
-              <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
-                <div className="absolute inset-0 rounded-full bg-gold/10 blur-md" />
-                <img src={mangoImg} alt="Mango" className="relative w-full h-full object-contain drop-shadow-sm" />
+            <div style={{ ["--ca" as string]: "#f0872a" }} className="allergen-card rounded-2xl p-6 flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 right-4 w-[72px] h-[72px] md:w-[96px] md:h-[96px] shrink-0 z-10">
+                <div className="allergen-halo absolute -inset-3 rounded-full blur-xl" />
+                <img src={mangoImg} alt="Mango" className="flavour-img relative w-full h-full object-contain" />
               </div>
               <h3 className="font-serif-display text-xl mb-4 text-gold pr-16">Mango</h3>
               <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>
@@ -1628,10 +1630,10 @@ function Index() {
             </div>
 
             {/* Pistachio */}
-            <div className="rounded-2xl border border-gold/30 bg-ink-2/70 backdrop-blur p-6 shadow-[0_0_40px_-15px_rgba(212,175,55,0.2)] flex flex-col relative overflow-hidden">
-              <div className="absolute top-4 right-4 w-[60px] h-[60px] md:w-[80px] md:h-[80px] shrink-0 z-10">
-                <div className="absolute inset-0 rounded-full bg-gold/10 blur-md" />
-                <img src={pistachioImg} alt="Pistachio" className="relative w-full h-full object-contain drop-shadow-sm" />
+            <div style={{ ["--ca" as string]: "#8fb04a" }} className="allergen-card rounded-2xl p-6 flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 right-4 w-[72px] h-[72px] md:w-[96px] md:h-[96px] shrink-0 z-10">
+                <div className="allergen-halo absolute -inset-3 rounded-full blur-xl" />
+                <img src={pistachioImg} alt="Pistachio" className="flavour-img relative w-full h-full object-contain" />
               </div>
               <h3 className="font-serif-display text-xl mb-4 text-gold pr-16">Pistachio</h3>
               <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-3">Contains</div>

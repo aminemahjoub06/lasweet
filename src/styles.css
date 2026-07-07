@@ -190,3 +190,60 @@ html, body {
   0%, 100% { transform: translateX(-50%) scaleX(1); opacity: .5; }
   50% { transform: translateX(-50%) scaleX(.78); opacity: .26; }
 }
+
+/* ==== Flavour wall — accent-driven card system ==== */
+
+/* Product / Collection flavour card */
+.flavour-card {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ca) 15%, #15110c), #0a0806);
+  border: 1px solid color-mix(in srgb, var(--ca) 22%, rgba(201,161,74,.25));
+  transition: transform .5s ease, border-color .5s ease, box-shadow .5s ease;
+}
+.flavour-card:hover {
+  transform: translateY(-8px);
+  border-color: color-mix(in srgb, var(--ca) 60%, transparent);
+  box-shadow: 0 30px 70px -30px color-mix(in srgb, var(--ca) 65%, transparent);
+}
+.flavour-halo {
+  background: radial-gradient(circle at 50% 42%,
+    color-mix(in srgb, var(--ca) 44%, transparent),
+    color-mix(in srgb, var(--ca) 13%, transparent) 52%,
+    transparent 78%);
+}
+.flavour-img {
+  filter: drop-shadow(0 0 26px color-mix(in srgb, var(--ca) 45%, transparent));
+}
+.flavour-no-badge {
+  background: color-mix(in srgb, var(--ca) 55%, rgba(10,8,6,.5));
+  border: 1px solid color-mix(in srgb, var(--ca) 50%, transparent);
+  color: #fff;
+}
+
+/* Allergen card */
+.allergen-card {
+  background: linear-gradient(155deg, color-mix(in srgb, var(--ca) 16%, #15110c), #0a0806);
+  border: 1px solid color-mix(in srgb, var(--ca) 26%, rgba(201,161,74,.2));
+  transition: transform .5s ease, border-color .5s ease, box-shadow .5s ease;
+}
+.allergen-card:hover {
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--ca) 55%, transparent);
+  box-shadow: 0 24px 60px -30px color-mix(in srgb, var(--ca) 55%, transparent);
+}
+.allergen-halo {
+  background: radial-gradient(circle at 50% 50%,
+    color-mix(in srgb, var(--ca) 34%, transparent),
+    transparent 72%);
+}
+
+/* Quote plum panel */
+.quote-plum {
+  background: radial-gradient(ellipse at 50% 16%, #2c1322, #180d16 58%, #0b0810);
+  border-top: 1px solid rgba(201,161,74,.3);
+  border-bottom: 1px solid rgba(201,161,74,.3);
+}
+
+/* Pathways warm background */
+.pathways-warm {
+  background: linear-gradient(180deg, #150f0a, #0a0806);
+}
