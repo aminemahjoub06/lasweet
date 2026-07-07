@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "L&A Sweet — Handcrafted French Trompe-l'œil Desserts, Brisbane" },
-      { name: "description", content: "L&A Sweet is a French pâtisserie in Brisbane creating handmade trompe-l'œil desserts. Raspberry and Lemon available now, Mango and Pistachio coming soon. Pick-up in Woolloongabba or delivery across Brisbane." },
+      { name: "description", content: "L&A Sweet is a French pâtisserie in Brisbane creating four handmade trompe-l'œil desserts: Raspberry (A$15), Lemon (A$15), Mango (A$22) and Pistachio (A$22). Pick-up in Woolloongabba or delivery across Brisbane." },
       { property: "og:title", content: "L&A Sweet — Handcrafted French Trompe-l'œil Desserts, Brisbane" },
       { property: "og:description", content: "Every dessert is entirely made by hand and looks like a piece of fruit — inside you'll find a delicate mousse, a fruity insert and a soft homemade biscuit." },
       { property: "og:url", content: "https://la-sweet-bne.com/" },
@@ -100,6 +100,28 @@ export const Route = createFileRoute("/")({
                       availability: "https://schema.org/InStock",
                     },
                   },
+                  {
+                    "@type": "MenuItem",
+                    name: "Mango Trompe-l'œil",
+                    description: "A tropical mango illusion with silky mango-passion crémeux, a soft homemade biscuit and vanilla bean ganache under a smooth white chocolate shell.",
+                    offers: {
+                      "@type": "Offer",
+                      price: "22.00",
+                      priceCurrency: "AUD",
+                      availability: "https://schema.org/InStock",
+                    },
+                  },
+                  {
+                    "@type": "MenuItem",
+                    name: "Pistachio Trompe-l'œil",
+                    description: "A pistachio trompe-l'œil under a delicate white chocolate shell, with roasted pistachio praliné, a soft homemade biscuit and vanilla ganache. Contains tree nuts.",
+                    offers: {
+                      "@type": "Offer",
+                      price: "22.00",
+                      priceCurrency: "AUD",
+                      availability: "https://schema.org/InStock",
+                    },
+                  },
                 ],
               },
             },
@@ -148,7 +170,7 @@ export const Route = createFileRoute("/")({
                   name: "How much does a L&A Sweet dessert cost?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "Each dessert is A$15. Two flavours are currently available: Raspberry and Lemon. Mango and Pistachio are coming soon. Pick-up is free. Delivery is A$10 across Brisbane for under 8 pieces, and free from 8 pieces.",
+                    text: "L&A Sweet offers four handmade trompe-l'œil desserts. Raspberry and Lemon are A$15 each. Mango and Pistachio are A$22 each (they use more premium ingredients — mango-passion crémeux and pistachio praliné). Pick-up is free. Delivery is A$10 across Brisbane for under 8 pieces, and free from 8 pieces.",
                   },
                 },
                 {
