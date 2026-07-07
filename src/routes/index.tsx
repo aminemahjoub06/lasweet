@@ -884,44 +884,15 @@ function Index() {
                 ←
               </button>
 
-              <div
-                className="flex-1 max-w-xl mx-auto md:mx-0 md:ml-auto p-8 md:p-12 rounded-sm"
-                style={{
-                  background: "rgba(8, 6, 3, 0.28)",
-                  backdropFilter: "blur(10px)",
-                  WebkitBackdropFilter: "blur(10px)",
-                  border: "1px solid rgba(200, 155, 60, 0.35)",
-                  boxShadow: "0 25px 80px rgba(0, 0, 0, 0.35)",
-                  backgroundBlendMode: "screen",
-                }}
-              >
-                <div className="eyebrow mb-6">{f.label}</div>
-                <h1 className="font-serif-display text-6xl md:text-7xl leading-[0.95] mb-6">
+              <div className="flex-1 max-w-lg mx-auto md:mx-0 md:ml-auto md:p-2">
+                <div className="eyebrow mb-5">{f.label}</div>
+                <h1 className="font-serif-display text-5xl md:text-6xl leading-[0.95] mb-5">
                   {f.prefix}
                   <span className="italic text-gold">{f.suffix}</span>
                 </h1>
-                <p className="text-sm md:text-base text-[color:var(--foreground)]/70 leading-relaxed mb-6 max-w-md">
-                  {f.description}
+                <p className="text-sm text-[color:var(--foreground)]/70 leading-relaxed mb-7 max-w-md">
+                  {f.short}
                 </p>
-                <div className="grid grid-cols-3 gap-2 md:gap-3 mb-8">
-                  {[
-                    { v: "Stock", l: "Available" },
-                    { v: "15+ pcs", l: "Prep time" },
-                    { v: "Fresh", l: "Chilled" },
-                  ].map((b) => (
-                    <div
-                      key={b.l}
-                      className="border border-line p-2.5 md:p-3 text-center flex flex-col items-center justify-center overflow-hidden"
-                    >
-                      <div className="font-serif-display text-sm md:text-lg leading-tight text-[color:var(--foreground)]">
-                        {b.v}
-                      </div>
-                      <div className="text-[10px] md:text-[11px] tracking-[0.08em] md:tracking-[0.2em] uppercase text-gold/80 mt-1 leading-tight">
-                        {b.l}
-                      </div>
-                    </div>
-                  ))}
-                </div>
 
                 <button
                   type="button"
@@ -934,12 +905,12 @@ function Index() {
 
                 <a
                   href="#products"
-                  className="mt-4 w-full border border-gold/60 text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold/10 transition inline-flex items-center justify-center"
+                  className="mt-3 w-full border border-gold/60 text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold/10 transition inline-flex items-center justify-center"
                 >
                   Explore flavours
                 </a>
 
-                <div className="mt-6 pt-5 border-t border-gold/20 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[10px] tracking-[0.22em] uppercase">
+                <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] tracking-[0.22em] uppercase">
                   <span className="text-gold font-medium">Homemade in Brisbane</span>
                   <span className="text-gold/40">•</span>
                   <span className="text-[color:var(--foreground)]/60">No added sugar</span>
