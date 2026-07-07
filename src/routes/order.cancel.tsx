@@ -7,8 +7,13 @@ export const Route = createFileRoute("/order/cancel")({
   head: () => ({
     meta: [
       { title: "Payment cancelled · L&A Sweet" },
+      { name: "description", content: "Your L&A Sweet payment was not completed. No charge was made — return to the shop to try again or choose cash on pick-up." },
       { name: "robots", content: "noindex" },
+      { property: "og:title", content: "Payment cancelled — L&A Sweet" },
+      { property: "og:description", content: "Your payment was not completed. No charge was made." },
+      { property: "og:url", content: "https://la-sweet-bne.com/order/cancel" },
     ],
+    links: [{ rel: "canonical", href: "https://la-sweet-bne.com/order/cancel" }],
   }),
 });
 
