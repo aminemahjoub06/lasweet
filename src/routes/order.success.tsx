@@ -14,8 +14,13 @@ export const Route = createFileRoute("/order/success")({
   head: () => ({
     meta: [
       { title: "Order confirmed · L&A Sweet" },
+      { name: "description", content: "Thanks for your order at L&A Sweet — your handcrafted trompe-l'œil desserts are confirmed. Details have been sent to your email." },
       { name: "robots", content: "noindex" },
+      { property: "og:title", content: "Order confirmed — L&A Sweet" },
+      { property: "og:description", content: "Your L&A Sweet order is confirmed. Details have been sent to your email." },
+      { property: "og:url", content: "https://la-sweet-bne.com/order/success" },
     ],
+    links: [{ rel: "canonical", href: "https://la-sweet-bne.com/order/success" }],
   }),
 });
 
