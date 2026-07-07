@@ -873,7 +873,7 @@ function Index() {
           </div>
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-6 md:px-10 pt-32 md:pt-40 pb-16 md:pb-24 min-h-[100vh] flex flex-col">
+        <div className="relative z-[2] mx-auto max-w-7xl px-6 md:px-10 pt-32 md:pt-40 pb-16 md:pb-24 min-h-[100vh] flex flex-col">
           <div className="flex-1 flex items-center justify-center md:justify-end">
             <div className="flex items-center gap-6 md:gap-10 w-full">
               <button
