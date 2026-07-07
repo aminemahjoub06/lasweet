@@ -870,7 +870,7 @@ function Index() {
             flavour backdrop, below the content card. Gracefully hides if no file. */}
         <HeroVideo />
 
-        {/* Flavour coverflow — floating 3D showcase behind the content card */}
+        {/* Flavour coverflow — floating 3D showcase behind the content card (desktop) */}
         <div className="absolute inset-0 hidden md:flex items-center justify-center pointer-events-none z-[1]">
           <div className="pointer-events-auto">
             <FlavourCoverflow flavours={flavours} idx={idx} onSelect={setIdx} />
@@ -931,18 +931,24 @@ function Index() {
                   type="button"
                   disabled={f.available === false}
                   onClick={() => startOrderFlow({ no: cartKeyFor(f), qty: 1 })}
-                  className="w-full border border-gold text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold hover:text-ink transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gold"
+                  className="w-full bg-gold text-ink text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold/80 transition disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-3"
                 >
-                  {f.available === false ? "Coming Soon" : "Order this flavour"}
+                  {f.available === false ? "Coming Soon" : <>Add to bag · ${f.price ?? 15} <span aria-hidden>→</span></>}
                 </button>
 
-                <div className="mt-5 pt-5 border-t border-gold/20 flex flex-col items-center gap-2">
-                  <span className="text-xs tracking-[0.2em] uppercase text-gold font-medium">
-                    Homemade in Brisbane
-                  </span>
-                  <span className="text-xs tracking-[0.2em] uppercase text-[color:var(--foreground)]/60">
-                    No extra sugar added
-                  </span>
+                <a
+                  href="#products"
+                  className="mt-4 w-full border border-gold/60 text-gold text-[11px] tracking-[0.28em] uppercase py-4 hover:bg-gold/10 transition inline-flex items-center justify-center"
+                >
+                  Explore flavours
+                </a>
+
+                <div className="mt-6 pt-5 border-t border-gold/20 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[10px] tracking-[0.22em] uppercase">
+                  <span className="text-gold font-medium">Homemade in Brisbane</span>
+                  <span className="text-gold/40">•</span>
+                  <span className="text-[color:var(--foreground)]/60">No added sugar</span>
+                  <span className="text-gold/40">•</span>
+                  <span className="text-[color:var(--foreground)]/60">Trompe-l'œil</span>
                 </div>
               </div>
 
