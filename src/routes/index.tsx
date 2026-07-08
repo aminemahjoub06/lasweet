@@ -2267,21 +2267,39 @@ function CheckoutModal({
                     <option className="bg-ink-2">Event</option>
                   </select>
                 </FieldLA>
+                <div className="sm:col-span-2 rounded-md border-l-[3px] border-gold px-4 py-4" style={{ backgroundColor: "rgba(201,168,74,0.08)" }}>
+                  <div className="font-serif-display text-gold text-lg leading-snug mb-1">
+                    📅 Advance orders only
+                  </div>
+                  <p className="text-sm leading-relaxed text-[color:var(--foreground)]/85">
+                    To guarantee the freshness and quality of every creation, we only accept orders at least 1 day in advance. If we have stock available on the day, we'll reach out directly to offer same-day delivery. Thank you for your understanding 🤍
+                  </p>
+                </div>
                 <FieldLA label="Preferred date">
                   <input
                     type="date"
                     value={form.date}
-                    min={new Date().toISOString().slice(0, 10)}
+                    min={getBrisbaneTomorrowIso()}
                     onChange={(e) => {
-                      updateForm("date", e.target.value);
-                      // Reset time if no longer valid for the new date.
-                      const allowed = getAvailableSlots(e.target.value);
+                      const v = e.target.value;
+                      const today = getBrisbaneTodayIso();
+                      if (v && v <= today) {
+                        setFormError("Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.");
+                        updateForm("date", "");
+                        return;
+                      }
+                      setFormError(null);
+                      updateForm("date", v);
+                      const allowed = getAvailableSlots(v);
                       if (form.time && !allowed.includes(form.time as (typeof allowed)[number])) {
                         updateForm("time", "");
                       }
                     }}
                     className={inputCls}
                   />
+                  <p className="mt-2 text-xs italic text-[color:var(--foreground)]/55">
+                    We need at least 1 day to prepare your order with care 🍰
+                  </p>
                   {form.date && stockByNo && (
                     <div className="mt-2 space-y-1">
                       {Object.entries(stockByNo).map(([no, info]) => {
