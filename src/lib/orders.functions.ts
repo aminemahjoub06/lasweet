@@ -34,10 +34,12 @@ const customerSchema = z.object({
   notes: z.string().max(1000).optional().default(""),
 });
 
-const orderPayloadSchema = z.object({
+const orderPayloadBaseSchema = z.object({
   customer: customerSchema,
   items: z.array(itemSchema).min(1).max(50),
-}).superRefine((val, ctx) => {
+});
+
+const rejectSameDay = (val: { customer: { date?: string } }, ctx: z.RefinementCtx) => {
   const date = val.customer.date?.trim();
   if (!date) return;
   const today = getBrisbaneTodayIso();
@@ -49,12 +51,16 @@ const orderPayloadSchema = z.object({
         "Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.",
     });
   }
-});
+};
 
-const stripeCheckoutSchema = orderPayloadSchema.extend({
-  origin: z.string().url().max(2048).optional(),
-  paymentPlan: z.enum(["full", "deposit_50"]).default("full"),
-});
+const orderPayloadSchema = orderPayloadBaseSchema.superRefine(rejectSameDay);
+
+const stripeCheckoutSchema = orderPayloadBaseSchema
+  .extend({
+    origin: z.string().url().max(2048).optional(),
+    paymentPlan: z.enum(["full", "deposit_50"]).default("full"),
+  })
+  .superRefine(rejectSameDay);
 
 export type OrderPayload = z.infer<typeof orderPayloadSchema>;
 
