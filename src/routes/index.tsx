@@ -11,7 +11,7 @@ import {
 } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
-import { PICKUP_ADDRESS, getAvailableSlots } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getBrisbaneTomorrowIso } from "@/lib/config";
 import raspberryImg from "@/assets/raspberry.png";
 import lemonImg from "@/assets/lemon.png";
 import mangoImg from "@/assets/mango.png";
@@ -178,7 +178,7 @@ export const Route = createFileRoute("/")({
                   name: "How do I order from L&A Sweet?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "Orders are placed online at https://la-sweet-bne.com. Minimum 48 hours in advance. You can choose to pay a 50% deposit online and the balance in cash on collection, or pay in full online via Stripe.",
+                    text: "Orders are placed online at https://la-sweet-bne.com. Minimum 1 day (D+1) in advance — same-day orders are not accepted. You can choose to pay a 50% deposit online and the balance in cash on collection, or pay in full online via Stripe.",
                   },
                 },
                 {
@@ -865,11 +865,14 @@ function Index() {
           ? "Please choose a delivery time."
           : "Please choose a pick-up time.",
       );
+    const brisbaneToday = getBrisbaneTodayIso();
+    if (!form.date || form.date <= brisbaneToday)
+      return setFormError(
+        "Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.",
+      );
     const allowedSlots = getAvailableSlots(form.date);
     if (!allowedSlots.includes(form.time as (typeof allowedSlots)[number]))
-      return setFormError(
-        "That time is too soon — please choose a slot at least 2 hours from now.",
-      );
+      return setFormError("Please choose a valid time slot.");
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     // Lock in a snapshot of the cart so quantities can't change mid-review.
@@ -2264,21 +2267,39 @@ function CheckoutModal({
                     <option className="bg-ink-2">Event</option>
                   </select>
                 </FieldLA>
+                <div className="sm:col-span-2 rounded-md border-l-[3px] border-gold px-4 py-4" style={{ backgroundColor: "rgba(201,168,74,0.08)" }}>
+                  <div className="font-serif-display text-gold text-lg leading-snug mb-1">
+                    📅 Advance orders only
+                  </div>
+                  <p className="text-sm leading-relaxed text-[color:var(--foreground)]/85">
+                    To guarantee the freshness and quality of every creation, we only accept orders at least 1 day in advance. If we have stock available on the day, we'll reach out directly to offer same-day delivery. Thank you for your understanding 🤍
+                  </p>
+                </div>
                 <FieldLA label="Preferred date">
                   <input
                     type="date"
                     value={form.date}
-                    min={new Date().toISOString().slice(0, 10)}
+                    min={getBrisbaneTomorrowIso()}
                     onChange={(e) => {
-                      updateForm("date", e.target.value);
-                      // Reset time if no longer valid for the new date.
-                      const allowed = getAvailableSlots(e.target.value);
+                      const v = e.target.value;
+                      const today = getBrisbaneTodayIso();
+                      if (v && v <= today) {
+                        setFormError("Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.");
+                        updateForm("date", "");
+                        return;
+                      }
+                      setFormError(null);
+                      updateForm("date", v);
+                      const allowed = getAvailableSlots(v);
                       if (form.time && !allowed.includes(form.time as (typeof allowed)[number])) {
                         updateForm("time", "");
                       }
                     }}
                     className={inputCls}
                   />
+                  <p className="mt-2 text-xs italic text-[color:var(--foreground)]/55">
+                    We need at least 1 day to prepare your order with care 🍰
+                  </p>
                   {form.date && stockByNo && (
                     <div className="mt-2 space-y-1">
                       {Object.entries(stockByNo).map(([no, info]) => {

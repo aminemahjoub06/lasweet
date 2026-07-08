@@ -71,7 +71,7 @@ function TermsPage() {
           <section>
             <h2 className="font-serif-display text-xl text-gold mb-3">4. Delivery and Pick-up</h2>
             <p className="mb-3">
-              Orders must be placed at least 48 hours in advance to allow for preparation.
+              Orders must be placed at least 1 day (D+1) in advance to allow for preparation. Same-day orders are not accepted.
             </p>
             <p className="mb-3">
               We currently serve the Brisbane, Queensland area. Delivery dates and times are arranged
@@ -93,14 +93,14 @@ function TermsPage() {
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>
-                Cancellations made at least 48 hours before the agreed delivery or pick-up date are eligible
+                Cancellations made at least 1 day before the agreed delivery or pick-up date are eligible
                 for a full refund of any amount paid online (deposit or full payment).
               </li>
               <li>
-                Cancellations made less than 48 hours before the agreed pick-up or delivery time are
+                Cancellations made less than 1 day before the agreed pick-up or delivery time are
                 <strong> not eligible for a refund</strong>, as production has already begun. This applies to
                 both deposits and full payments — <strong>deposits are non-refundable</strong> within this
-                48-hour window.
+                1-day window.
               </li>
               <li>
                 If you are dissatisfied with your order due to a defect or error on our part, please contact us
