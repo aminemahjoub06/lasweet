@@ -865,11 +865,14 @@ function Index() {
           ? "Please choose a delivery time."
           : "Please choose a pick-up time.",
       );
+    const brisbaneToday = getBrisbaneTodayIso();
+    if (!form.date || form.date <= brisbaneToday)
+      return setFormError(
+        "Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.",
+      );
     const allowedSlots = getAvailableSlots(form.date);
     if (!allowedSlots.includes(form.time as (typeof allowedSlots)[number]))
-      return setFormError(
-        "That time is too soon — please choose a slot at least 2 hours from now.",
-      );
+      return setFormError("Please choose a valid time slot.");
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     // Lock in a snapshot of the cart so quantities can't change mid-review.
