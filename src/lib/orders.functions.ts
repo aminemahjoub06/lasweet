@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { DEFAULT_DAILY_STOCK } from "./config";
+import { DEFAULT_DAILY_STOCK, getBrisbaneTodayIso } from "./config";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Schemas
@@ -37,6 +37,18 @@ const customerSchema = z.object({
 const orderPayloadSchema = z.object({
   customer: customerSchema,
   items: z.array(itemSchema).min(1).max(50),
+}).superRefine((val, ctx) => {
+  const date = val.customer.date?.trim();
+  if (!date) return;
+  const today = getBrisbaneTodayIso();
+  if (date <= today) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["customer", "date"],
+      message:
+        "Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.",
+    });
+  }
 });
 
 const stripeCheckoutSchema = orderPayloadSchema.extend({
