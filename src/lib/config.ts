@@ -27,19 +27,37 @@ export const TIME_SLOTS = [
 export type TimeSlot = (typeof TIME_SLOTS)[number];
 
 /**
- * Same-day cut-off: only return slots starting at least 2 hours from now
- * when the chosen date is today. For future dates, all slots are returned.
- * Date is expected as YYYY-MM-DD (the value emitted by <input type="date">).
+ * Return the available time slots for a given date.
+ * Same-day orders are no longer accepted (D+1 minimum), so any date is
+ * either fully open or entirely rejected upstream. This helper simply
+ * returns all slots for a valid future date.
  */
-export function getAvailableSlots(dateIso: string, now: Date = new Date()): readonly string[] {
-  if (!dateIso) return TIME_SLOTS;
-  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
-    now.getDate(),
-  ).padStart(2, "0")}`;
-  if (dateIso !== todayIso) return TIME_SLOTS;
-  const minMinutes = now.getHours() * 60 + now.getMinutes() + 120;
-  return TIME_SLOTS.filter((s) => {
-    const [h, m] = s.split(":").map(Number);
-    return h * 60 + m >= minMinutes;
-  });
+export function getAvailableSlots(_dateIso: string, _now: Date = new Date()): readonly string[] {
+  return TIME_SLOTS;
+}
+
+/**
+ * Today's date (YYYY-MM-DD) in the Australia/Brisbane timezone.
+ * Used to disable same-day orders on the client and reject them on the server.
+ */
+export function getBrisbaneTodayIso(now: Date = new Date()): string {
+  // en-CA locale renders as YYYY-MM-DD, which matches <input type="date">.
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Australia/Brisbane",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+}
+
+/**
+ * Tomorrow's date (YYYY-MM-DD) in the Australia/Brisbane timezone.
+ * Used as the `min` attribute on the delivery date picker.
+ */
+export function getBrisbaneTomorrowIso(now: Date = new Date()): string {
+  const today = getBrisbaneTodayIso(now);
+  const [y, m, d] = today.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + 1);
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}-${String(dt.getUTCDate()).padStart(2, "0")}`;
 }
