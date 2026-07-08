@@ -11,7 +11,7 @@ import {
 } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
-import { PICKUP_ADDRESS, getAvailableSlots } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getBrisbaneTomorrowIso } from "@/lib/config";
 import raspberryImg from "@/assets/raspberry.png";
 import lemonImg from "@/assets/lemon.png";
 import mangoImg from "@/assets/mango.png";
@@ -178,7 +178,7 @@ export const Route = createFileRoute("/")({
                   name: "How do I order from L&A Sweet?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "Orders are placed online at https://la-sweet-bne.com. Minimum 48 hours in advance. You can choose to pay a 50% deposit online and the balance in cash on collection, or pay in full online via Stripe.",
+                    text: "Orders are placed online at https://la-sweet-bne.com. Minimum 1 day (D+1) in advance — same-day orders are not accepted. You can choose to pay a 50% deposit online and the balance in cash on collection, or pay in full online via Stripe.",
                   },
                 },
                 {
