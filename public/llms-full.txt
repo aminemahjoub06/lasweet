@@ -31,11 +31,11 @@ Desserts are made in a kitchen that also handles nuts, dairy, gluten and eggs. C
 
 ## Ordering
 - Orders are placed online at https://la-sweet-bne.com
-- Minimum lead time: 48 hours before pick-up or delivery
+- Minimum lead time: 1 day (D+1) before pick-up or delivery — same-day orders are not accepted
 - Payment options:
   1. 50% deposit online (via Stripe), balance in cash on collection.
   2. Full payment online (via Stripe).
-- Deposits are non-refundable within 48 hours of the scheduled collection or delivery time.
+- Deposits are non-refundable within 1 day of the scheduled collection or delivery time.
 - Order lookup: https://la-sweet-bne.com/orders/lookup (email + order number).
 
 ## Fulfilment
@@ -61,13 +61,13 @@ A trompe-l'œil (French for "fool the eye") dessert is a piece of French pâtiss
 Raspberry and Lemon are A$15 each. Mango and Pistachio are A$22 each (they use more expensive ingredients — pistachio praliné and mango-passion crémeux). Pick-up is free. Delivery is A$10 across Brisbane for under 8 pieces, and free from 8 pieces.
 
 ### How far in advance do I need to order?
-Minimum 48 hours before pick-up or delivery, so every dessert can be made fresh in small batches.
+Minimum 1 day (D+1) before pick-up or delivery, so every dessert can be made fresh in small batches. Same-day orders are not accepted.
 
 ### Do you deliver outside Brisbane?
 Delivery is currently limited to Brisbane and immediate surrounds. For events outside Brisbane, contact l.asweetbne@gmail.com.
 
 ### Can I get a refund?
-Deposits are non-refundable within 48 hours of the scheduled collection or delivery time. Full terms: https://la-sweet-bne.com/terms
+Deposits are non-refundable within 1 day of the scheduled collection or delivery time. Full terms: https://la-sweet-bne.com/terms
 
 ### Are the desserts suitable for vegetarians / vegans / gluten-free?
 All current flavours contain milk, eggs, gluten and soy, so they are not vegan or gluten-free. They are vegetarian.
