@@ -2560,12 +2560,6 @@ function CheckoutModal({
                   </p>
                 </FieldLA>
               )}
-              {/* placeholder removed to keep JSX balanced */}
-              {false && (
-                <FieldLA label="Delivery address" required>
-                  <input value="" onChange={() => {}} />
-                </FieldLA>
-              )}
 
               <FieldLA label="Notes / allergens / special requests">
                 <textarea
