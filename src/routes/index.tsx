@@ -2430,7 +2430,7 @@ function CheckoutModal({
                   })}
                 </div>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
-                  Pick-up: free, no minimum · Delivery: $10 under 8 pcs, free from 8 pcs.
+                  Pick-up: free, no minimum · Delivery: fee calculated by distance from Woolloongabba.
                 </p>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
                   Stock updates in real time · Choose any available date and time.
@@ -2478,7 +2478,7 @@ function CheckoutModal({
                   );
                 })()}
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
-                  Times shown in 24-hour format. Same-day orders: earliest slot is 2 hours from now.
+                  Times shown in 24-hour format.
                 </p>
               </FieldLA>
 
@@ -2490,9 +2490,58 @@ function CheckoutModal({
                     autoComplete="street-address"
                     value={form.address}
                     onChange={(e) => updateForm("address", e.target.value)}
+                    onBlur={(e) => {
+                      const v = e.target.value.trim();
+                      if (v.length > 15 && !deliveryQuote && !quoteLoading) {
+                        void fetchDeliveryQuote(v);
+                      }
+                    }}
                     className={inputCls}
                     placeholder="Street, suburb, postcode"
                   />
+                  <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:items-center">
+                    <button
+                      type="button"
+                      onClick={() => void fetchDeliveryQuote(form.address)}
+                      disabled={quoteLoading || form.address.trim().length < 5}
+                      className="inline-flex items-center justify-center gap-2 text-[10px] tracking-[0.24em] uppercase border border-gold/50 text-gold px-4 py-2 hover:bg-gold hover:text-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {quoteLoading ? "Calculating…" : "Calculate delivery fee"}
+                    </button>
+                    {deliveryQuote?.deliverable === true && (
+                      <span className="text-xs text-[color:var(--foreground)]/85">
+                        Estimated delivery fee:{" "}
+                        <span className="text-gold font-serif-display text-base">
+                          A${Number(deliveryQuote.feeAud ?? 0).toFixed(2)}
+                        </span>{" "}
+                        (approx. {Number(deliveryQuote.distanceKm ?? 0).toFixed(1)} km from Woolloongabba)
+                      </span>
+                    )}
+                  </div>
+                  {deliveryQuote?.deliverable === false && (
+                    <p className="mt-2 text-xs text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-3 py-2">
+                      Sorry, we don't deliver beyond 25 km. Please contact us at{" "}
+                      <a href="mailto:l.asweetbne@gmail.com" className="underline">
+                        l.asweetbne@gmail.com
+                      </a>
+                      .
+                    </p>
+                  )}
+                  {deliveryQuote?.pending && (
+                    <p className="mt-2 text-xs text-[color:var(--foreground)]/70 border border-gold/30 bg-ink-3/60 px-3 py-2">
+                      We couldn't estimate the delivery fee automatically. We'll contact you within 24h
+                      with the exact amount.
+                    </p>
+                  )}
+                  <p className="mt-2 text-[10px] italic text-[color:var(--foreground)]/50 leading-relaxed">
+                    Distance is estimated. Actual fee may vary slightly and will be confirmed before dispatch.
+                  </p>
+                </FieldLA>
+              )}
+              {/* placeholder removed to keep JSX balanced */}
+              {false && (
+                <FieldLA label="Delivery address" required>
+                  <input value="" onChange={() => {}} />
                 </FieldLA>
               )}
 
