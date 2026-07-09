@@ -74,12 +74,51 @@ function generateOrderNumber() {
   return `LAS-${year}-${rand}`;
 }
 
-function computeTotals(items: OrderPayload["items"], delivery: "delivery" | "pickup") {
+function computeTotals(items: OrderPayload["items"], deliveryFee: number) {
   const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
-  const totalQty = items.reduce((s, i) => s + i.qty, 0);
-  const deliveryFee = delivery === "delivery" && totalQty < 8 ? 10 : 0;
   const total = subtotal + deliveryFee;
-  return { subtotal, deliveryFee, total, totalQty };
+  return { subtotal, deliveryFee, total };
+}
+
+// Re-resolve the delivery fee server-side from the customer's address.
+// Returns:
+//   { fee: number, distanceKm: number|null, lat: number|null, lng: number|null, pending: boolean }
+// Throws a 400 Response when the address is outside our 25 km delivery area.
+async function resolveDeliveryFee(opts: {
+  delivery: "delivery" | "pickup";
+  address: string;
+}): Promise<{
+  fee: number;
+  distanceKm: number | null;
+  lat: number | null;
+  lng: number | null;
+  pending: boolean;
+}> {
+  if (opts.delivery !== "delivery") {
+    return { fee: 0, distanceKm: null, lat: null, lng: null, pending: false };
+  }
+  const { computeDeliveryQuoteForAddress } = await import("./delivery.server");
+  const outcome = await computeDeliveryQuoteForAddress(opts.address);
+  if (outcome.status === "out_of_range") {
+    throw new Response(
+      JSON.stringify({
+        error:
+          "Sorry, we don't deliver beyond 25 km. Please contact us at l.asweetbne@gmail.com.",
+        code: "delivery_out_of_range",
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+  if (outcome.status === "unresolved") {
+    return { fee: 0, distanceKm: null, lat: null, lng: null, pending: true };
+  }
+  return {
+    fee: outcome.feeAud,
+    distanceKm: outcome.distanceKm,
+    lat: outcome.geocode.lat,
+    lng: outcome.geocode.lng,
+    pending: false,
+  };
 }
 
 // Stable per-flavour stock key. We use the product `no` ("01" Raspberry,
@@ -180,7 +219,11 @@ export const createCashOrder = createServerFn({ method: "POST" })
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
     await enforceOrderRateLimit({ endpoint: "createCashOrder", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { subtotal, deliveryFee, total } = computeTotals(data.items, data.customer.delivery);
+    const deliveryQuote = await resolveDeliveryFee({
+      delivery: data.customer.delivery,
+      address: data.customer.address,
+    });
+    const { subtotal, deliveryFee, total } = computeTotals(data.items, deliveryQuote.fee);
     const orderNumber = generateOrderNumber();
 
     // Reserve stock atomically per (flavour, delivery date) before we save.
@@ -204,6 +247,10 @@ export const createCashOrder = createServerFn({ method: "POST" })
       total,
       payment_method: "cash",
       payment_status: "cash_pending",
+      delivery_distance_km: deliveryQuote.distanceKm,
+      delivery_lat: deliveryQuote.lat,
+      delivery_lng: deliveryQuote.lng,
+      pending_delivery_quote: deliveryQuote.pending,
     });
 
     if (error) {
@@ -245,7 +292,11 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
     await enforceOrderRateLimit({ endpoint: "createStripeCheckout", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { subtotal, deliveryFee, total } = computeTotals(data.items, data.customer.delivery);
+    const deliveryQuote = await resolveDeliveryFee({
+      delivery: data.customer.delivery,
+      address: data.customer.address,
+    });
+    const { subtotal, deliveryFee, total } = computeTotals(data.items, deliveryQuote.fee);
     const orderNumber = generateOrderNumber();
 
     const paymentPlan = data.paymentPlan ?? "full";
@@ -282,6 +333,10 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         payment_plan: paymentPlan,
         amount_paid_online: 0,
         balance_due_cash: 0,
+        delivery_distance_km: deliveryQuote.distanceKm,
+        delivery_lat: deliveryQuote.lat,
+        delivery_lng: deliveryQuote.lng,
+        pending_delivery_quote: deliveryQuote.pending,
       })
       .select("id")
       .single();
