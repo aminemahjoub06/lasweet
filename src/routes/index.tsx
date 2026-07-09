@@ -12,6 +12,8 @@ import {
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getBrisbaneTomorrowIso } from "@/lib/config";
+import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
+import { StarDisplay } from "@/components/Stars";
 import raspberryImg from "@/assets/raspberry.png";
 import lemonImg from "@/assets/lemon.png";
 import mangoImg from "@/assets/mango.png";
@@ -19,7 +21,15 @@ import pistachioImg from "@/assets/pistachio.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
-  head: () => ({
+  loader: async () => {
+    try {
+      return await getHomeReviews();
+    } catch (e) {
+      console.error("[home loader] getHomeReviews failed", e);
+      return { reviews: [], aggregate: { count: 0, average: 0 } };
+    }
+  },
+  head: ({ loaderData }) => ({
     meta: [
       { title: "L&A Sweet — Handcrafted French Trompe-l'œil Desserts, Brisbane" },
       { name: "description", content: "L&A Sweet is a French pâtisserie in Brisbane creating four handmade trompe-l'œil desserts: Raspberry (A$15), Lemon (A$15), Mango (A$22) and Pistachio (A$22). Pick-up in Woolloongabba or delivery across Brisbane." },
@@ -124,6 +134,29 @@ export const Route = createFileRoute("/")({
                   },
                 ],
               },
+              ...(loaderData && loaderData.aggregate.count > 0
+                ? {
+                    aggregateRating: {
+                      "@type": "AggregateRating",
+                      ratingValue: loaderData.aggregate.average,
+                      reviewCount: loaderData.aggregate.count,
+                      bestRating: 5,
+                      worstRating: 1,
+                    },
+                    review: loaderData.reviews.slice(0, 3).map((r) => ({
+                      "@type": "Review",
+                      author: { "@type": "Person", name: r.reviewer_name },
+                      datePublished: (r.approved_at ?? r.created_at).slice(0, 10),
+                      reviewRating: {
+                        "@type": "Rating",
+                        ratingValue: r.rating,
+                        bestRating: 5,
+                        worstRating: 1,
+                      },
+                      reviewBody: r.comment.slice(0, 500),
+                    })),
+                  }
+                : {}),
             },
             {
               "@type": "WebSite",
