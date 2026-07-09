@@ -2661,14 +2661,15 @@ function CheckoutModal({
                   </span>
                 </div>
                 {(() => {
-                  const snapQty = orderSnapshot.reduce((s, i) => s + i.qty, 0);
-                  const fee = form.delivery === "delivery" && snapQty < 8 ? 10 : 0;
+                  const fee = effectiveDeliveryFee;
                   const message =
                     form.delivery === "pickup"
                       ? "Pick-up is free with no minimum order."
-                      : snapQty < 8
-                      ? "Delivery fee applies under 8 pieces."
-                      : "Free delivery from 8 pieces.";
+                      : deliveryQuote?.deliverable === true
+                        ? `Delivery fee based on approx. ${Number(deliveryQuote.distanceKm ?? 0).toFixed(1)} km from Woolloongabba.`
+                        : deliveryQuote?.pending
+                          ? "We'll confirm your exact delivery fee within 24h."
+                          : "Delivery fee will be calculated from your address at the Details step.";
                   return (
                     <>
                       <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/60">
@@ -2794,8 +2795,7 @@ function CheckoutModal({
                   </span>
                 </div>
                 {(() => {
-                  const snapQty = orderSnapshot.reduce((s, i) => s + i.qty, 0);
-                  const fee = form.delivery === "delivery" && snapQty < 8 ? 10 : 0;
+                  const fee = effectiveDeliveryFee;
                   return (
                     <>
                       <div className="mt-2 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
@@ -2815,8 +2815,7 @@ function CheckoutModal({
 
               {/* Payment options — 50% deposit or pay in full. */}
               {(() => {
-                const snapQty = orderSnapshot.reduce((s, i) => s + i.qty, 0);
-                const fee = form.delivery === "delivery" && snapQty < 8 ? 10 : 0;
+                const fee = effectiveDeliveryFee;
                 const orderTotal = snapshotTotal + fee;
                 const deposit = Math.round((orderTotal / 2) * 100) / 100;
                 const balance = Math.round((orderTotal - deposit) * 100) / 100;
