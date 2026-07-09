@@ -170,7 +170,7 @@ export const Route = createFileRoute("/")({
                   name: "How much does a L&A Sweet dessert cost?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "L&A Sweet offers four handmade trompe-l'œil desserts. Raspberry and Lemon are A$15 each. Mango and Pistachio are A$22 each (they use more premium ingredients — mango-passion crémeux and pistachio praliné). Pick-up is free. Delivery is A$10 across Brisbane for under 8 pieces, and free from 8 pieces.",
+                    text: "L&A Sweet offers four handmade trompe-l'œil desserts. Raspberry and Lemon are A$15 each. Mango and Pistachio are A$22 each (they use more premium ingredients — mango-passion crémeux and pistachio praliné). Pick-up is free. Delivery fee is calculated based on the distance from our Woolloongabba kitchen — see checkout for your exact amount. Delivery is available within 25 km of Brisbane.",
                   },
                 },
                 {
@@ -1174,9 +1174,9 @@ function Index() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-10 py-8 md:py-10 grid grid-cols-2 md:grid-cols-4 gap-0 items-center text-center">
           {[
             { v: String(flavours.length), l: "Flavours" },
-            { v: "50 km", l: "Brisbane delivery" },
+            { v: "25 km", l: "Delivery radius from Woolloongabba" },
             { v: "15+ pcs", l: "Preparation time may apply" },
-            { v: "$10", l: "Delivery under 8 pcs · free from 8" },
+            { v: "By distance", l: "Delivery fee calculated at checkout" },
           ].map((s, i) => (
             <div
               key={s.l}
@@ -1622,7 +1622,7 @@ function Index() {
                 {[
                   "Birthdays, weddings, parties and corporate events",
                   "Pick-up available with no minimum order — free",
-                  "Delivery: $10 under 8 pieces, free from 8 pieces",
+                  "Delivery fee calculated by distance from Woolloongabba — shown at checkout",
                   "Choose one flavour or a mixed selection",
                   "Fresh products, subject to availability",
                   "Made to order in small batches",
@@ -1988,7 +1988,7 @@ function Index() {
               className="text-[11px] leading-snug"
               style={{ letterSpacing: "0.08em", color: "rgba(245, 234, 210, 0.55)" }}
             >
-              Pick-up: free · Delivery: $10 under 8 pcs · Free from 8 pcs
+              Pick-up: free · Delivery: fee calculated at checkout based on your address
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
