@@ -2107,6 +2107,11 @@ function Index() {
         resetOrder={resetOrder}
         paymentPlan={paymentPlan}
         setPaymentPlan={setPaymentPlan}
+        deliveryQuote={deliveryQuote}
+        quoteLoading={quoteLoading}
+        quoteError={quoteError}
+        fetchDeliveryQuote={fetchDeliveryQuote}
+        effectiveDeliveryFee={effectiveDeliveryFee}
         stockByNo={
           dailyStock
             ? Object.fromEntries(
@@ -2176,6 +2181,11 @@ function CheckoutModal({
   resetOrder,
   paymentPlan,
   setPaymentPlan,
+  deliveryQuote,
+  quoteLoading,
+  quoteError: _quoteError,
+  fetchDeliveryQuote,
+  effectiveDeliveryFee,
   stockByNo,
 }: {
   open: boolean;
@@ -2196,6 +2206,18 @@ function CheckoutModal({
   resetOrder: () => void;
   paymentPlan: "full" | "deposit_50" | null;
   setPaymentPlan: (m: "full" | "deposit_50" | null) => void;
+  deliveryQuote: {
+    deliverable: boolean | null;
+    distanceKm: number | null;
+    feeAud: number | null;
+    method: string;
+    pending?: boolean;
+    message?: string;
+  } | null;
+  quoteLoading: boolean;
+  quoteError: string | null;
+  fetchDeliveryQuote: (addr: string) => Promise<void>;
+  effectiveDeliveryFee: number;
   stockByNo: Record<string, { name: string; remaining: number }> | null;
 }) {
   const steps: { k: CheckoutStep; l: string }[] = [
