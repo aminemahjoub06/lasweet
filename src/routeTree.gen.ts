@@ -11,13 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LegalRouteImport } from './routes/legal'
+import { Route as LeaveReviewRouteImport } from './routes/leave-review'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrdersLookupRouteImport } from './routes/orders.lookup'
 import { Route as OrderSuccessRouteImport } from './routes/order.success'
 import { Route as OrderCancelRouteImport } from './routes/order.cancel'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicReviewsIndexRouteImport } from './routes/api/public/reviews/index'
@@ -42,6 +45,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReviewsRoute = ReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -50,6 +58,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const LegalRoute = LegalRouteImport.update({
   id: '/legal',
   path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaveReviewRoute = LeaveReviewRouteImport.update({
+  id: '/leave-review',
+  path: '/leave-review',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -75,6 +88,11 @@ const OrderCancelRoute = OrderCancelRouteImport.update({
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/admin/reviews',
+  path: '/admin/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
@@ -152,11 +170,14 @@ const ApiPublicDeliveryQuoteRoute = ApiPublicDeliveryQuoteRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/leave-review': typeof LeaveReviewRoute
   '/legal': typeof LegalRoute
   '/privacy': typeof PrivacyRoute
+  '/reviews': typeof ReviewsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
@@ -176,11 +197,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/leave-review': typeof LeaveReviewRoute
   '/legal': typeof LegalRoute
   '/privacy': typeof PrivacyRoute
+  '/reviews': typeof ReviewsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
@@ -201,11 +225,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/leave-review': typeof LeaveReviewRoute
   '/legal': typeof LegalRoute
   '/privacy': typeof PrivacyRoute
+  '/reviews': typeof ReviewsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
@@ -227,11 +254,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/leave-review'
     | '/legal'
     | '/privacy'
+    | '/reviews'
     | '/terms'
     | '/unsubscribe'
     | '/admin/orders'
+    | '/admin/reviews'
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
@@ -251,11 +281,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/leave-review'
     | '/legal'
     | '/privacy'
+    | '/reviews'
     | '/terms'
     | '/unsubscribe'
     | '/admin/orders'
+    | '/admin/reviews'
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
@@ -275,11 +308,14 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/leave-review'
     | '/legal'
     | '/privacy'
+    | '/reviews'
     | '/terms'
     | '/unsubscribe'
     | '/admin/orders'
+    | '/admin/reviews'
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
@@ -300,11 +336,14 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LeaveReviewRoute: typeof LeaveReviewRoute
   LegalRoute: typeof LegalRoute
   PrivacyRoute: typeof PrivacyRoute
+  ReviewsRoute: typeof ReviewsRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   OrderCancelRoute: typeof OrderCancelRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
@@ -339,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reviews': {
+      id: '/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof ReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -351,6 +397,13 @@ declare module '@tanstack/react-router' {
       path: '/legal'
       fullPath: '/legal'
       preLoaderRoute: typeof LegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leave-review': {
+      id: '/leave-review'
+      path: '/leave-review'
+      fullPath: '/leave-review'
+      preLoaderRoute: typeof LeaveReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -386,6 +439,13 @@ declare module '@tanstack/react-router' {
       path: '/email/unsubscribe'
       fullPath: '/email/unsubscribe'
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reviews': {
+      id: '/admin/reviews'
+      path: '/admin/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/orders': {
@@ -484,11 +544,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LeaveReviewRoute: LeaveReviewRoute,
   LegalRoute: LegalRoute,
   PrivacyRoute: PrivacyRoute,
+  ReviewsRoute: ReviewsRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   AdminOrdersRoute: AdminOrdersRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   OrderCancelRoute: OrderCancelRoute,
   OrderSuccessRoute: OrderSuccessRoute,
