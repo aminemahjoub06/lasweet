@@ -75,9 +75,14 @@ All current flavours contain milk, eggs, gluten and soy, so they are not vegan o
 ## Key pages
 - Home / Order: https://la-sweet-bne.com/
 - Find my order: https://la-sweet-bne.com/orders/lookup
+- Customer reviews: https://la-sweet-bne.com/reviews
+- Leave a review: https://la-sweet-bne.com/leave-review
 - Terms & Conditions: https://la-sweet-bne.com/terms
 - Privacy Policy: https://la-sweet-bne.com/privacy
 - Legal Notice: https://la-sweet-bne.com/legal
+
+## Reviews & social proof
+L&A Sweet publishes customer reviews on https://la-sweet-bne.com/reviews and highlights the six most recent approved reviews on the home page. Every review is manually moderated before being published. Verified purchases (matched by order number + email) receive a verified badge. Reviews accept optional photos (up to 3 per review). The aggregate rating is exposed via Schema.org AggregateRating and included in the home page JSON-LD, which powers Google review stars in search results.
 
 ## Legal
 - Governed by the laws of Queensland, Australia.
