@@ -1652,6 +1652,8 @@ function Index() {
       {/* WHOLESALE / EVENTS */}
       <InstagramSection />
 
+      <ReviewsHomeSection />
+
       <section className="pathways-warm border-t border-line">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32">
           <div className="text-center mb-16">
