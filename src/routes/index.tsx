@@ -828,6 +828,63 @@ function Index() {
   const [paying, setPaying] = useState(false);
   const [paymentPlan, setPaymentPlan] = useState<"full" | "deposit_50" | null>(null);
   const submitOnlineOrder = useServerFn(createStripeCheckout);
+
+  // Delivery quote (distance-based fee) — computed via /api/public/delivery/quote.
+  type DeliveryQuote = {
+    deliverable: boolean | null; // true=OK, false=out of range, null=pending
+    distanceKm: number | null;
+    feeAud: number | null;
+    method: string;
+    pending?: boolean;
+    message?: string;
+  };
+  const [deliveryQuote, setDeliveryQuote] = useState<DeliveryQuote | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+
+  const fetchDeliveryQuote = async (rawAddress: string) => {
+    const address = rawAddress.trim();
+    if (address.length < 5) return;
+    setQuoteLoading(true);
+    setQuoteError(null);
+    try {
+      const resp = await fetch("/api/public/delivery/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address }),
+      });
+      const json = (await resp.json()) as DeliveryQuote & { error?: string };
+      if (!resp.ok) {
+        throw new Error(json.error || "Could not calculate delivery fee.");
+      }
+      setDeliveryQuote(json);
+    } catch (err) {
+      // Nominatim unreachable / other failure: fall back to pending quote.
+      setQuoteError(err instanceof Error ? err.message : "Could not calculate delivery fee.");
+      setDeliveryQuote({
+        deliverable: null,
+        distanceKm: null,
+        feeAud: null,
+        method: "pending",
+        pending: true,
+        message:
+          "We couldn't estimate the delivery fee automatically. We'll contact you within 24h with the exact amount.",
+      });
+    } finally {
+      setQuoteLoading(false);
+    }
+  };
+
+  // Effective delivery fee used across Review / Payment / server payload.
+  // Pickup = 0. Delivery with a known deliverable quote = its feeAud.
+  // Delivery with a pending/unknown quote = 0 (server will re-check).
+  const effectiveDeliveryFee =
+    form.delivery === "delivery"
+      ? deliveryQuote?.deliverable === true
+        ? Number(deliveryQuote.feeAud ?? 0)
+        : 0
+      : 0;
+
   // Snapshot of the cart at the moment the customer advances to payment,
   // so quantities can't change mid-checkout.
   const [orderSnapshot, setOrderSnapshot] = useState<
@@ -846,6 +903,13 @@ function Index() {
   const snapshotTotal = orderSnapshot.reduce((s, i) => s + i.qty * i.price, 0);
   const updateForm = <K extends keyof OrderForm>(k: K, v: OrderForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
+
+  // Reset the quote whenever the address or delivery method changes.
+  React.useEffect(() => {
+    setDeliveryQuote(null);
+    setQuoteError(null);
+  }, [form.address, form.delivery]);
+
   const validateDetails = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -859,6 +923,18 @@ function Index() {
     if (form.business.length > 120) return setFormError("Business name is too long.");
     if (form.delivery === "delivery" && form.address.trim().length < 5)
       return setFormError("Please enter a delivery address.");
+    if (form.delivery === "delivery") {
+      if (!deliveryQuote) {
+        return setFormError(
+          "Please calculate the delivery fee for your address before continuing.",
+        );
+      }
+      if (deliveryQuote.deliverable === false) {
+        return setFormError(
+          "Sorry, we don't deliver beyond 25 km. Please contact us at l.asweetbne@gmail.com.",
+        );
+      }
+    }
     if (!form.time)
       return setFormError(
         form.delivery === "delivery"
