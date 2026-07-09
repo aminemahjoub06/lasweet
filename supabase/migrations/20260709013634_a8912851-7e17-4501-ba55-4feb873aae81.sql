@@ -1,0 +1,1 @@
+CREATE POLICY "Service role only" ON public.daily_stock FOR ALL TO service_role USING (true) WITH CHECK (true);
