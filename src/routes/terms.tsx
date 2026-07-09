@@ -63,8 +63,9 @@ function TermsPage() {
               </li>
             </ul>
             <p className="mt-3">
-              Delivery fees may apply depending on your order size and location. Free delivery is available
-              for orders of 8 pieces or more within our Brisbane delivery area.
+              Delivery fees are calculated based on the distance from our Woolloongabba kitchen to your
+              delivery address. Your exact fee is shown at checkout. Delivery is available within 25 km
+              of Brisbane; for addresses beyond that, please contact us at l.asweetbne@gmail.com.
             </p>
           </section>
 

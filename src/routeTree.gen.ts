@@ -27,6 +27,7 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksCleanupPendingOrdersRouteImport } from './routes/api/public/hooks/cleanup-pending-orders'
+import { Route as ApiPublicDeliveryQuoteRouteImport } from './routes/api/public/delivery/quote'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -123,6 +124,11 @@ const ApiPublicHooksCleanupPendingOrdersRoute =
     path: '/api/public/hooks/cleanup-pending-orders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicDeliveryQuoteRoute = ApiPublicDeliveryQuoteRouteImport.update({
+  id: '/api/public/delivery/quote',
+  path: '/api/public/delivery/quote',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/order/success': typeof OrderSuccessRoute
   '/orders/lookup': typeof OrdersLookupRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/delivery/quote': typeof ApiPublicDeliveryQuoteRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/order/success': typeof OrderSuccessRoute
   '/orders/lookup': typeof OrdersLookupRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/delivery/quote': typeof ApiPublicDeliveryQuoteRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/order/success': typeof OrderSuccessRoute
   '/orders/lookup': typeof OrdersLookupRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/delivery/quote': typeof ApiPublicDeliveryQuoteRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/order/success'
     | '/orders/lookup'
     | '/lovable/email/suppression'
+    | '/api/public/delivery/quote'
     | '/api/public/hooks/cleanup-pending-orders'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/order/success'
     | '/orders/lookup'
     | '/lovable/email/suppression'
+    | '/api/public/delivery/quote'
     | '/api/public/hooks/cleanup-pending-orders'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/order/success'
     | '/orders/lookup'
     | '/lovable/email/suppression'
+    | '/api/public/delivery/quote'
     | '/api/public/hooks/cleanup-pending-orders'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -260,6 +272,7 @@ export interface RootRouteChildren {
   OrderSuccessRoute: typeof OrderSuccessRoute
   OrdersLookupRoute: typeof OrdersLookupRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicDeliveryQuoteRoute: typeof ApiPublicDeliveryQuoteRoute
   ApiPublicHooksCleanupPendingOrdersRoute: typeof ApiPublicHooksCleanupPendingOrdersRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -397,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksCleanupPendingOrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/delivery/quote': {
+      id: '/api/public/delivery/quote'
+      path: '/api/public/delivery/quote'
+      fullPath: '/api/public/delivery/quote'
+      preLoaderRoute: typeof ApiPublicDeliveryQuoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -412,6 +432,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrderSuccessRoute: OrderSuccessRoute,
   OrdersLookupRoute: OrdersLookupRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicDeliveryQuoteRoute: ApiPublicDeliveryQuoteRoute,
   ApiPublicHooksCleanupPendingOrdersRoute:
     ApiPublicHooksCleanupPendingOrdersRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,

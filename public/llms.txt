@@ -25,7 +25,7 @@
 - Two payment options: 50% deposit online with balance in cash on collection, or full payment online
 - Deposits are non-refundable within 1 day of the collection/delivery time
 - Pick-up: free, at 803b Stanley Street, Woolloongabba
-- Delivery: A$10 across Brisbane under 8 pieces, free from 8 pieces
+- Delivery fee calculated based on distance from Woolloongabba. See checkout for your exact amount. Delivery available within 25 km of Brisbane.
 
 ## Storage
 - Refrigerate at 2–4°C

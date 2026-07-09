@@ -125,6 +125,33 @@ export type Database = {
         }
         Relationships: []
       }
+      geocoding_cache: {
+        Row: {
+          address: string
+          created_at: string
+          lat: number
+          lng: number
+          provider: string
+          raw: Json | null
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          lat: number
+          lng: number
+          provider?: string
+          raw?: Json | null
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          lat?: number
+          lng?: number
+          provider?: string
+          raw?: Json | null
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount_paid_online: number
@@ -137,7 +164,10 @@ export type Database = {
           customer_phone: string
           delivery_address: string | null
           delivery_date: string | null
+          delivery_distance_km: number | null
           delivery_fee: number
+          delivery_lat: number | null
+          delivery_lng: number | null
           delivery_method: string
           delivery_time: string | null
           id: string
@@ -148,6 +178,7 @@ export type Database = {
           payment_method: string
           payment_plan: string
           payment_status: string
+          pending_delivery_quote: boolean
           refunded_amount: number
           refunded_at: string | null
           stripe_session_id: string | null
@@ -166,7 +197,10 @@ export type Database = {
           customer_phone: string
           delivery_address?: string | null
           delivery_date?: string | null
+          delivery_distance_km?: number | null
           delivery_fee?: number
+          delivery_lat?: number | null
+          delivery_lng?: number | null
           delivery_method: string
           delivery_time?: string | null
           id?: string
@@ -177,6 +211,7 @@ export type Database = {
           payment_method: string
           payment_plan?: string
           payment_status?: string
+          pending_delivery_quote?: boolean
           refunded_amount?: number
           refunded_at?: string | null
           stripe_session_id?: string | null
@@ -195,7 +230,10 @@ export type Database = {
           customer_phone?: string
           delivery_address?: string | null
           delivery_date?: string | null
+          delivery_distance_km?: number | null
           delivery_fee?: number
+          delivery_lat?: number | null
+          delivery_lng?: number | null
           delivery_method?: string
           delivery_time?: string | null
           id?: string
@@ -206,6 +244,7 @@ export type Database = {
           payment_method?: string
           payment_plan?: string
           payment_status?: string
+          pending_delivery_quote?: boolean
           refunded_amount?: number
           refunded_at?: string | null
           stripe_session_id?: string | null

@@ -170,7 +170,7 @@ export const Route = createFileRoute("/")({
                   name: "How much does a L&A Sweet dessert cost?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "L&A Sweet offers four handmade trompe-l'œil desserts. Raspberry and Lemon are A$15 each. Mango and Pistachio are A$22 each (they use more premium ingredients — mango-passion crémeux and pistachio praliné). Pick-up is free. Delivery is A$10 across Brisbane for under 8 pieces, and free from 8 pieces.",
+                    text: "L&A Sweet offers four handmade trompe-l'œil desserts. Raspberry and Lemon are A$15 each. Mango and Pistachio are A$22 each (they use more premium ingredients — mango-passion crémeux and pistachio praliné). Pick-up is free. Delivery fee is calculated based on the distance from our Woolloongabba kitchen — see checkout for your exact amount. Delivery is available within 25 km of Brisbane.",
                   },
                 },
                 {
@@ -828,6 +828,63 @@ function Index() {
   const [paying, setPaying] = useState(false);
   const [paymentPlan, setPaymentPlan] = useState<"full" | "deposit_50" | null>(null);
   const submitOnlineOrder = useServerFn(createStripeCheckout);
+
+  // Delivery quote (distance-based fee) — computed via /api/public/delivery/quote.
+  type DeliveryQuote = {
+    deliverable: boolean | null; // true=OK, false=out of range, null=pending
+    distanceKm: number | null;
+    feeAud: number | null;
+    method: string;
+    pending?: boolean;
+    message?: string;
+  };
+  const [deliveryQuote, setDeliveryQuote] = useState<DeliveryQuote | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+
+  const fetchDeliveryQuote = async (rawAddress: string) => {
+    const address = rawAddress.trim();
+    if (address.length < 5) return;
+    setQuoteLoading(true);
+    setQuoteError(null);
+    try {
+      const resp = await fetch("/api/public/delivery/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address }),
+      });
+      const json = (await resp.json()) as DeliveryQuote & { error?: string };
+      if (!resp.ok) {
+        throw new Error(json.error || "Could not calculate delivery fee.");
+      }
+      setDeliveryQuote(json);
+    } catch (err) {
+      // Nominatim unreachable / other failure: fall back to pending quote.
+      setQuoteError(err instanceof Error ? err.message : "Could not calculate delivery fee.");
+      setDeliveryQuote({
+        deliverable: null,
+        distanceKm: null,
+        feeAud: null,
+        method: "pending",
+        pending: true,
+        message:
+          "We couldn't estimate the delivery fee automatically. We'll contact you within 24h with the exact amount.",
+      });
+    } finally {
+      setQuoteLoading(false);
+    }
+  };
+
+  // Effective delivery fee used across Review / Payment / server payload.
+  // Pickup = 0. Delivery with a known deliverable quote = its feeAud.
+  // Delivery with a pending/unknown quote = 0 (server will re-check).
+  const effectiveDeliveryFee =
+    form.delivery === "delivery"
+      ? deliveryQuote?.deliverable === true
+        ? Number(deliveryQuote.feeAud ?? 0)
+        : 0
+      : 0;
+
   // Snapshot of the cart at the moment the customer advances to payment,
   // so quantities can't change mid-checkout.
   const [orderSnapshot, setOrderSnapshot] = useState<
@@ -846,6 +903,13 @@ function Index() {
   const snapshotTotal = orderSnapshot.reduce((s, i) => s + i.qty * i.price, 0);
   const updateForm = <K extends keyof OrderForm>(k: K, v: OrderForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
+
+  // Reset the quote whenever the address or delivery method changes.
+  React.useEffect(() => {
+    setDeliveryQuote(null);
+    setQuoteError(null);
+  }, [form.address, form.delivery]);
+
   const validateDetails = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -859,6 +923,18 @@ function Index() {
     if (form.business.length > 120) return setFormError("Business name is too long.");
     if (form.delivery === "delivery" && form.address.trim().length < 5)
       return setFormError("Please enter a delivery address.");
+    if (form.delivery === "delivery") {
+      if (!deliveryQuote) {
+        return setFormError(
+          "Please calculate the delivery fee for your address before continuing.",
+        );
+      }
+      if (deliveryQuote.deliverable === false) {
+        return setFormError(
+          "Sorry, we don't deliver beyond 25 km. Please contact us at l.asweetbne@gmail.com.",
+        );
+      }
+    }
     if (!form.time)
       return setFormError(
         form.delivery === "delivery"
@@ -1174,9 +1250,9 @@ function Index() {
         <div className="mx-auto max-w-[1000px] px-6 md:px-10 py-8 md:py-10 grid grid-cols-2 md:grid-cols-4 gap-0 items-center text-center">
           {[
             { v: String(flavours.length), l: "Flavours" },
-            { v: "50 km", l: "Brisbane delivery" },
+            { v: "25 km", l: "Delivery radius from Woolloongabba" },
             { v: "15+ pcs", l: "Preparation time may apply" },
-            { v: "$10", l: "Delivery under 8 pcs · free from 8" },
+            { v: "By distance", l: "Delivery fee calculated at checkout" },
           ].map((s, i) => (
             <div
               key={s.l}
@@ -1622,7 +1698,7 @@ function Index() {
                 {[
                   "Birthdays, weddings, parties and corporate events",
                   "Pick-up available with no minimum order — free",
-                  "Delivery: $10 under 8 pieces, free from 8 pieces",
+                  "Delivery fee calculated by distance from Woolloongabba — shown at checkout",
                   "Choose one flavour or a mixed selection",
                   "Fresh products, subject to availability",
                   "Made to order in small batches",
@@ -1988,7 +2064,7 @@ function Index() {
               className="text-[11px] leading-snug"
               style={{ letterSpacing: "0.08em", color: "rgba(245, 234, 210, 0.55)" }}
             >
-              Pick-up: free · Delivery: $10 under 8 pcs · Free from 8 pcs
+              Pick-up: free · Delivery: fee calculated at checkout based on your address
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
@@ -2031,6 +2107,11 @@ function Index() {
         resetOrder={resetOrder}
         paymentPlan={paymentPlan}
         setPaymentPlan={setPaymentPlan}
+        deliveryQuote={deliveryQuote}
+        quoteLoading={quoteLoading}
+        quoteError={quoteError}
+        fetchDeliveryQuote={fetchDeliveryQuote}
+        effectiveDeliveryFee={effectiveDeliveryFee}
         stockByNo={
           dailyStock
             ? Object.fromEntries(
@@ -2100,6 +2181,11 @@ function CheckoutModal({
   resetOrder,
   paymentPlan,
   setPaymentPlan,
+  deliveryQuote,
+  quoteLoading,
+  quoteError: _quoteError,
+  fetchDeliveryQuote,
+  effectiveDeliveryFee,
   stockByNo,
 }: {
   open: boolean;
@@ -2120,6 +2206,18 @@ function CheckoutModal({
   resetOrder: () => void;
   paymentPlan: "full" | "deposit_50" | null;
   setPaymentPlan: (m: "full" | "deposit_50" | null) => void;
+  deliveryQuote: {
+    deliverable: boolean | null;
+    distanceKm: number | null;
+    feeAud: number | null;
+    method: string;
+    pending?: boolean;
+    message?: string;
+  } | null;
+  quoteLoading: boolean;
+  quoteError: string | null;
+  fetchDeliveryQuote: (addr: string) => Promise<void>;
+  effectiveDeliveryFee: number;
   stockByNo: Record<string, { name: string; remaining: number }> | null;
 }) {
   const steps: { k: CheckoutStep; l: string }[] = [
@@ -2354,7 +2452,7 @@ function CheckoutModal({
                   })}
                 </div>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
-                  Pick-up: free, no minimum · Delivery: $10 under 8 pcs, free from 8 pcs.
+                  Pick-up: free, no minimum · Delivery: fee calculated by distance from Woolloongabba.
                 </p>
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
                   Stock updates in real time · Choose any available date and time.
@@ -2402,7 +2500,7 @@ function CheckoutModal({
                   );
                 })()}
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
-                  Times shown in 24-hour format. Same-day orders: earliest slot is 2 hours from now.
+                  Times shown in 24-hour format.
                 </p>
               </FieldLA>
 
@@ -2414,9 +2512,52 @@ function CheckoutModal({
                     autoComplete="street-address"
                     value={form.address}
                     onChange={(e) => updateForm("address", e.target.value)}
+                    onBlur={(e) => {
+                      const v = e.target.value.trim();
+                      if (v.length > 15 && !deliveryQuote && !quoteLoading) {
+                        void fetchDeliveryQuote(v);
+                      }
+                    }}
                     className={inputCls}
                     placeholder="Street, suburb, postcode"
                   />
+                  <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:items-center">
+                    <button
+                      type="button"
+                      onClick={() => void fetchDeliveryQuote(form.address)}
+                      disabled={quoteLoading || form.address.trim().length < 5}
+                      className="inline-flex items-center justify-center gap-2 text-[10px] tracking-[0.24em] uppercase border border-gold/50 text-gold px-4 py-2 hover:bg-gold hover:text-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {quoteLoading ? "Calculating…" : "Calculate delivery fee"}
+                    </button>
+                    {deliveryQuote?.deliverable === true && (
+                      <span className="text-xs text-[color:var(--foreground)]/85">
+                        Estimated delivery fee:{" "}
+                        <span className="text-gold font-serif-display text-base">
+                          A${Number(deliveryQuote.feeAud ?? 0).toFixed(2)}
+                        </span>{" "}
+                        (approx. {Number(deliveryQuote.distanceKm ?? 0).toFixed(1)} km from Woolloongabba)
+                      </span>
+                    )}
+                  </div>
+                  {deliveryQuote?.deliverable === false && (
+                    <p className="mt-2 text-xs text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-3 py-2">
+                      Sorry, we don't deliver beyond 25 km. Please contact us at{" "}
+                      <a href="mailto:l.asweetbne@gmail.com" className="underline">
+                        l.asweetbne@gmail.com
+                      </a>
+                      .
+                    </p>
+                  )}
+                  {deliveryQuote?.pending && (
+                    <p className="mt-2 text-xs text-[color:var(--foreground)]/70 border border-gold/30 bg-ink-3/60 px-3 py-2">
+                      We couldn't estimate the delivery fee automatically. We'll contact you within 24h
+                      with the exact amount.
+                    </p>
+                  )}
+                  <p className="mt-2 text-[10px] italic text-[color:var(--foreground)]/50 leading-relaxed">
+                    Distance is estimated. Actual fee may vary slightly and will be confirmed before dispatch.
+                  </p>
                 </FieldLA>
               )}
 
@@ -2514,14 +2655,15 @@ function CheckoutModal({
                   </span>
                 </div>
                 {(() => {
-                  const snapQty = orderSnapshot.reduce((s, i) => s + i.qty, 0);
-                  const fee = form.delivery === "delivery" && snapQty < 8 ? 10 : 0;
+                  const fee = effectiveDeliveryFee;
                   const message =
                     form.delivery === "pickup"
                       ? "Pick-up is free with no minimum order."
-                      : snapQty < 8
-                      ? "Delivery fee applies under 8 pieces."
-                      : "Free delivery from 8 pieces.";
+                      : deliveryQuote?.deliverable === true
+                        ? `Delivery fee based on approx. ${Number(deliveryQuote.distanceKm ?? 0).toFixed(1)} km from Woolloongabba.`
+                        : deliveryQuote?.pending
+                          ? "We'll confirm your exact delivery fee within 24h."
+                          : "Delivery fee will be calculated from your address at the Details step.";
                   return (
                     <>
                       <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/60">
@@ -2647,8 +2789,7 @@ function CheckoutModal({
                   </span>
                 </div>
                 {(() => {
-                  const snapQty = orderSnapshot.reduce((s, i) => s + i.qty, 0);
-                  const fee = form.delivery === "delivery" && snapQty < 8 ? 10 : 0;
+                  const fee = effectiveDeliveryFee;
                   return (
                     <>
                       <div className="mt-2 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55">
@@ -2668,8 +2809,7 @@ function CheckoutModal({
 
               {/* Payment options — 50% deposit or pay in full. */}
               {(() => {
-                const snapQty = orderSnapshot.reduce((s, i) => s + i.qty, 0);
-                const fee = form.delivery === "delivery" && snapQty < 8 ? 10 : 0;
+                const fee = effectiveDeliveryFee;
                 const orderTotal = snapshotTotal + fee;
                 const deposit = Math.round((orderTotal / 2) * 100) / 100;
                 const balance = Math.round((orderTotal - deposit) * 100) / 100;
