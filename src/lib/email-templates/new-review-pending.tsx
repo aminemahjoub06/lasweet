@@ -27,7 +27,7 @@ const NewReviewPending = (p: Props) => {
       <Body style={main}>
         <Container style={container}>
           <Heading style={h1}>New review to moderate</Heading>
-          <Text style={rating_style}>{stars(rating)} — {rating}/5</Text>
+          <Text style={rating_style}>{stars(rating)} — {String(rating)}/5</Text>
 
           <Section style={card}>
             <Text style={label}>Reviewer</Text>
