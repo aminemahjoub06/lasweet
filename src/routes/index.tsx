@@ -12,6 +12,8 @@ import {
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getBrisbaneTomorrowIso } from "@/lib/config";
+import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
+import { StarDisplay } from "@/components/Stars";
 import raspberryImg from "@/assets/raspberry.png";
 import lemonImg from "@/assets/lemon.png";
 import mangoImg from "@/assets/mango.png";
@@ -19,7 +21,15 @@ import pistachioImg from "@/assets/pistachio.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
-  head: () => ({
+  loader: async () => {
+    try {
+      return await getHomeReviews();
+    } catch (e) {
+      console.error("[home loader] getHomeReviews failed", e);
+      return { reviews: [], aggregate: { count: 0, average: 0 } };
+    }
+  },
+  head: ({ loaderData }) => ({
     meta: [
       { title: "L&A Sweet — Handcrafted French Trompe-l'œil Desserts, Brisbane" },
       { name: "description", content: "L&A Sweet is a French pâtisserie in Brisbane creating four handmade trompe-l'œil desserts: Raspberry (A$15), Lemon (A$15), Mango (A$22) and Pistachio (A$22). Pick-up in Woolloongabba or delivery across Brisbane." },
@@ -124,6 +134,29 @@ export const Route = createFileRoute("/")({
                   },
                 ],
               },
+              ...(loaderData && loaderData.aggregate.count > 0
+                ? {
+                    aggregateRating: {
+                      "@type": "AggregateRating",
+                      ratingValue: loaderData.aggregate.average,
+                      reviewCount: loaderData.aggregate.count,
+                      bestRating: 5,
+                      worstRating: 1,
+                    },
+                    review: loaderData.reviews.slice(0, 3).map((r) => ({
+                      "@type": "Review",
+                      author: { "@type": "Person", name: r.reviewer_name },
+                      datePublished: (r.approved_at ?? r.created_at).slice(0, 10),
+                      reviewRating: {
+                        "@type": "Rating",
+                        ratingValue: r.rating,
+                        bestRating: 5,
+                        worstRating: 1,
+                      },
+                      reviewBody: r.comment.slice(0, 500),
+                    })),
+                  }
+                : {}),
             },
             {
               "@type": "WebSite",
@@ -637,6 +670,101 @@ function InstagramSection() {
 }
 
 function Index() {
+  return <IndexInner />;
+}
+
+function ReviewsHomeSection() {
+  const data = Route.useLoaderData();
+  const reviews: PublicReview[] = data?.reviews ?? [];
+  const aggregate = data?.aggregate ?? { count: 0, average: 0 };
+  const hasReviews = reviews.length > 0;
+
+  return (
+    <section id="reviews" className="border-t border-line bg-ink">
+      <div className="mx-auto max-w-7xl px-6 md:px-10 py-20 md:py-28">
+        <div className="text-center mb-12">
+          <div className="eyebrow justify-center mb-6 inline-flex">Customer voices</div>
+          <h2 className="font-serif-display text-4xl md:text-5xl leading-tight">
+            What our <span className="italic text-gold">customers say</span>
+          </h2>
+          {hasReviews ? (
+            <div className="mt-5 flex items-center justify-center gap-3">
+              <StarDisplay value={aggregate.average} size={20} />
+              <span className="text-sm text-[color:var(--foreground)]/80">
+                {aggregate.average.toFixed(1)} based on {aggregate.count} review{aggregate.count === 1 ? "" : "s"}
+              </span>
+            </div>
+          ) : (
+            <p className="mt-5 text-sm text-[color:var(--foreground)]/60 italic max-w-xl mx-auto">
+              Be the first to share your L&amp;A Sweet experience.
+            </p>
+          )}
+        </div>
+
+        {hasReviews && (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {reviews.slice(0, 6).map((r) => <HomeReviewCard key={r.id} review={r} />)}
+          </div>
+        )}
+
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
+          <Link
+            to="/leave-review"
+            className="inline-flex items-center gap-3 border border-gold text-gold text-[11px] tracking-[0.28em] uppercase px-6 py-4 hover:bg-gold hover:text-ink transition"
+          >
+            Leave a review
+          </Link>
+          {hasReviews && (
+            <Link
+              to="/reviews"
+              className="inline-flex items-center gap-3 border border-gold/40 text-[color:var(--foreground)]/80 text-[11px] tracking-[0.28em] uppercase px-6 py-4 hover:border-gold hover:text-gold transition"
+            >
+              See all reviews
+            </Link>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomeReviewCard({ review }: { review: PublicReview }) {
+  const [expanded, setExpanded] = React.useState(false);
+  const truncated = review.comment.length > 200 && !expanded;
+  const text = truncated ? review.comment.slice(0, 200).trimEnd() + "…" : review.comment;
+  const date = new Date(review.approved_at ?? review.created_at).toLocaleDateString("en-AU", { year: "numeric", month: "short", day: "numeric" });
+  return (
+    <article className="border border-line bg-ink-2/40 p-6 flex flex-col h-full">
+      <div className="flex items-center justify-between mb-3">
+        <StarDisplay value={review.rating} size={16} />
+        <time className="text-[11px] text-[color:var(--foreground)]/50">{date}</time>
+      </div>
+      <p className="text-sm text-[color:var(--foreground)]/85 leading-relaxed whitespace-pre-wrap flex-1">
+        {text}
+        {truncated && (
+          <button type="button" onClick={() => setExpanded(true)} className="ml-1 text-gold underline text-xs">read more</button>
+        )}
+      </p>
+      {review.photo_urls.length > 0 && (
+        <div className="flex gap-2 mt-4">
+          {review.photo_urls.slice(0, 3).map((src, i) => (
+            <a key={i} href={src} target="_blank" rel="noopener noreferrer" className="block w-14 h-14 border border-gold/30 overflow-hidden">
+              <img src={src} alt={`review photo ${i + 1}`} loading="lazy" className="w-full h-full object-cover" />
+            </a>
+          ))}
+        </div>
+      )}
+      <div className="mt-4 pt-4 border-t border-line flex items-center justify-between text-xs">
+        <span className="text-[color:var(--foreground)]/80">{review.reviewer_name}</span>
+        {review.verified_purchase && (
+          <span className="text-[10px] tracking-[0.18em] uppercase text-gold border border-gold/40 px-2 py-0.5">Verified</span>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function IndexInner() {
   const [idx, setIdx] = useState(0); // raspberry default per brief (now first)
   const f = flavours[idx];
   const prev = () => setIdx((i) => (i - 1 + flavours.length) % flavours.length);
@@ -1618,6 +1746,8 @@ function Index() {
 
       {/* WHOLESALE / EVENTS */}
       <InstagramSection />
+
+      <ReviewsHomeSection />
 
       <section className="pathways-warm border-t border-line">
         <div className="mx-auto max-w-7xl px-6 md:px-10 py-24 md:py-32">

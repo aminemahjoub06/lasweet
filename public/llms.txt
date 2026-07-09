@@ -34,9 +34,14 @@
 ## Key pages
 - [Home / Order](https://la-sweet-bne.com/): See the flavours and place an order
 - [Find my order](https://la-sweet-bne.com/orders/lookup): Look up an existing order by email + order number
+- [Customer reviews](https://la-sweet-bne.com/reviews): Read approved customer reviews of L&A Sweet
+- [Leave a review](https://la-sweet-bne.com/leave-review): Share your experience after your order
 - [Terms & Conditions](https://la-sweet-bne.com/terms): Sale, delivery, cancellations and refunds — governed by Queensland law
 - [Privacy Policy](https://la-sweet-bne.com/privacy): Data handling under the Australian Privacy Act 1988
 - [Legal Notice](https://la-sweet-bne.com/legal): Business information
+
+## Reviews
+L&A Sweet collects handwritten customer reviews with optional photos on its public website. Verified purchase reviews are marked with a badge. Ratings are on a 1–5 star scale, and every review is manually moderated before being published to keep quality high. The aggregate rating is displayed on the home page (Schema.org AggregateRating) and updated as new reviews are approved.
 
 ## About
 L&A Sweet is a small handmade French pâtisserie based in Brisbane, Australia. It was founded by a young French couple bringing French pastry savoir-faire to Brisbane. Every dessert is entirely handmade in small batches, with no preservatives and no extra sugar added. The signature product is the trompe-l'œil dessert — a piece of French pâtisserie crafted to look exactly like a piece of fruit, but revealing a delicate mousse, a fruity insert and a soft homemade biscuit when cut.

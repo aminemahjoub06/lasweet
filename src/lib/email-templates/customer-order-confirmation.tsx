@@ -166,6 +166,11 @@ const CustomerOrderConfirmation = (p: Props) => {
           </Text>
 
           <Text style={footer}>
+            Once you've tried your dessert, we'd love to hear about it 👇{' '}
+            <Link href={`${SITE_URL}/leave-review?order=${p.orderNumber ?? ''}`} style={link}>Leave a review</Link>
+          </Text>
+
+          <Text style={footer}>
             By placing this order you accept our handling of your details as described in our{' '}
             <Link href={`${SITE_URL}/privacy`} style={link}>Privacy Policy</Link>.
           </Text>

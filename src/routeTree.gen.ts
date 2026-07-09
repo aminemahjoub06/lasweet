@@ -11,21 +11,27 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LegalRouteImport } from './routes/legal'
+import { Route as LeaveReviewRouteImport } from './routes/leave-review'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrdersLookupRouteImport } from './routes/orders.lookup'
 import { Route as OrderSuccessRouteImport } from './routes/order.success'
 import { Route as OrderCancelRouteImport } from './routes/order.cancel'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ApiPublicReviewsIndexRouteImport } from './routes/api/public/reviews/index'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicReviewsModerateRouteImport } from './routes/api/public/reviews/moderate'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicHooksReviewRemindersRouteImport } from './routes/api/public/hooks/review-reminders'
 import { Route as ApiPublicHooksCleanupPendingOrdersRouteImport } from './routes/api/public/hooks/cleanup-pending-orders'
 import { Route as ApiPublicDeliveryQuoteRouteImport } from './routes/api/public/delivery/quote'
 
@@ -39,6 +45,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReviewsRoute = ReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -47,6 +58,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const LegalRoute = LegalRouteImport.update({
   id: '/legal',
   path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaveReviewRoute = LeaveReviewRouteImport.update({
+  id: '/leave-review',
+  path: '/leave-review',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -74,6 +90,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/admin/reviews',
+  path: '/admin/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/admin/orders',
   path: '/admin/orders',
@@ -82,6 +103,11 @@ const AdminOrdersRoute = AdminOrdersRouteImport.update({
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicReviewsIndexRoute = ApiPublicReviewsIndexRouteImport.update({
+  id: '/api/public/reviews/',
+  path: '/api/public/reviews/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailTransactionalSendRoute =
@@ -112,10 +138,22 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicReviewsModerateRoute =
+  ApiPublicReviewsModerateRouteImport.update({
+    id: '/api/public/reviews/moderate',
+    path: '/api/public/reviews/moderate',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
     path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksReviewRemindersRoute =
+  ApiPublicHooksReviewRemindersRouteImport.update({
+    id: '/api/public/hooks/review-reminders',
+    path: '/api/public/hooks/review-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksCleanupPendingOrdersRoute =
@@ -132,11 +170,14 @@ const ApiPublicDeliveryQuoteRoute = ApiPublicDeliveryQuoteRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/leave-review': typeof LeaveReviewRoute
   '/legal': typeof LegalRoute
   '/privacy': typeof PrivacyRoute
+  '/reviews': typeof ReviewsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
@@ -144,20 +185,26 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/delivery/quote': typeof ApiPublicDeliveryQuoteRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
+  '/api/public/hooks/review-reminders': typeof ApiPublicHooksReviewRemindersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/reviews/moderate': typeof ApiPublicReviewsModerateRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/reviews/': typeof ApiPublicReviewsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/leave-review': typeof LeaveReviewRoute
   '/legal': typeof LegalRoute
   '/privacy': typeof PrivacyRoute
+  '/reviews': typeof ReviewsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
@@ -165,21 +212,27 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/delivery/quote': typeof ApiPublicDeliveryQuoteRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
+  '/api/public/hooks/review-reminders': typeof ApiPublicHooksReviewRemindersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/reviews/moderate': typeof ApiPublicReviewsModerateRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/reviews': typeof ApiPublicReviewsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/leave-review': typeof LeaveReviewRoute
   '/legal': typeof LegalRoute
   '/privacy': typeof PrivacyRoute
+  '/reviews': typeof ReviewsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/order/cancel': typeof OrderCancelRoute
   '/order/success': typeof OrderSuccessRoute
@@ -187,22 +240,28 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/delivery/quote': typeof ApiPublicDeliveryQuoteRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
+  '/api/public/hooks/review-reminders': typeof ApiPublicHooksReviewRemindersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/reviews/moderate': typeof ApiPublicReviewsModerateRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/reviews/': typeof ApiPublicReviewsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/leave-review'
     | '/legal'
     | '/privacy'
+    | '/reviews'
     | '/terms'
     | '/unsubscribe'
     | '/admin/orders'
+    | '/admin/reviews'
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
@@ -210,20 +269,26 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/delivery/quote'
     | '/api/public/hooks/cleanup-pending-orders'
+    | '/api/public/hooks/review-reminders'
     | '/api/public/payments/webhook'
+    | '/api/public/reviews/moderate'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/api/public/reviews/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/leave-review'
     | '/legal'
     | '/privacy'
+    | '/reviews'
     | '/terms'
     | '/unsubscribe'
     | '/admin/orders'
+    | '/admin/reviews'
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
@@ -231,20 +296,26 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/delivery/quote'
     | '/api/public/hooks/cleanup-pending-orders'
+    | '/api/public/hooks/review-reminders'
     | '/api/public/payments/webhook'
+    | '/api/public/reviews/moderate'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/api/public/reviews'
   id:
     | '__root__'
     | '/'
+    | '/leave-review'
     | '/legal'
     | '/privacy'
+    | '/reviews'
     | '/terms'
     | '/unsubscribe'
     | '/admin/orders'
+    | '/admin/reviews'
     | '/email/unsubscribe'
     | '/order/cancel'
     | '/order/success'
@@ -252,21 +323,27 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/delivery/quote'
     | '/api/public/hooks/cleanup-pending-orders'
+    | '/api/public/hooks/review-reminders'
     | '/api/public/payments/webhook'
+    | '/api/public/reviews/moderate'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/api/public/reviews/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LeaveReviewRoute: typeof LeaveReviewRoute
   LegalRoute: typeof LegalRoute
   PrivacyRoute: typeof PrivacyRoute
+  ReviewsRoute: typeof ReviewsRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   OrderCancelRoute: typeof OrderCancelRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
@@ -274,12 +351,15 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicDeliveryQuoteRoute: typeof ApiPublicDeliveryQuoteRoute
   ApiPublicHooksCleanupPendingOrdersRoute: typeof ApiPublicHooksCleanupPendingOrdersRoute
+  ApiPublicHooksReviewRemindersRoute: typeof ApiPublicHooksReviewRemindersRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicReviewsModerateRoute: typeof ApiPublicReviewsModerateRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
+  ApiPublicReviewsIndexRoute: typeof ApiPublicReviewsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -298,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reviews': {
+      id: '/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof ReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -310,6 +397,13 @@ declare module '@tanstack/react-router' {
       path: '/legal'
       fullPath: '/legal'
       preLoaderRoute: typeof LegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leave-review': {
+      id: '/leave-review'
+      path: '/leave-review'
+      fullPath: '/leave-review'
+      preLoaderRoute: typeof LeaveReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -347,6 +441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/reviews': {
+      id: '/admin/reviews'
+      path: '/admin/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/admin/orders'
@@ -359,6 +460,13 @@ declare module '@tanstack/react-router' {
       path: '/lovable/email/suppression'
       fullPath: '/lovable/email/suppression'
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/reviews/': {
+      id: '/api/public/reviews/'
+      path: '/api/public/reviews'
+      fullPath: '/api/public/reviews/'
+      preLoaderRoute: typeof ApiPublicReviewsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lovable/email/transactional/send': {
@@ -396,11 +504,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/reviews/moderate': {
+      id: '/api/public/reviews/moderate'
+      path: '/api/public/reviews/moderate'
+      fullPath: '/api/public/reviews/moderate'
+      preLoaderRoute: typeof ApiPublicReviewsModerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
       fullPath: '/api/public/payments/webhook'
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/review-reminders': {
+      id: '/api/public/hooks/review-reminders'
+      path: '/api/public/hooks/review-reminders'
+      fullPath: '/api/public/hooks/review-reminders'
+      preLoaderRoute: typeof ApiPublicHooksReviewRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/cleanup-pending-orders': {
@@ -422,11 +544,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LeaveReviewRoute: LeaveReviewRoute,
   LegalRoute: LegalRoute,
   PrivacyRoute: PrivacyRoute,
+  ReviewsRoute: ReviewsRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   AdminOrdersRoute: AdminOrdersRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   OrderCancelRoute: OrderCancelRoute,
   OrderSuccessRoute: OrderSuccessRoute,
@@ -435,23 +560,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDeliveryQuoteRoute: ApiPublicDeliveryQuoteRoute,
   ApiPublicHooksCleanupPendingOrdersRoute:
     ApiPublicHooksCleanupPendingOrdersRoute,
+  ApiPublicHooksReviewRemindersRoute: ApiPublicHooksReviewRemindersRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicReviewsModerateRoute: ApiPublicReviewsModerateRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
+  ApiPublicReviewsIndexRoute: ApiPublicReviewsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
