@@ -23,7 +23,7 @@ const NewReviewPending = (p: Props) => {
   return (
     <Html lang="en" dir="ltr">
       <Head />
-      <Preview>New {rating}★ review from {p.reviewerName ?? 'a customer'}</Preview>
+      <Preview>{`New ${rating}★ review from ${p.reviewerName ?? 'a customer'}`}</Preview>
       <Body style={main}>
         <Container style={container}>
           <Heading style={h1}>New review to moderate</Heading>
