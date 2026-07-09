@@ -359,6 +359,107 @@ export type Database = {
         }
         Relationships: []
       }
+      review_moderation_tokens: {
+        Row: {
+          action: string
+          created_at: string
+          expires_at: string
+          id: string
+          review_id: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          review_id: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          review_id?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_moderation_tokens_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_reminder_log: {
+        Row: {
+          order_number: string
+          sent_at: string
+        }
+        Insert: {
+          order_number: string
+          sent_at?: string
+        }
+        Update: {
+          order_number?: string
+          sent_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          admin_notes: string | null
+          approved_at: string | null
+          comment: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          order_number: string | null
+          photo_urls: Json
+          rating: number
+          reviewer_email: string
+          reviewer_name: string
+          status: string
+          verified_purchase: boolean
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          comment: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          order_number?: string | null
+          photo_urls?: Json
+          rating: number
+          reviewer_email: string
+          reviewer_name: string
+          status?: string
+          verified_purchase?: boolean
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          comment?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          order_number?: string | null
+          photo_urls?: Json
+          rating?: number
+          reviewer_email?: string
+          reviewer_name?: string
+          status?: string
+          verified_purchase?: boolean
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
