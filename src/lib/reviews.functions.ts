@@ -153,8 +153,8 @@ export const adminModerateReview = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       return { ok: true };
     }
-    const patch: Record<string, unknown> = {
-      status: data.action === "approve" ? "approved" : "rejected",
+    const patch = {
+      status: (data.action === "approve" ? "approved" : "rejected") as "approved" | "rejected",
       admin_notes: data.note ?? null,
       approved_at: data.action === "approve" ? new Date().toISOString() : null,
     };
