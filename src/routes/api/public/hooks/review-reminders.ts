@@ -13,10 +13,13 @@ export const Route = createFileRoute("/api/public/hooks/review-reminders")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Light auth: require apikey header matches the anon key.
-        const apikey = request.headers.get("apikey");
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
-        if (!apikey || !expected || apikey !== expected) {
+        // Require service-role bearer token — the anon key is public, so it
+        // cannot be used to gate this endpoint. Matches the email queue
+        // processor's auth pattern.
+        const auth = request.headers.get("authorization") ?? "";
+        const expected = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const provided = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+        if (!expected || !provided || provided !== expected) {
           return json({ error: "Unauthorized" }, 401);
         }
 
