@@ -81,6 +81,13 @@ const CustomerOrderConfirmation = (p: Props) => {
       <Preview>Your L&A Sweet order is confirmed</Preview>
       <Body style={main}>
         <Container style={container}>
+          <img
+            src="https://la-sweet-bne.com/branding/logo-square.png"
+            alt="L&A Sweet"
+            width="80"
+            height="80"
+            style={{ display: 'block', margin: '0 auto 24px auto' }}
+          />
           <Heading style={h1}>Hi {greetingName},</Heading>
           <Text style={lead}>
             Thank you for your order with L&amp;A Sweet. Your order has been
