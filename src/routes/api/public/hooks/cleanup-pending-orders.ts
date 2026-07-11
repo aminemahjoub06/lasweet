@@ -11,6 +11,17 @@ import { createFileRoute } from "@tanstack/react-router";
 
 async function handleCleanup(request: Request) {
   const url = new URL(request.url);
+  // Require service-role bearer token — this endpoint mutates order state and
+  // must never be triggerable by unauthenticated internet callers.
+  const auth = request.headers.get("authorization") ?? "";
+  const expected = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const provided = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (!expected || !provided || provided !== expected) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
   // Default to live (production webhook); allow override for manual testing.
   const envParam = url.searchParams.get("env");
   const stripeEnv = (envParam === "sandbox" ? "sandbox" : "live") as
@@ -120,8 +131,6 @@ export const Route = createFileRoute("/api/public/hooks/cleanup-pending-orders")
   server: {
     handlers: {
       POST: async ({ request }) => handleCleanup(request),
-      // Allow GET for easy manual testing from a browser/curl during ops.
-      GET: async ({ request }) => handleCleanup(request),
     },
   },
 });
