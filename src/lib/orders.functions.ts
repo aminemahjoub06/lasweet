@@ -481,7 +481,11 @@ export const getOrderStatus = createServerFn({ method: "GET" })
     const { data: row, error } = await supabaseAdmin
       .from("orders")
       .select(
-        "order_number, customer_name, customer_email, customer_phone, business, delivery_method, delivery_address, delivery_date, delivery_time, order_type, notes, total, payment_method, payment_status, payment_plan, amount_paid_online, balance_due_cash, balance_collected_at, items, subtotal, delivery_fee, created_at",
+        // No PII (name/email/phone/address/notes) — the order number travels
+        // in the URL after Stripe redirects and can leak via referrer/history.
+        // Detailed order info is available via the email-verified
+        // `lookupOrderByEmail` flow instead.
+        "order_number, business, delivery_method, delivery_date, delivery_time, order_type, total, payment_method, payment_status, payment_plan, amount_paid_online, balance_due_cash, balance_collected_at, items, subtotal, delivery_fee, created_at",
       )
       .eq("order_number", data.orderNumber)
       .maybeSingle();
