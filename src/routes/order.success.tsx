@@ -121,22 +121,18 @@ function OrderSuccessPage() {
         {data && (
           <div className="mt-8 grid sm:grid-cols-2 gap-3 text-left text-sm">
             <div className="border border-line bg-ink-3/40 p-4">
-              <div className="text-[10px] tracking-[0.24em] uppercase text-gold/80 mb-1">Customer</div>
-              <div className="font-serif-display">{data.customer_name}</div>
-              <div className="text-[color:var(--foreground)]/70">{data.customer_email}</div>
-              {data.customer_phone && (
-                <div className="text-[color:var(--foreground)]/70">{data.customer_phone}</div>
-              )}
+              <div className="text-[10px] tracking-[0.24em] uppercase text-gold/80 mb-1">Order</div>
+              <div className="font-serif-display">{data.order_number}</div>
               {data.business && (
                 <div className="text-[color:var(--foreground)]/70">{data.business}</div>
               )}
+              <div className="text-[color:var(--foreground)]/60 text-xs mt-2">
+                Full details have been sent to your email.
+              </div>
             </div>
             <div className="border border-line bg-ink-3/40 p-4">
               <div className="text-[10px] tracking-[0.24em] uppercase text-gold/80 mb-1">Fulfilment</div>
               <div>{data.delivery_method === "delivery" ? "Delivery" : "Pick-up"}</div>
-              {data.delivery_address && (
-                <div className="text-[color:var(--foreground)]/70">{data.delivery_address}</div>
-              )}
               {data.delivery_date && (
                 <div className="text-[color:var(--foreground)]/70">Date: {fmtDate(data.delivery_date)}</div>
               )}
@@ -189,11 +185,6 @@ function OrderSuccessPage() {
               <span>Payment: {data.payment_method === "cash" ? "Cash" : "Online"}</span>
               <span className="text-gold">{data.payment_status}</span>
             </div>
-            {data.notes && (
-              <p className="mt-3 text-[color:var(--foreground)]/65 italic text-sm">
-                “{data.notes}”
-              </p>
-            )}
           </div>
         )}
 
