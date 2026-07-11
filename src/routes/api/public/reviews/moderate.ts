@@ -46,7 +46,13 @@ export const Route = createFileRoute("/api/public/reviews/moderate")({
           admin_notes: row.action === "reject" ? "Rejected via email magic link." : null,
         };
         const { error } = await supabaseAdmin.from("reviews").update(patch).eq("id", row.review_id);
-        if (error) return htmlPage(`<h1>Something went wrong</h1><p>${error.message}</p>`, 500);
+        if (error) {
+          console.error("[moderate] update error", error);
+          return htmlPage(
+            `<h1>Something went wrong</h1><p>Could not action this review. Please use the admin dashboard.</p>`,
+            500,
+          );
+        }
         await supabaseAdmin.from("review_moderation_tokens").update({ used_at: new Date().toISOString() }).eq("id", row.id);
 
         const verb = row.action === "approve" ? "approved and published" : "rejected";
