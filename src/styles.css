@@ -247,3 +247,28 @@ html, body {
 .pathways-warm {
   background: linear-gradient(180deg, #150f0a, #0a0806);
 }
+
+/* Google Website Translator — hide the default top banner and prevent it from
+   pushing the page content down. The switcher lives in our own header. */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+.skiptranslate iframe.goog-te-banner-frame,
+#goog-gt-tt,
+.goog-tooltip,
+.goog-tooltip:hover,
+.goog-text-highlight {
+  display: none !important;
+  visibility: hidden !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+body {
+  top: 0 !important;
+  position: static !important;
+}
+html {
+  min-height: 100%;
+}
+/* Google injects inline font-size on body when translating some scripts —
+   force our own back. */
+body { font-size: inherit; }

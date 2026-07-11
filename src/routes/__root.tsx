@@ -11,6 +11,8 @@ import {
 import appCss from "../styles.css?url";
 import { Toaster } from "sonner";
 import { CookieBanner } from "../components/CookieBanner";
+import { TranslateWidget } from "../components/TranslateWidget";
+import { TranslateBanner } from "../components/TranslateBanner";
 
 function NotFoundComponent() {
   return (
@@ -116,6 +118,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@300;400;500&display=swap",
       },
+      // hreflang alternates — signal supported translated versions to search
+      // engines. The `?lang=` param is a hint for crawlers; on-page switching
+      // is handled by the Google Translate widget.
+      { rel: "alternate", hrefLang: "en-AU", href: "https://la-sweet-bne.com/" },
+      { rel: "alternate", hrefLang: "zh-CN", href: "https://la-sweet-bne.com/?lang=zh-CN" },
+      { rel: "alternate", hrefLang: "ja", href: "https://la-sweet-bne.com/?lang=ja" },
+      { rel: "alternate", hrefLang: "ko", href: "https://la-sweet-bne.com/?lang=ko" },
+      { rel: "alternate", hrefLang: "vi", href: "https://la-sweet-bne.com/?lang=vi" },
+      { rel: "alternate", hrefLang: "th", href: "https://la-sweet-bne.com/?lang=th" },
+      { rel: "alternate", hrefLang: "id", href: "https://la-sweet-bne.com/?lang=id" },
+      { rel: "alternate", hrefLang: "hi", href: "https://la-sweet-bne.com/?lang=hi" },
+      { rel: "alternate", hrefLang: "fr", href: "https://la-sweet-bne.com/?lang=fr" },
+      { rel: "alternate", hrefLang: "es", href: "https://la-sweet-bne.com/?lang=es" },
+      { rel: "alternate", hrefLang: "de", href: "https://la-sweet-bne.com/?lang=de" },
+      { rel: "alternate", hrefLang: "it", href: "https://la-sweet-bne.com/?lang=it" },
+      { rel: "alternate", hrefLang: "x-default", href: "https://la-sweet-bne.com/" },
     ],
   }),
   shellComponent: RootShell,
@@ -146,6 +164,8 @@ function RootComponent() {
       <Outlet />
       <Toaster position="bottom-center" theme="dark" />
       <CookieBanner />
+      <TranslateWidget />
+      <TranslateBanner />
     </QueryClientProvider>
   );
 }

@@ -11,6 +11,7 @@ import {
 } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getBrisbaneTomorrowIso } from "@/lib/config";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
@@ -1224,7 +1225,8 @@ function IndexInner() {
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            className="font-serif-display text-xl md:text-2xl leading-none"
+            className="notranslate font-serif-display text-xl md:text-2xl leading-none"
+            translate="no"
           >
             L<span className="text-gold">&</span>A <span className="italic">Sweet</span>
           </a>
@@ -1236,6 +1238,7 @@ function IndexInner() {
               <a href="#story" className="hover:text-gold transition">About</a>
               <a href="#footer" className="hover:text-gold transition">Contact</a>
             </nav>
+            <LanguageSwitcher />
             <button
               type="button"
               aria-label="Open cart"
