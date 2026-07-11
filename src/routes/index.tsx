@@ -1220,15 +1220,21 @@ function IndexInner() {
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 md:px-10 md:py-8">
           <a
-            href="#top"
+            href="/"
             onClick={(e) => {
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            className="notranslate font-serif-display text-xl md:text-2xl leading-none"
+            className="notranslate leading-none"
             translate="no"
+            aria-label="L&A Sweet — home"
           >
-            L<span className="text-gold">&</span>A <span className="italic">Sweet</span>
+            <img
+              src="/branding/logo-square.png"
+              alt="L&A Sweet"
+              className="block h-11 md:h-14 w-auto"
+            />
+            <span className="sr-only">L&A Sweet</span>
           </a>
           <div className="flex items-center gap-6 md:gap-8">
             <nav className="hidden md:flex items-center gap-8 text-[11px] tracking-[0.22em] uppercase text-[color:var(--foreground)]/70">
