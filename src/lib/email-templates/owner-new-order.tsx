@@ -51,6 +51,13 @@ const OwnerNewOrderEmail = (p: Props) => {
       <Preview>New L&A Sweet order — {p.orderNumber ?? ''}</Preview>
       <Body style={main}>
         <Container style={container}>
+          <img
+            src="https://la-sweet-bne.com/branding/logo-square.png"
+            alt="L&A Sweet"
+            width="80"
+            height="80"
+            style={{ display: 'block', margin: '0 auto 24px auto' }}
+          />
           <Heading style={h1}>New order received</Heading>
           <Text style={muted}>Order reference</Text>
           <Text style={ref}>{p.orderNumber}</Text>
