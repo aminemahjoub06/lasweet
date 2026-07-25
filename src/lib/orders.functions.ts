@@ -105,20 +105,37 @@ async function resolveDeliveryFee(opts: {
   if (opts.delivery !== "delivery") {
     return { fee: 0, distanceKm: null, lat: null, lng: null, pending: false };
   }
+  if (!opts.address || opts.address.trim().length < 5) {
+    throw new Response(
+      JSON.stringify({
+        error:
+          "We couldn't verify your delivery address. Please check your address and try again, choose pickup, or contact us at l.asweetbne@gmail.com for assistance.",
+        code: "delivery_address_unverified",
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
   const { computeDeliveryQuoteForAddress } = await import("./delivery.server");
   const outcome = await computeDeliveryQuoteForAddress(opts.address);
   if (outcome.status === "out_of_range") {
     throw new Response(
       JSON.stringify({
         error:
-          "Sorry, we don't deliver beyond 25 km. Please contact us at l.asweetbne@gmail.com.",
+          "This address is outside our standard delivery area. Please choose pickup or contact us at l.asweetbne@gmail.com for a custom delivery quote.",
         code: "delivery_out_of_range",
       }),
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
   if (outcome.status === "unresolved") {
-    return { fee: 0, distanceKm: null, lat: null, lng: null, pending: true };
+    throw new Response(
+      JSON.stringify({
+        error:
+          "We couldn't verify your delivery address. Please check your address and try again, choose pickup, or contact us at l.asweetbne@gmail.com for assistance.",
+        code: "delivery_address_unverified",
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
   }
   return {
     fee: outcome.feeAud,

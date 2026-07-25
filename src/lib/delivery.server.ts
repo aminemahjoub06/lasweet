@@ -6,7 +6,7 @@ import {
   computeDeliveryFee,
   estimatedRoadDistanceKm,
 } from "./config";
-import { geocodeAddress, type GeocodeResult } from "./geocoding.server";
+import { geocodeAddressWithRetry, type GeocodeResult } from "./geocoding.server";
 
 export type DeliveryQuoteOutcome =
   | {
@@ -43,7 +43,7 @@ export type DeliveryQuoteOutcome =
 export async function computeDeliveryQuoteForAddress(
   address: string,
 ): Promise<DeliveryQuoteOutcome> {
-  const geo = await geocodeAddress(address);
+  const geo = await geocodeAddressWithRetry(address);
   const method =
     (process.env.GEOCODING_PROVIDER ?? "nominatim").toLowerCase() === "google"
       ? ("google-estimate" as const)
