@@ -50,6 +50,14 @@ const rejectSameDay = (val: { customer: { date?: string } }, ctx: z.RefinementCt
       message:
         "Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.",
     });
+    return;
+  }
+  if (CLOSURE_DATES.includes(date)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["customer", "date"],
+      message: CLOSURE_MESSAGE,
+    });
   }
 };
 
