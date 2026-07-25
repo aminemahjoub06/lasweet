@@ -129,3 +129,61 @@ export function isClosureDate(dateIso: string | null | undefined): boolean {
   if (!dateIso) return false;
   return CLOSURE_DATES.includes(dateIso);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Next-day ordering cut-off (Australia/Brisbane, 20:00 local time)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const ORDER_CUTOFF_HOUR = 20;
+
+export const NEXT_DAY_CUTOFF_MESSAGE =
+  "Orders for next-day pickup and delivery close at 8:00 PM. Please select another available date.";
+
+/** Current hour (0-23) in Australia/Brisbane. */
+function getBrisbaneHour(now: Date = new Date()): number {
+  const h = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Australia/Brisbane",
+    hour: "2-digit",
+    hour12: false,
+  }).format(now);
+  return parseInt(h, 10);
+}
+
+/** True once the 8pm Brisbane cut-off for next-day orders has been reached. */
+export function isPastNextDayCutoff(now: Date = new Date()): boolean {
+  return getBrisbaneHour(now) >= ORDER_CUTOFF_HOUR;
+}
+
+/** Add whole days to a YYYY-MM-DD string, treating it as a calendar date. */
+function addDaysIso(iso: string, days: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + days);
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}-${String(dt.getUTCDate()).padStart(2, "0")}`;
+}
+
+/**
+ * Earliest order date (YYYY-MM-DD, Brisbane) taking into account:
+ *  - the D+1 minimum,
+ *  - the 8pm Brisbane cut-off (after which D+1 is unavailable → D+2),
+ *  - configured CLOSURE_DATES (skipped forward until an open day).
+ */
+export function getEarliestOrderDateIso(now: Date = new Date()): string {
+  const today = getBrisbaneTodayIso(now);
+  let d = addDaysIso(today, isPastNextDayCutoff(now) ? 2 : 1);
+  // Skip closure dates. Bounded loop for safety.
+  for (let i = 0; i < 30 && isClosureDate(d); i++) {
+    d = addDaysIso(d, 1);
+  }
+  return d;
+}
+
+/** True if the given ISO date is allowed at `now` given the cut-off + closures. */
+export function isDateAllowedForOrder(
+  dateIso: string | null | undefined,
+  now: Date = new Date(),
+): boolean {
+  if (!dateIso) return false;
+  if (isClosureDate(dateIso)) return false;
+  return dateIso >= getEarliestOrderDateIso(now);
+}
