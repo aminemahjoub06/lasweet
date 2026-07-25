@@ -12,7 +12,7 @@ import {
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getBrisbaneTomorrowIso } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getBrisbaneTomorrowIso, CLOSURE_DATES, CLOSURE_MESSAGE, isClosureDate } from "@/lib/config";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
 import raspberryImg from "@/assets/raspberry.png";
@@ -77,7 +77,7 @@ export const Route = createFileRoute("/")({
                 {
                   "@type": "OpeningHoursSpecification",
                   dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-                  opens: "10:00",
+                  opens: "12:00",
                   closes: "22:00",
                 },
               ],
