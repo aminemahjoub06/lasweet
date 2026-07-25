@@ -45,13 +45,14 @@ export const Route = createFileRoute("/api/public/delivery/quote")({
 
         if (outcome.status === "unresolved") {
           return json({
-            deliverable: null,
+            deliverable: false,
             distanceKm: null,
             feeAud: null,
             method: outcome.method,
-            pending: true,
+            pending: false,
+            code: "delivery_address_unverified",
             message:
-              "We couldn't estimate the delivery fee automatically. We'll contact you within 24h with the exact amount.",
+              "We couldn't verify your delivery address. Please check your address and try again, choose pickup, or contact us at l.asweetbne@gmail.com for assistance.",
           });
         }
 
@@ -61,8 +62,9 @@ export const Route = createFileRoute("/api/public/delivery/quote")({
             distanceKm: outcome.distanceKm,
             feeAud: null,
             method: outcome.method,
+            code: "delivery_out_of_range",
             message:
-              "Sorry, we don't deliver beyond 25 km. Please contact us at l.asweetbne@gmail.com.",
+              "This address is outside our standard delivery area. Please choose pickup or contact us at l.asweetbne@gmail.com for a custom delivery quote.",
           });
         }
 
