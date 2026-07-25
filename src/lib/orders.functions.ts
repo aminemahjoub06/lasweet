@@ -1,6 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { CLOSURE_DATES, CLOSURE_MESSAGE, DEFAULT_DAILY_STOCK, getBrisbaneTodayIso } from "./config";
+import {
+  CLOSURE_DATES,
+  CLOSURE_MESSAGE,
+  DEFAULT_DAILY_STOCK,
+  getBrisbaneTodayIso,
+  getEarliestOrderDateIso,
+  NEXT_DAY_CUTOFF_MESSAGE,
+} from "./config";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Schemas
@@ -57,6 +64,15 @@ const rejectSameDay = (val: { customer: { date?: string } }, ctx: z.RefinementCt
       code: z.ZodIssueCode.custom,
       path: ["customer", "date"],
       message: CLOSURE_MESSAGE,
+    });
+    return;
+  }
+  const earliest = getEarliestOrderDateIso();
+  if (date < earliest) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["customer", "date"],
+      message: NEXT_DAY_CUTOFF_MESSAGE,
     });
   }
 };
