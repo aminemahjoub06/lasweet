@@ -270,7 +270,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
     // Reserve stock atomically per (flavour, delivery date) before we save.
     await reserveStockOrThrow(data.items, data.customer.date);
 
-    const { error } = await supabaseAdmin.from("orders").insert({
+    const { data: insertedCash, error } = await supabaseAdmin.from("orders").insert({
       order_number: orderNumber,
       customer_name: data.customer.fullName,
       customer_email: data.customer.email,
@@ -292,12 +292,22 @@ export const createCashOrder = createServerFn({ method: "POST" })
       delivery_lat: deliveryQuote.lat,
       delivery_lng: deliveryQuote.lng,
       pending_delivery_quote: deliveryQuote.pending,
-    });
+    })
+      .select("*")
+      .single();
 
     if (error) {
       console.error("[createCashOrder] insert error", error);
       await restoreOrderStock(data.items, data.customer.date);
       throw new Error("Could not save your order. Please try again.");
+    }
+
+    // Best-effort Google Calendar sync (never blocks the order).
+    try {
+      const { syncOrderCalendarEvent } = await import("./calendar-sync.server");
+      await syncOrderCalendarEvent(insertedCash as never);
+    } catch (e) {
+      console.error("[calendar-sync] cash order failed", e);
     }
 
     // Best-effort owner notification (never blocks the order)
