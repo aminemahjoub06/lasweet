@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { DEFAULT_DAILY_STOCK, getBrisbaneTodayIso } from "./config";
+import { CLOSURE_DATES, CLOSURE_MESSAGE, DEFAULT_DAILY_STOCK, getBrisbaneTodayIso } from "./config";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Schemas
@@ -49,6 +49,14 @@ const rejectSameDay = (val: { customer: { date?: string } }, ctx: z.RefinementCt
       path: ["customer", "date"],
       message:
         "Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.",
+    });
+    return;
+  }
+  if (CLOSURE_DATES.includes(date)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["customer", "date"],
+      message: CLOSURE_MESSAGE,
     });
   }
 };

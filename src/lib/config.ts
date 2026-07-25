@@ -57,8 +57,6 @@ export const DEFAULT_DAILY_STOCK = 15;
 
 // Available pick-up / delivery time slots (24-hour, on the hour).
 export const TIME_SLOTS = [
-  "10:00",
-  "11:00",
   "12:00",
   "13:00",
   "14:00",
@@ -108,4 +106,26 @@ export function getBrisbaneTomorrowIso(now: Date = new Date()): string {
   const dt = new Date(Date.UTC(y, m - 1, d));
   dt.setUTCDate(dt.getUTCDate() + 1);
   return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}-${String(dt.getUTCDate()).padStart(2, "0")}`;
+}
+
+/**
+ * Dates (YYYY-MM-DD, Australia/Brisbane) on which the business is closed and
+ * no orders can be placed. Compared as strings against the date input value.
+ */
+export const CLOSURE_DATES: readonly string[] = [
+  "2026-07-28",
+  "2026-07-29",
+  "2026-07-30",
+  "2026-07-31",
+  "2026-08-01",
+  "2026-08-02",
+  "2026-08-03",
+];
+
+export const CLOSURE_MESSAGE =
+  "We'll be closed from July 28 to August 3. Please select a date from August 4 onwards.";
+
+export function isClosureDate(dateIso: string | null | undefined): boolean {
+  if (!dateIso) return false;
+  return CLOSURE_DATES.includes(dateIso);
 }
