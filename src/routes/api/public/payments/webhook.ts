@@ -117,6 +117,12 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
 
           if (updated) {
             try {
+              const { syncOrderCalendarEvent } = await import("@/lib/calendar-sync.server");
+              await syncOrderCalendarEvent(updated as never);
+            } catch (e) {
+              console.error("[stripe-webhook] calendar sync failed", e);
+            }
+            try {
               const { notifyOwnerNewOrder } = await import("@/lib/notifications.server");
               await notifyOwnerNewOrder({
                 orderNumber: updated.order_number,
@@ -274,6 +280,14 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                   "[stripe-webhook] restore stock after refund failed",
                   err,
                 );
+              }
+              try {
+                const { cancelOrderCalendarEvent } = await import(
+                  "@/lib/calendar-sync.server"
+                );
+                await cancelOrderCalendarEvent(order.id);
+              } catch (err) {
+                console.error("[stripe-webhook] cancel calendar event failed", err);
               }
             }
 

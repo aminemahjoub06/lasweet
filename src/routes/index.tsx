@@ -12,7 +12,7 @@ import {
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getBrisbaneTomorrowIso, CLOSURE_DATES, CLOSURE_MESSAGE, isClosureDate } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, CLOSURE_DATES, CLOSURE_MESSAGE, isClosureDate } from "@/lib/config";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
 import raspberryImg from "@/assets/raspberry.png";
@@ -1074,11 +1074,12 @@ function IndexInner() {
           ? "Please choose a delivery time."
           : "Please choose a pick-up time.",
       );
-    const brisbaneToday = getBrisbaneTodayIso();
-    if (!form.date || form.date <= brisbaneToday)
+    if (!form.date || form.date <= getBrisbaneTodayIso())
       return setFormError(
         "Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.",
       );
+    if (!isDateAllowedForOrder(form.date))
+      return setFormError(NEXT_DAY_CUTOFF_MESSAGE);
     const allowedSlots = getAvailableSlots(form.date);
     if (!allowedSlots.includes(form.time as (typeof allowedSlots)[number]))
       return setFormError("Please choose a valid time slot.");
@@ -2530,7 +2531,7 @@ function CheckoutModal({
                   <input
                     type="date"
                     value={form.date}
-                    min={getBrisbaneTomorrowIso()}
+                    min={getEarliestOrderDateIso()}
                     onChange={(e) => {
                       const v = e.target.value;
                       const today = getBrisbaneTodayIso();
@@ -2541,6 +2542,11 @@ function CheckoutModal({
                       }
                       if (v && isClosureDate(v)) {
                         setFormError(CLOSURE_MESSAGE);
+                        updateForm("date", "");
+                        return;
+                      }
+                      if (v && !isDateAllowedForOrder(v)) {
+                        setFormError(NEXT_DAY_CUTOFF_MESSAGE);
                         updateForm("date", "");
                         return;
                       }
