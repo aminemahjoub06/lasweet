@@ -2699,19 +2699,31 @@ function CheckoutModal({
                     )}
                   </div>
                   {deliveryQuote?.deliverable === false && (
-                    <p className="mt-2 text-xs text-[color:var(--gold-soft)] border border-gold/30 bg-ink-3/60 px-3 py-2">
-                      Sorry, we don't deliver beyond 25 km. Please contact us at{" "}
-                      <a href="mailto:l.asweetbne@gmail.com" className="underline">
-                        l.asweetbne@gmail.com
-                      </a>
-                      .
-                    </p>
-                  )}
-                  {deliveryQuote?.pending && (
-                    <p className="mt-2 text-xs text-[color:var(--foreground)]/70 border border-gold/30 bg-ink-3/60 px-3 py-2">
-                      We couldn't estimate the delivery fee automatically. We'll contact you within 24h
-                      with the exact amount.
-                    </p>
+                  {deliveryQuote?.deliverable === false && (
+                    <div className="mt-2 border border-gold/30 bg-ink-3/60 px-3 py-3 space-y-2">
+                      <p className="text-xs text-[color:var(--gold-soft)]">
+                        {deliveryQuote.message ||
+                          "This address is outside our standard delivery area. Please choose pickup or contact us for a custom delivery quote."}
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            updateForm("delivery", "pickup");
+                            setFormError(null);
+                          }}
+                          className="inline-flex items-center justify-center text-[10px] tracking-[0.24em] uppercase bg-gold text-ink px-4 py-2 hover:bg-[color:var(--gold-soft)] transition-colors"
+                        >
+                          Switch to pickup
+                        </button>
+                        <a
+                          href="mailto:l.asweetbne@gmail.com"
+                          className="inline-flex items-center justify-center text-[10px] tracking-[0.24em] uppercase border border-gold/50 text-gold px-4 py-2 hover:bg-gold hover:text-ink transition-colors"
+                        >
+                          Contact us
+                        </a>
+                      </div>
+                    </div>
                   )}
                   <p className="mt-2 text-[10px] italic text-[color:var(--foreground)]/50 leading-relaxed">
                     Distance is estimated. Actual fee may vary slightly and will be confirmed before dispatch.
