@@ -2525,6 +2525,11 @@ function CheckoutModal({
                         updateForm("date", "");
                         return;
                       }
+                      if (v && isClosureDate(v)) {
+                        setFormError(CLOSURE_MESSAGE);
+                        updateForm("date", "");
+                        return;
+                      }
                       setFormError(null);
                       updateForm("date", v);
                       const allowed = getAvailableSlots(v);
