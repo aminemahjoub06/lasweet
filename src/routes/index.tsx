@@ -966,6 +966,7 @@ function IndexInner() {
     method: string;
     pending?: boolean;
     message?: string;
+    code?: string;
   };
   const [deliveryQuote, setDeliveryQuote] = useState<DeliveryQuote | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
@@ -974,6 +975,7 @@ function IndexInner() {
   const fetchDeliveryQuote = async (rawAddress: string) => {
     const address = rawAddress.trim();
     if (address.length < 5) return;
+    if (quoteLoading) return;
     setQuoteLoading(true);
     setQuoteError(null);
     try {
@@ -988,16 +990,17 @@ function IndexInner() {
       }
       setDeliveryQuote(json);
     } catch (err) {
-      // Nominatim unreachable / other failure: fall back to pending quote.
+      // Nominatim unreachable / other failure: block delivery, never fall back to $0.
       setQuoteError(err instanceof Error ? err.message : "Could not calculate delivery fee.");
       setDeliveryQuote({
-        deliverable: null,
+        deliverable: false,
         distanceKm: null,
         feeAud: null,
         method: "pending",
-        pending: true,
+        pending: false,
+        code: "delivery_address_unverified",
         message:
-          "We couldn't estimate the delivery fee automatically. We'll contact you within 24h with the exact amount.",
+          "We couldn't verify your delivery address. Please check your address and try again, choose pickup, or contact us at l.asweetbne@gmail.com for assistance.",
       });
     } finally {
       setQuoteLoading(false);
@@ -1058,9 +1061,10 @@ function IndexInner() {
           "Please calculate the delivery fee for your address before continuing.",
         );
       }
-      if (deliveryQuote.deliverable === false) {
+      if (deliveryQuote.deliverable !== true) {
         return setFormError(
-          "Sorry, we don't deliver beyond 25 km. Please contact us at l.asweetbne@gmail.com.",
+          deliveryQuote.message ||
+            "We couldn't verify your delivery address. Please check your address and try again, choose pickup, or contact us at l.asweetbne@gmail.com for assistance.",
         );
       }
     }
@@ -1107,6 +1111,16 @@ function IndexInner() {
     if (paying || orderSnapshot.length === 0) return;
     if (!paymentPlan) {
       setFormError("Please choose a payment option.");
+      return;
+    }
+    if (
+      form.delivery === "delivery" &&
+      (!deliveryQuote || deliveryQuote.deliverable !== true)
+    ) {
+      setFormError(
+        "Please verify your delivery address before paying, or switch to pickup.",
+      );
+      setCheckoutStep("details");
       return;
     }
     setPaying(true);
