@@ -2699,7 +2699,6 @@ function CheckoutModal({
                     )}
                   </div>
                   {deliveryQuote?.deliverable === false && (
-                  {deliveryQuote?.deliverable === false && (
                     <div className="mt-2 border border-gold/30 bg-ink-3/60 px-3 py-3 space-y-2">
                       <p className="text-xs text-[color:var(--gold-soft)]">
                         {deliveryQuote.message ||
