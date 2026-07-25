@@ -158,6 +158,10 @@ export type Database = {
           balance_collected_at: string | null
           balance_due_cash: number
           business: string | null
+          calendar_event_id: string | null
+          calendar_sync_error: string | null
+          calendar_sync_status: string | null
+          calendar_synced_at: string | null
           created_at: string
           customer_email: string
           customer_name: string
@@ -191,6 +195,10 @@ export type Database = {
           balance_collected_at?: string | null
           balance_due_cash?: number
           business?: string | null
+          calendar_event_id?: string | null
+          calendar_sync_error?: string | null
+          calendar_sync_status?: string | null
+          calendar_synced_at?: string | null
           created_at?: string
           customer_email: string
           customer_name: string
@@ -224,6 +232,10 @@ export type Database = {
           balance_collected_at?: string | null
           balance_due_cash?: number
           business?: string | null
+          calendar_event_id?: string | null
+          calendar_sync_error?: string | null
+          calendar_sync_status?: string | null
+          calendar_synced_at?: string | null
           created_at?: string
           customer_email?: string
           customer_name?: string
