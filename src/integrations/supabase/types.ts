@@ -38,6 +38,30 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_slot_locks: {
+        Row: {
+          created_at: string
+          delivery_date: string
+          delivery_time: string
+          id: string
+          order_number: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_date: string
+          delivery_time: string
+          id?: string
+          order_number: string
+        }
+        Update: {
+          created_at?: string
+          delivery_date?: string
+          delivery_time?: string
+          id?: string
+          order_number?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
