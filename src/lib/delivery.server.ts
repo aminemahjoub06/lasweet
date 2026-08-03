@@ -13,6 +13,7 @@ export type DeliveryQuoteOutcome =
       status: "ok";
       distanceKm: number;
       feeAud: number;
+      minPieces: number;
       deliverable: true;
       method: "osm-estimate" | "google-estimate";
       geocode: GeocodeResult;
@@ -21,6 +22,7 @@ export type DeliveryQuoteOutcome =
       status: "out_of_range";
       distanceKm: number;
       feeAud: null;
+      minPieces: number;
       deliverable: false;
       method: "osm-estimate" | "google-estimate";
       geocode: GeocodeResult;
@@ -29,6 +31,7 @@ export type DeliveryQuoteOutcome =
       status: "unresolved";
       distanceKm: null;
       feeAud: null;
+      minPieces: number;
       deliverable: null;
       method: "pending";
       geocode: null;
@@ -54,6 +57,7 @@ export async function computeDeliveryQuoteForAddress(
       status: "unresolved",
       distanceKm: null,
       feeAud: null,
+      minPieces: 0,
       deliverable: null,
       method: "pending",
       geocode: null,
@@ -61,13 +65,14 @@ export async function computeDeliveryQuoteForAddress(
   }
 
   const distanceKm = estimatedRoadDistanceKm(geo.lat, geo.lng);
-  const feeAud = computeDeliveryFee(distanceKm);
+  const { feeAud, minPieces } = computeDeliveryFee(distanceKm);
 
   if (feeAud === null || distanceKm > MAX_DELIVERY_KM) {
     return {
       status: "out_of_range",
       distanceKm,
       feeAud: null,
+      minPieces: 0,
       deliverable: false,
       method,
       geocode: geo,
@@ -78,6 +83,7 @@ export async function computeDeliveryQuoteForAddress(
     status: "ok",
     distanceKm,
     feeAud,
+    minPieces,
     deliverable: true,
     method,
     geocode: geo,
