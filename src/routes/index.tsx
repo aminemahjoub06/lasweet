@@ -2749,6 +2749,34 @@ function CheckoutModal({
                       </span>
                     )}
                   </div>
+                  {deliveryQuote?.deliverable === true &&
+                    (deliveryQuote.minPieces ?? 0) > 0 && (
+                      <div className="mt-2 border border-gold/30 bg-ink-3/60 px-3 py-3 space-y-2">
+                        <p className="text-xs text-[color:var(--gold-soft)]">
+                          Delivery fee: A${Number(deliveryQuote.feeAud ?? 0).toFixed(2)} (approx.{" "}
+                          {Number(deliveryQuote.distanceKm ?? 0).toFixed(1)} km). Long-distance
+                          deliveries require a minimum of {deliveryQuote.minPieces} pieces per order.
+                        </p>
+                        {cartCount < (deliveryQuote.minPieces ?? 0) && (
+                          <>
+                            <p className="text-xs text-[color:var(--destructive)]">
+                              Add {(deliveryQuote.minPieces ?? 0) - cartCount} more piece(s) to enable
+                              delivery to this address, or switch to pick-up.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                updateForm("delivery", "pickup");
+                                setFormError(null);
+                              }}
+                              className="inline-flex items-center justify-center text-[10px] tracking-[0.24em] uppercase bg-gold text-ink px-4 py-2 hover:bg-[color:var(--gold-soft)] transition-colors"
+                            >
+                              Switch to pickup
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   {deliveryQuote?.deliverable === false && (
                     <div className="mt-2 border border-gold/30 bg-ink-3/60 px-3 py-3 space-y-2">
                       <p className="text-xs text-[color:var(--gold-soft)]">
@@ -2811,7 +2839,12 @@ function CheckoutModal({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors"
+                  disabled={
+                    form.delivery === "delivery" &&
+                    deliveryQuote?.deliverable === true &&
+                    cartCount < (deliveryQuote.minPieces ?? 0)
+                  }
+                  className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Continue to Review →
                 </button>
