@@ -108,28 +108,6 @@ export function getBrisbaneTomorrowIso(now: Date = new Date()): string {
   return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}-${String(dt.getUTCDate()).padStart(2, "0")}`;
 }
 
-/**
- * Dates (YYYY-MM-DD, Australia/Brisbane) on which the business is closed and
- * no orders can be placed. Compared as strings against the date input value.
- */
-export const CLOSURE_DATES: readonly string[] = [
-  "2026-07-28",
-  "2026-07-29",
-  "2026-07-30",
-  "2026-07-31",
-  "2026-08-01",
-  "2026-08-02",
-  "2026-08-03",
-];
-
-export const CLOSURE_MESSAGE =
-  "We'll be closed from July 28 to August 3. Please select a date from August 4 onwards.";
-
-export function isClosureDate(dateIso: string | null | undefined): boolean {
-  if (!dateIso) return false;
-  return CLOSURE_DATES.includes(dateIso);
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Next-day ordering cut-off (Australia/Brisbane, 20:00 local time)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -166,24 +144,17 @@ function addDaysIso(iso: string, days: number): string {
  * Earliest order date (YYYY-MM-DD, Brisbane) taking into account:
  *  - the D+1 minimum,
  *  - the 8pm Brisbane cut-off (after which D+1 is unavailable → D+2),
- *  - configured CLOSURE_DATES (skipped forward until an open day).
  */
 export function getEarliestOrderDateIso(now: Date = new Date()): string {
   const today = getBrisbaneTodayIso(now);
-  let d = addDaysIso(today, isPastNextDayCutoff(now) ? 2 : 1);
-  // Skip closure dates. Bounded loop for safety.
-  for (let i = 0; i < 30 && isClosureDate(d); i++) {
-    d = addDaysIso(d, 1);
-  }
-  return d;
+  return addDaysIso(today, isPastNextDayCutoff(now) ? 2 : 1);
 }
 
-/** True if the given ISO date is allowed at `now` given the cut-off + closures. */
+/** True if the given ISO date is allowed at `now` given the cut-off. */
 export function isDateAllowedForOrder(
   dateIso: string | null | undefined,
   now: Date = new Date(),
 ): boolean {
   if (!dateIso) return false;
-  if (isClosureDate(dateIso)) return false;
   return dateIso >= getEarliestOrderDateIso(now);
 }
