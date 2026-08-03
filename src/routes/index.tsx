@@ -12,7 +12,7 @@ import {
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, CLOSURE_DATES, CLOSURE_MESSAGE, isClosureDate } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE } from "@/lib/config";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
 import raspberryImg from "@/assets/raspberry.png";
@@ -957,6 +957,25 @@ function IndexInner() {
   const [paying, setPaying] = useState(false);
   const [paymentPlan, setPaymentPlan] = useState<"full" | "deposit_50" | null>(null);
   const submitOnlineOrder = useServerFn(createStripeCheckout);
+
+  // Delivery slots already booked for the selected date (delivery only).
+  const fetchBookedSlots = useServerFn(getBookedDeliverySlots);
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const refreshBookedSlots = React.useCallback(async () => {
+    if (!form.date || !/^\d{4}-\d{2}-\d{2}$/.test(form.date)) {
+      setBookedSlots([]);
+      return;
+    }
+    try {
+      const res = await fetchBookedSlots({ data: { date: form.date } });
+      setBookedSlots(res.bookedTimes ?? []);
+    } catch {
+      setBookedSlots([]);
+    }
+  }, [form.date, fetchBookedSlots]);
+  React.useEffect(() => {
+    void refreshBookedSlots();
+  }, [refreshBookedSlots, form.delivery]);
 
   // Delivery quote (distance-based fee) — computed via /api/public/delivery/quote.
   type DeliveryQuote = {
