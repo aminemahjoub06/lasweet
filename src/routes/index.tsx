@@ -205,7 +205,7 @@ export const Route = createFileRoute("/")({
                   name: "How much does a L&A Sweet dessert cost?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "L&A Sweet offers four handmade trompe-l'œil desserts. Raspberry and Lemon are A$15 each. Mango and Pistachio are A$22 each (they use more premium ingredients — mango-passion crémeux and pistachio praliné). Pick-up is free. Delivery fee is calculated based on the distance from our Woolloongabba kitchen — see checkout for your exact amount. Delivery is available within 25 km of Brisbane.",
+                    text: "L&A Sweet offers four handmade trompe-l'œil desserts. Raspberry and Lemon are A$15 each. Mango and Pistachio are A$22 each (they use more premium ingredients — mango-passion crémeux and pistachio praliné). Pick-up is free. Delivery fee is calculated based on the distance from our Woolloongabba kitchen: A$10 up to 10 km, A$18 from 10 to 15 km, A$28 from 15 to 25 km, A$30 from 25 to 35 km, and A$35 from 35 to 42 km. Deliveries beyond 25 km require a minimum of 5 pieces per order. We do not deliver beyond 42 km — contact l.asweetbne@gmail.com for a custom quote.",
                   },
                 },
                 {
@@ -983,6 +983,7 @@ function IndexInner() {
     deliverable: boolean | null; // true=OK, false=out of range, null=pending
     distanceKm: number | null;
     feeAud: number | null;
+    minPieces?: number;
     method: string;
     pending?: boolean;
     message?: string;
@@ -1085,6 +1086,13 @@ function IndexInner() {
         return setFormError(
           deliveryQuote.message ||
             "We couldn't verify your delivery address. Please check your address and try again, choose pickup, or contact us at l.asweetbne@gmail.com for assistance.",
+        );
+      }
+      // Long-distance tiers (> 25 km) need a minimum number of pieces.
+      const minPieces = deliveryQuote.minPieces ?? 0;
+      if (minPieces > 0 && cartCount < minPieces) {
+        return setFormError(
+          `Deliveries beyond 25 km require a minimum of ${minPieces} pieces per order. Please add more pieces or choose pick-up.`,
         );
       }
     }
@@ -2395,6 +2403,7 @@ function CheckoutModal({
     deliverable: boolean | null;
     distanceKm: number | null;
     feeAud: number | null;
+    minPieces?: number;
     method: string;
     pending?: boolean;
     message?: string;
@@ -2741,6 +2750,34 @@ function CheckoutModal({
                       </span>
                     )}
                   </div>
+                  {deliveryQuote?.deliverable === true &&
+                    (deliveryQuote.minPieces ?? 0) > 0 && (
+                      <div className="mt-2 border border-gold/30 bg-ink-3/60 px-3 py-3 space-y-2">
+                        <p className="text-xs text-[color:var(--gold-soft)]">
+                          Delivery fee: A${Number(deliveryQuote.feeAud ?? 0).toFixed(2)} (approx.{" "}
+                          {Number(deliveryQuote.distanceKm ?? 0).toFixed(1)} km). Long-distance
+                          deliveries require a minimum of {deliveryQuote.minPieces} pieces per order.
+                        </p>
+                        {cartCount < (deliveryQuote.minPieces ?? 0) && (
+                          <>
+                            <p className="text-xs text-[color:var(--destructive)]">
+                              Add {(deliveryQuote.minPieces ?? 0) - cartCount} more piece(s) to enable
+                              delivery to this address, or switch to pick-up.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                updateForm("delivery", "pickup");
+                                setFormError(null);
+                              }}
+                              className="inline-flex items-center justify-center text-[10px] tracking-[0.24em] uppercase bg-gold text-ink px-4 py-2 hover:bg-[color:var(--gold-soft)] transition-colors"
+                            >
+                              Switch to pickup
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   {deliveryQuote?.deliverable === false && (
                     <div className="mt-2 border border-gold/30 bg-ink-3/60 px-3 py-3 space-y-2">
                       <p className="text-xs text-[color:var(--gold-soft)]">
@@ -2803,7 +2840,12 @@ function CheckoutModal({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors"
+                  disabled={
+                    form.delivery === "delivery" &&
+                    deliveryQuote?.deliverable === true &&
+                    cartCount < (deliveryQuote.minPieces ?? 0)
+                  }
+                  className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Continue to Review →
                 </button>
