@@ -205,7 +205,7 @@ export const Route = createFileRoute("/")({
                   name: "How much does a L&A Sweet dessert cost?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "L&A Sweet offers four handmade trompe-l'œil desserts. Raspberry and Lemon are A$15 each. Mango and Pistachio are A$22 each (they use more premium ingredients — mango-passion crémeux and pistachio praliné). Pick-up is free. Delivery fee is calculated based on the distance from our Woolloongabba kitchen — see checkout for your exact amount. Delivery is available within 25 km of Brisbane.",
+                    text: "L&A Sweet offers four handmade trompe-l'œil desserts. Raspberry and Lemon are A$15 each. Mango and Pistachio are A$22 each (they use more premium ingredients — mango-passion crémeux and pistachio praliné). Pick-up is free. Delivery fee is calculated based on the distance from our Woolloongabba kitchen: A$10 up to 10 km, A$18 from 10 to 15 km, A$28 from 15 to 25 km, A$30 from 25 to 35 km, and A$35 from 35 to 42 km. Deliveries beyond 25 km require a minimum of 5 pieces per order. We do not deliver beyond 42 km — contact l.asweetbne@gmail.com for a custom quote.",
                   },
                 },
                 {

@@ -64,8 +64,10 @@ function TermsPage() {
             </ul>
             <p className="mt-3">
               Delivery fees are calculated based on the distance from our Woolloongabba kitchen to your
-              delivery address. Your exact fee is shown at checkout. Delivery is available within 25 km
-              of Brisbane; for addresses beyond that, please contact us at l.asweetbne@gmail.com.
+              delivery address. Your exact fee is shown at checkout: A$10 up to 10 km, A$18 from 10 to 15 km,
+              A$28 from 15 to 25 km, A$30 from 25 to 35 km, and A$35 from 35 to 42 km. Deliveries
+              beyond 25 km require a minimum of 5 pieces per order. We do not deliver beyond 42 km;
+              for those addresses, please contact us at l.asweetbne@gmail.com for a custom quote.
             </p>
           </section>
 
