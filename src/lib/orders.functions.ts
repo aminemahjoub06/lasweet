@@ -336,9 +336,11 @@ export const createCashOrder = createServerFn({ method: "POST" })
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
     await enforceOrderRateLimit({ endpoint: "createCashOrder", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const totalPieces = data.items.reduce((n, i) => n + i.qty, 0);
     const deliveryQuote = await resolveDeliveryFee({
       delivery: data.customer.delivery,
       address: data.customer.address,
+      totalPieces,
     });
     const { subtotal, deliveryFee, total } = computeTotals(data.items, deliveryQuote.fee);
     const orderNumber = generateOrderNumber();
@@ -430,9 +432,11 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
     await enforceOrderRateLimit({ endpoint: "createStripeCheckout", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const totalPieces = data.items.reduce((n, i) => n + i.qty, 0);
     const deliveryQuote = await resolveDeliveryFee({
       delivery: data.customer.delivery,
       address: data.customer.address,
+      totalPieces,
     });
     const { subtotal, deliveryFee, total } = computeTotals(data.items, deliveryQuote.fee);
     const orderNumber = generateOrderNumber();
