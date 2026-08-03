@@ -218,6 +218,78 @@ async function reserveStockOrThrow(
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Delivery slot locks — one delivery per (date, time). Pick-ups are unlimited.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const DELIVERY_SLOT_TAKEN_MESSAGE =
+  "This delivery slot has just been booked. Please choose another time.";
+
+/**
+ * Atomically reserve a delivery slot. Throws a 409 Response when the
+ * (date, time) pair is already taken by another delivery order.
+ */
+async function lockDeliverySlotOrThrow(
+  deliveryDate: string,
+  deliveryTime: string,
+  orderNumber: string,
+) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { error } = await supabaseAdmin.from("delivery_slot_locks").insert({
+    delivery_date: deliveryDate,
+    delivery_time: deliveryTime,
+    order_number: orderNumber,
+  });
+  if (!error) return;
+  // 23505 = unique_violation on unique_delivery_slot
+  if (error.code === "23505") {
+    throw new Response(
+      JSON.stringify({
+        error: DELIVERY_SLOT_TAKEN_MESSAGE,
+        code: "delivery_slot_taken",
+      }),
+      { status: 409, headers: { "Content-Type": "application/json" } },
+    );
+  }
+  console.error("[lockDeliverySlot] error", error);
+  throw new Error("Could not reserve your delivery time. Please try again.");
+}
+
+/** Release a delivery slot lock (order failed, cancelled, refunded or swept). */
+export async function releaseDeliverySlot(orderNumber: string | null | undefined) {
+  if (!orderNumber) return;
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("delivery_slot_locks")
+      .delete()
+      .eq("order_number", orderNumber);
+  } catch (err) {
+    console.error("[releaseDeliverySlot] failed", orderNumber, err);
+  }
+}
+
+/** Booked delivery slots for a date — used to grey out taken times. */
+export const getBookedDeliverySlots = createServerFn({ method: "GET" })
+  .inputValidator((input) =>
+    z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("delivery_slot_locks")
+      .select("delivery_time")
+      .eq("delivery_date", data.date);
+    if (error) {
+      console.error("[getBookedDeliverySlots] error", error);
+      return { date: data.date, bookedTimes: [] as string[] };
+    }
+    return {
+      date: data.date,
+      bookedTimes: (rows ?? []).map((r) => r.delivery_time),
+    };
+  });
+
 // Restore stock when an order is cancelled/refunded/expired.
 export async function restoreOrderStock(
   items: OrderPayload["items"] | unknown,
