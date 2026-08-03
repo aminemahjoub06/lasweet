@@ -14,22 +14,6 @@ import { CookieBanner } from "../components/CookieBanner";
 import { TranslateWidget } from "../components/TranslateWidget";
 import { TranslateBanner } from "../components/TranslateBanner";
 
-function ClosureAnnouncement() {
-  return (
-    <div
-      className="w-full border-b border-gold/40 bg-ink text-center notranslate"
-      style={{ backgroundColor: "rgba(201,168,74,0.10)" }}
-      role="status"
-      aria-live="polite"
-    >
-      <p className="mx-auto max-w-5xl px-4 py-2 text-[11px] md:text-[13px] leading-snug tracking-wide text-[color:var(--foreground)]/90">
-        <span className="text-gold uppercase tracking-[0.22em] mr-2">Temporary closure</span>
-        We'll be closed from July 28 to August 3 inclusive. Orders will resume on August 4. Thank you for your understanding!
-      </p>
-    </div>
-  );
-}
-
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -180,7 +164,6 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ClosureAnnouncement />
       <Outlet />
       <Toaster position="bottom-center" theme="dark" />
       <CookieBanner />
