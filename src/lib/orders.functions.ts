@@ -101,6 +101,7 @@ function computeTotals(items: OrderPayload["items"], deliveryFee: number) {
 async function resolveDeliveryFee(opts: {
   delivery: "delivery" | "pickup";
   address: string;
+  totalPieces: number;
 }): Promise<{
   fee: number;
   distanceKm: number | null;
@@ -124,10 +125,10 @@ async function resolveDeliveryFee(opts: {
   const { computeDeliveryQuoteForAddress } = await import("./delivery.server");
   const outcome = await computeDeliveryQuoteForAddress(opts.address);
   if (outcome.status === "out_of_range") {
+    const { OUT_OF_RANGE_MESSAGE } = await import("./config");
     throw new Response(
       JSON.stringify({
-        error:
-          "This address is outside our standard delivery area. Please choose pickup or contact us at l.asweetbne@gmail.com for a custom delivery quote.",
+        error: OUT_OF_RANGE_MESSAGE,
         code: "delivery_out_of_range",
       }),
       { status: 400, headers: { "Content-Type": "application/json" } },
@@ -139,6 +140,19 @@ async function resolveDeliveryFee(opts: {
         error:
           "We couldn't verify your delivery address. Please check your address and try again, choose pickup, or contact us at l.asweetbne@gmail.com for assistance.",
         code: "delivery_address_unverified",
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+  // Long-distance deliveries (> 25 km) are only worth the trip above a
+  // minimum number of pieces.
+  if (outcome.minPieces > 0 && opts.totalPieces < outcome.minPieces) {
+    const { LONG_DISTANCE_MIN_PIECES_MESSAGE } = await import("./config");
+    throw new Response(
+      JSON.stringify({
+        error: LONG_DISTANCE_MIN_PIECES_MESSAGE,
+        code: "delivery_min_pieces_required",
+        minPieces: outcome.minPieces,
       }),
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
