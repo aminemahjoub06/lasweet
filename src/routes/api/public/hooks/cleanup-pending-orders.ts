@@ -100,6 +100,13 @@ async function handleCleanup(request: Request) {
       } catch (err) {
         console.error("[cleanup-pending] restore stock failed", order.order_number, err);
       }
+      // Free the delivery time slot so someone else can book it.
+      try {
+        const { releaseDeliverySlot } = await import("@/lib/orders.functions");
+        await releaseDeliverySlot(order.order_number);
+      } catch (err) {
+        console.error("[cleanup-pending] release slot failed", order.order_number, err);
+      }
     } catch (err) {
       console.error("[cleanup-pending] row error", order.order_number, err);
       errors.push(order.order_number);

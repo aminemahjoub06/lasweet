@@ -8,11 +8,12 @@ import {
   createCashOrder,
   createStripeCheckout,
   getDailyStockForDate,
+  getBookedDeliverySlots,
 } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, CLOSURE_DATES, CLOSURE_MESSAGE, isClosureDate } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE } from "@/lib/config";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
 import raspberryImg from "@/assets/raspberry.png";
@@ -958,6 +959,25 @@ function IndexInner() {
   const [paymentPlan, setPaymentPlan] = useState<"full" | "deposit_50" | null>(null);
   const submitOnlineOrder = useServerFn(createStripeCheckout);
 
+  // Delivery slots already booked for the selected date (delivery only).
+  const fetchBookedSlots = useServerFn(getBookedDeliverySlots);
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const refreshBookedSlots = React.useCallback(async () => {
+    if (!form.date || !/^\d{4}-\d{2}-\d{2}$/.test(form.date)) {
+      setBookedSlots([]);
+      return;
+    }
+    try {
+      const res = await fetchBookedSlots({ data: { date: form.date } });
+      setBookedSlots(res.bookedTimes ?? []);
+    } catch {
+      setBookedSlots([]);
+    }
+  }, [form.date, fetchBookedSlots]);
+  React.useEffect(() => {
+    void refreshBookedSlots();
+  }, [refreshBookedSlots, form.delivery]);
+
   // Delivery quote (distance-based fee) — computed via /api/public/delivery/quote.
   type DeliveryQuote = {
     deliverable: boolean | null; // true=OK, false=out of range, null=pending
@@ -1171,9 +1191,18 @@ function IndexInner() {
       return;
     } catch (err) {
       console.error(err);
-      setFormError(
-        err instanceof Error ? err.message : "Something went wrong. Please try again.",
-      );
+      const raw = err instanceof Error ? err.message : String(err ?? "");
+      // A delivery slot was taken while the customer was checking out.
+      if (raw.includes("delivery_slot_taken") || raw.includes("just been booked")) {
+        await refreshBookedSlots();
+        updateForm("time", "");
+        setFormError(
+          "This delivery slot has just been booked. Please choose another time.",
+        );
+        setCheckoutStep("details");
+      } else {
+        setFormError(raw || "Something went wrong. Please try again.");
+      }
     } finally {
       setPaying(false);
     }
@@ -2266,6 +2295,7 @@ function IndexInner() {
         quoteError={quoteError}
         fetchDeliveryQuote={fetchDeliveryQuote}
         effectiveDeliveryFee={effectiveDeliveryFee}
+        bookedSlots={bookedSlots}
         stockByNo={
           dailyStock
             ? Object.fromEntries(
@@ -2340,6 +2370,7 @@ function CheckoutModal({
   quoteError: _quoteError,
   fetchDeliveryQuote,
   effectiveDeliveryFee,
+  bookedSlots,
   stockByNo,
 }: {
   open: boolean;
@@ -2372,6 +2403,7 @@ function CheckoutModal({
   quoteError: string | null;
   fetchDeliveryQuote: (addr: string) => Promise<void>;
   effectiveDeliveryFee: number;
+  bookedSlots: string[];
   stockByNo: Record<string, { name: string; remaining: number }> | null;
 }) {
   const steps: { k: CheckoutStep; l: string }[] = [
@@ -2540,11 +2572,6 @@ function CheckoutModal({
                         updateForm("date", "");
                         return;
                       }
-                      if (v && isClosureDate(v)) {
-                        setFormError(CLOSURE_MESSAGE);
-                        updateForm("date", "");
-                        return;
-                      }
                       if (v && !isDateAllowedForOrder(v)) {
                         setFormError(NEXT_DAY_CUTOFF_MESSAGE);
                         updateForm("date", "");
@@ -2646,25 +2673,35 @@ function CheckoutModal({
                   }
                   return (
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                      {allowed.map((slot) => (
-                        <button
-                          key={slot}
-                          type="button"
-                          onClick={() => updateForm("time", slot)}
-                          className={`text-[11px] tracking-[0.18em] py-2 border transition-colors ${
-                            form.time === slot
-                              ? "bg-gold text-ink border-gold"
-                              : "text-gold border-gold/40 hover:border-gold"
-                          }`}
-                        >
-                          {slot}
-                        </button>
-                      ))}
+                      {allowed.map((slot) => {
+                        // One delivery per slot per day; pick-ups are unlimited.
+                        const taken =
+                          form.delivery === "delivery" && bookedSlots.includes(slot);
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            disabled={taken}
+                            title={taken ? "Already booked" : undefined}
+                            onClick={() => updateForm("time", slot)}
+                            className={`text-[11px] tracking-[0.18em] py-2 border transition-colors ${
+                              taken
+                                ? "cursor-not-allowed line-through opacity-40 text-[color:var(--foreground)]/50 border-[color:var(--foreground)]/20"
+                                : form.time === slot
+                                  ? "bg-gold text-ink border-gold"
+                                  : "text-gold border-gold/40 hover:border-gold"
+                            }`}
+                          >
+                            {slot}
+                          </button>
+                        );
+                      })}
                     </div>
                   );
                 })()}
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
                   Times shown in 24-hour format.
+                  {form.delivery === "delivery" ? " Crossed-out times are already booked." : ""}
                 </p>
               </FieldLA>
 

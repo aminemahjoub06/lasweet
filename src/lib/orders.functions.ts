@@ -1,8 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
-  CLOSURE_DATES,
-  CLOSURE_MESSAGE,
   DEFAULT_DAILY_STOCK,
   getBrisbaneTodayIso,
   getEarliestOrderDateIso,
@@ -56,14 +54,6 @@ const rejectSameDay = (val: { customer: { date?: string } }, ctx: z.RefinementCt
       path: ["customer", "date"],
       message:
         "Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.",
-    });
-    return;
-  }
-  if (CLOSURE_DATES.includes(date)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["customer", "date"],
-      message: CLOSURE_MESSAGE,
     });
     return;
   }
@@ -228,6 +218,78 @@ async function reserveStockOrThrow(
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Delivery slot locks — one delivery per (date, time). Pick-ups are unlimited.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const DELIVERY_SLOT_TAKEN_MESSAGE =
+  "This delivery slot has just been booked. Please choose another time.";
+
+/**
+ * Atomically reserve a delivery slot. Throws a 409 Response when the
+ * (date, time) pair is already taken by another delivery order.
+ */
+async function lockDeliverySlotOrThrow(
+  deliveryDate: string,
+  deliveryTime: string,
+  orderNumber: string,
+) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { error } = await supabaseAdmin.from("delivery_slot_locks").insert({
+    delivery_date: deliveryDate,
+    delivery_time: deliveryTime,
+    order_number: orderNumber,
+  });
+  if (!error) return;
+  // 23505 = unique_violation on unique_delivery_slot
+  if (error.code === "23505") {
+    throw new Response(
+      JSON.stringify({
+        error: DELIVERY_SLOT_TAKEN_MESSAGE,
+        code: "delivery_slot_taken",
+      }),
+      { status: 409, headers: { "Content-Type": "application/json" } },
+    );
+  }
+  console.error("[lockDeliverySlot] error", error);
+  throw new Error("Could not reserve your delivery time. Please try again.");
+}
+
+/** Release a delivery slot lock (order failed, cancelled, refunded or swept). */
+export async function releaseDeliverySlot(orderNumber: string | null | undefined) {
+  if (!orderNumber) return;
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("delivery_slot_locks")
+      .delete()
+      .eq("order_number", orderNumber);
+  } catch (err) {
+    console.error("[releaseDeliverySlot] failed", orderNumber, err);
+  }
+}
+
+/** Booked delivery slots for a date — used to grey out taken times. */
+export const getBookedDeliverySlots = createServerFn({ method: "GET" })
+  .inputValidator((input) =>
+    z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("delivery_slot_locks")
+      .select("delivery_time")
+      .eq("delivery_date", data.date);
+    if (error) {
+      console.error("[getBookedDeliverySlots] error", error);
+      return { date: data.date, bookedTimes: [] as string[] };
+    }
+    return {
+      date: data.date,
+      bookedTimes: (rows ?? []).map((r) => r.delivery_time),
+    };
+  });
+
 // Restore stock when an order is cancelled/refunded/expired.
 export async function restoreOrderStock(
   items: OrderPayload["items"] | unknown,
@@ -267,8 +329,18 @@ export const createCashOrder = createServerFn({ method: "POST" })
     const { subtotal, deliveryFee, total } = computeTotals(data.items, deliveryQuote.fee);
     const orderNumber = generateOrderNumber();
 
+    // Delivery slots are unique per date — lock it before anything else.
+    if (data.customer.delivery === "delivery") {
+      await lockDeliverySlotOrThrow(data.customer.date, data.customer.time, orderNumber);
+    }
+
     // Reserve stock atomically per (flavour, delivery date) before we save.
-    await reserveStockOrThrow(data.items, data.customer.date);
+    try {
+      await reserveStockOrThrow(data.items, data.customer.date);
+    } catch (err) {
+      await releaseDeliverySlot(orderNumber);
+      throw err;
+    }
 
     const { data: insertedCash, error } = await supabaseAdmin.from("orders").insert({
       order_number: orderNumber,
@@ -299,6 +371,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
     if (error) {
       console.error("[createCashOrder] insert error", error);
       await restoreOrderStock(data.items, data.customer.date);
+      await releaseDeliverySlot(orderNumber);
       throw new Error("Could not save your order. Please try again.");
     }
 
@@ -357,8 +430,18 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const chargeAud = chargeCents / 100;
     const balanceDueAud = Math.max(0, total - chargeAud);
 
+    // Delivery slots are unique per date — lock it before anything else.
+    if (data.customer.delivery === "delivery") {
+      await lockDeliverySlotOrThrow(data.customer.date, data.customer.time, orderNumber);
+    }
+
     // Reserve stock atomically per (flavour, delivery date) before we save.
-    await reserveStockOrThrow(data.items, data.customer.date);
+    try {
+      await reserveStockOrThrow(data.items, data.customer.date);
+    } catch (err) {
+      await releaseDeliverySlot(orderNumber);
+      throw err;
+    }
 
     // 1) Save the order as pending
     const { data: inserted, error: insertError } = await supabaseAdmin
@@ -395,6 +478,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     if (insertError || !inserted) {
       console.error("[createStripeCheckout] insert error", insertError);
       await restoreOrderStock(data.items, data.customer.date);
+      await releaseDeliverySlot(orderNumber);
       throw new Error("Could not save your order. Please try again.");
     }
 
@@ -499,6 +583,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       console.error("[createStripeCheckout] gateway error", resp.status, errText);
       // Stripe session creation failed — release the reservation.
       await restoreOrderStock(data.items, data.customer.date);
+      await releaseDeliverySlot(orderNumber);
       await supabaseAdmin
         .from("orders")
         .update({ payment_status: "failed", notes: "Stripe session creation failed" })

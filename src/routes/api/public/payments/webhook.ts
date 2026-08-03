@@ -165,6 +165,13 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               ? q.eq("order_number", orderNumber)
               : q.eq("stripe_session_id", sessionId!)
             ).maybeSingle();
+            // Release the delivery slot lock — this order is dead.
+            try {
+              const { releaseDeliverySlot } = await import("@/lib/orders.functions");
+              await releaseDeliverySlot(orderNumber ?? null);
+            } catch (err) {
+              console.error("[stripe-webhook] release slot failed", err);
+            }
             // Release the daily-stock reservation now that payment failed.
             try {
               if (updatedRow?.delivery_date) {
@@ -288,6 +295,12 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 await cancelOrderCalendarEvent(order.id);
               } catch (err) {
                 console.error("[stripe-webhook] cancel calendar event failed", err);
+              }
+              try {
+                const { releaseDeliverySlot } = await import("@/lib/orders.functions");
+                await releaseDeliverySlot(order.order_number);
+              } catch (err) {
+                console.error("[stripe-webhook] release slot after refund failed", err);
               }
             }
 
