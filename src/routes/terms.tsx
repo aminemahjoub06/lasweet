@@ -81,6 +81,13 @@ function TermsPage() {
               by mutual agreement after order confirmation. Specific delivery times cannot be guaranteed
               but we will do our best to accommodate your preferred window.
             </p>
+            <p className="mb-3">
+              Delivery zones and fees, measured from our Woolloongabba kitchen: 0–10 km A$10, 10–15 km
+              A$18, 15–25 km A$28 (no minimum order); 25–35 km A$30 and 35–42 km A$35, both requiring a
+              minimum of 5 pieces per order. Long-distance deliveries take significantly longer, so they
+              are only accepted from 5 pieces upwards — smaller orders remain available as a free pick-up.
+              We do not deliver beyond 42 km; please contact us at l.asweetbne@gmail.com for a custom quote.
+            </p>
             <p>
               For pick-up orders, we will provide the collection address and agreed time upon confirmation.
               Please ensure you collect your order at the arranged time, as our products are perishable and
