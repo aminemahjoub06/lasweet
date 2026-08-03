@@ -2403,6 +2403,7 @@ function CheckoutModal({
     deliverable: boolean | null;
     distanceKm: number | null;
     feeAud: number | null;
+    minPieces?: number;
     method: string;
     pending?: boolean;
     message?: string;
