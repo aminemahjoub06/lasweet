@@ -2286,6 +2286,7 @@ function IndexInner() {
         quoteError={quoteError}
         fetchDeliveryQuote={fetchDeliveryQuote}
         effectiveDeliveryFee={effectiveDeliveryFee}
+        bookedSlots={bookedSlots}
         stockByNo={
           dailyStock
             ? Object.fromEntries(
@@ -2360,6 +2361,7 @@ function CheckoutModal({
   quoteError: _quoteError,
   fetchDeliveryQuote,
   effectiveDeliveryFee,
+  bookedSlots,
   stockByNo,
 }: {
   open: boolean;
@@ -2392,6 +2394,7 @@ function CheckoutModal({
   quoteError: string | null;
   fetchDeliveryQuote: (addr: string) => Promise<void>;
   effectiveDeliveryFee: number;
+  bookedSlots: string[];
   stockByNo: Record<string, { name: string; remaining: number }> | null;
 }) {
   const steps: { k: CheckoutStep; l: string }[] = [
