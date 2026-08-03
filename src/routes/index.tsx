@@ -1191,9 +1191,18 @@ function IndexInner() {
       return;
     } catch (err) {
       console.error(err);
-      setFormError(
-        err instanceof Error ? err.message : "Something went wrong. Please try again.",
-      );
+      const raw = err instanceof Error ? err.message : String(err ?? "");
+      // A delivery slot was taken while the customer was checking out.
+      if (raw.includes("delivery_slot_taken") || raw.includes("just been booked")) {
+        await refreshBookedSlots();
+        updateForm("time", "");
+        setFormError(
+          "This delivery slot has just been booked. Please choose another time.",
+        );
+        setCheckoutStep("details");
+      } else {
+        setFormError(raw || "Something went wrong. Please try again.");
+      }
     } finally {
       setPaying(false);
     }
