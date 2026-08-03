@@ -8,6 +8,7 @@ import {
   createCashOrder,
   createStripeCheckout,
   getDailyStockForDate,
+  getBookedDeliverySlots,
 } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
@@ -2559,11 +2560,6 @@ function CheckoutModal({
                         updateForm("date", "");
                         return;
                       }
-                      if (v && isClosureDate(v)) {
-                        setFormError(CLOSURE_MESSAGE);
-                        updateForm("date", "");
-                        return;
-                      }
                       if (v && !isDateAllowedForOrder(v)) {
                         setFormError(NEXT_DAY_CUTOFF_MESSAGE);
                         updateForm("date", "");
@@ -2665,25 +2661,35 @@ function CheckoutModal({
                   }
                   return (
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                      {allowed.map((slot) => (
-                        <button
-                          key={slot}
-                          type="button"
-                          onClick={() => updateForm("time", slot)}
-                          className={`text-[11px] tracking-[0.18em] py-2 border transition-colors ${
-                            form.time === slot
-                              ? "bg-gold text-ink border-gold"
-                              : "text-gold border-gold/40 hover:border-gold"
-                          }`}
-                        >
-                          {slot}
-                        </button>
-                      ))}
+                      {allowed.map((slot) => {
+                        // One delivery per slot per day; pick-ups are unlimited.
+                        const taken =
+                          form.delivery === "delivery" && bookedSlots.includes(slot);
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            disabled={taken}
+                            title={taken ? "Already booked" : undefined}
+                            onClick={() => updateForm("time", slot)}
+                            className={`text-[11px] tracking-[0.18em] py-2 border transition-colors ${
+                              taken
+                                ? "cursor-not-allowed line-through opacity-40 text-[color:var(--foreground)]/50 border-[color:var(--foreground)]/20"
+                                : form.time === slot
+                                  ? "bg-gold text-ink border-gold"
+                                  : "text-gold border-gold/40 hover:border-gold"
+                            }`}
+                          >
+                            {slot}
+                          </button>
+                        );
+                      })}
                     </div>
                   );
                 })()}
                 <p className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--foreground)]/55 leading-relaxed">
                   Times shown in 24-hour format.
+                  {form.delivery === "delivery" ? " Crossed-out times are already booked." : ""}
                 </p>
               </FieldLA>
 
