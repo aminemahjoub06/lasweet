@@ -983,6 +983,7 @@ function IndexInner() {
     deliverable: boolean | null; // true=OK, false=out of range, null=pending
     distanceKm: number | null;
     feeAud: number | null;
+    minPieces?: number;
     method: string;
     pending?: boolean;
     message?: string;
@@ -1085,6 +1086,13 @@ function IndexInner() {
         return setFormError(
           deliveryQuote.message ||
             "We couldn't verify your delivery address. Please check your address and try again, choose pickup, or contact us at l.asweetbne@gmail.com for assistance.",
+        );
+      }
+      // Long-distance tiers (> 25 km) need a minimum number of pieces.
+      const minPieces = deliveryQuote.minPieces ?? 0;
+      if (minPieces > 0 && cartCount < minPieces) {
+        return setFormError(
+          `Deliveries beyond 25 km require a minimum of ${minPieces} pieces per order. Please add more pieces or choose pick-up.`,
         );
       }
     }
