@@ -257,8 +257,18 @@ export const createCashOrder = createServerFn({ method: "POST" })
     const { subtotal, deliveryFee, total } = computeTotals(data.items, deliveryQuote.fee);
     const orderNumber = generateOrderNumber();
 
+    // Delivery slots are unique per date — lock it before anything else.
+    if (data.customer.delivery === "delivery") {
+      await lockDeliverySlotOrThrow(data.customer.date, data.customer.time, orderNumber);
+    }
+
     // Reserve stock atomically per (flavour, delivery date) before we save.
-    await reserveStockOrThrow(data.items, data.customer.date);
+    try {
+      await reserveStockOrThrow(data.items, data.customer.date);
+    } catch (err) {
+      await releaseDeliverySlot(orderNumber);
+      throw err;
+    }
 
     const { data: insertedCash, error } = await supabaseAdmin.from("orders").insert({
       order_number: orderNumber,
@@ -289,6 +299,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
     if (error) {
       console.error("[createCashOrder] insert error", error);
       await restoreOrderStock(data.items, data.customer.date);
+      await releaseDeliverySlot(orderNumber);
       throw new Error("Could not save your order. Please try again.");
     }
 
