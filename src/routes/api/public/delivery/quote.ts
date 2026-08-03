@@ -48,6 +48,7 @@ export const Route = createFileRoute("/api/public/delivery/quote")({
             deliverable: false,
             distanceKm: null,
             feeAud: null,
+            minPieces: 0,
             method: outcome.method,
             pending: false,
             code: "delivery_address_unverified",
@@ -57,22 +58,28 @@ export const Route = createFileRoute("/api/public/delivery/quote")({
         }
 
         if (outcome.status === "out_of_range") {
+          const { OUT_OF_RANGE_MESSAGE } = await import("@/lib/config");
           return json({
             deliverable: false,
             distanceKm: outcome.distanceKm,
             feeAud: null,
+            minPieces: 0,
             method: outcome.method,
             code: "delivery_out_of_range",
-            message:
-              "This address is outside our standard delivery area. Please choose pickup or contact us at l.asweetbne@gmail.com for a custom delivery quote.",
+            message: OUT_OF_RANGE_MESSAGE,
           });
         }
 
+        const { LONG_DISTANCE_MIN_PIECES_MESSAGE } = await import("@/lib/config");
         return json({
           deliverable: true,
           distanceKm: outcome.distanceKm,
           feeAud: outcome.feeAud,
+          minPieces: outcome.minPieces,
           method: outcome.method,
+          ...(outcome.minPieces > 0
+            ? { message: LONG_DISTANCE_MIN_PIECES_MESSAGE }
+            : {}),
         });
       },
     },
