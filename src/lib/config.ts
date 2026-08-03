@@ -17,21 +17,51 @@ export const BRISBANE_ROAD_FACTOR = 1.3;
  * Distance-based delivery pricing tiers.
  * `maxKm` is inclusive; `feeAud` is null when delivery is not available.
  */
+/**
+ * Distance-based delivery grid. Beyond 25 km a delivery takes too long to be
+ * worth the trip on a small order, so those tiers require a minimum number of
+ * pieces per order.
+ */
 export const DELIVERY_TIERS = [
-  { maxKm: 10, feeAud: 10 },
-  { maxKm: 15, feeAud: 18 },
-  { maxKm: 25, feeAud: 28 },
+  { maxKm: 10, feeAud: 10, minPieces: 0 },
+  { maxKm: 15, feeAud: 18, minPieces: 0 },
+  { maxKm: 25, feeAud: 28, minPieces: 0 },
+  { maxKm: 35, feeAud: 30, minPieces: 5 },
+  { maxKm: 42, feeAud: 35, minPieces: 5 },
+  { maxKm: Infinity, feeAud: null, minPieces: 0 }, // refused
 ] as const;
 
-export const MAX_DELIVERY_KM = 25;
+/** Hard cap — nothing is delivered beyond this distance. */
+export const MAX_DELIVERY_KM = 42;
 
-/** Return the delivery fee in AUD for a given distance in km, or null if out of range. */
-export function computeDeliveryFee(distanceKm: number): number | null {
-  if (!Number.isFinite(distanceKm) || distanceKm < 0) return null;
-  for (const tier of DELIVERY_TIERS) {
-    if (distanceKm <= tier.maxKm) return tier.feeAud;
+/** Distance beyond which the minimum-pieces rule kicks in. */
+export const LONG_DISTANCE_THRESHOLD_KM = 25;
+
+/** Minimum pieces per order for long-distance deliveries (> 25 km). */
+export const LONG_DISTANCE_MIN_PIECES = 5;
+
+export const LONG_DISTANCE_MIN_PIECES_MESSAGE =
+  "Deliveries beyond 25 km require a minimum of 5 pieces per order. Please add more pieces or choose pick-up.";
+
+export const OUT_OF_RANGE_MESSAGE =
+  "Sorry, we don't deliver beyond 42 km. Please contact l.asweetbne@gmail.com for a custom quote.";
+
+/**
+ * Return the delivery fee and piece minimum for a distance in km.
+ * `feeAud === null` means the address is out of range.
+ */
+export function computeDeliveryFee(
+  distanceKm: number,
+): { feeAud: number | null; minPieces: number } {
+  if (!Number.isFinite(distanceKm) || distanceKm < 0) {
+    return { feeAud: null, minPieces: 0 };
   }
-  return null;
+  for (const tier of DELIVERY_TIERS) {
+    if (distanceKm <= tier.maxKm) {
+      return { feeAud: tier.feeAud, minPieces: tier.minPieces };
+    }
+  }
+  return { feeAud: null, minPieces: 0 };
 }
 
 /** Great-circle distance in km between two lat/lng points. */
