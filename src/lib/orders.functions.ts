@@ -430,8 +430,18 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const chargeAud = chargeCents / 100;
     const balanceDueAud = Math.max(0, total - chargeAud);
 
+    // Delivery slots are unique per date — lock it before anything else.
+    if (data.customer.delivery === "delivery") {
+      await lockDeliverySlotOrThrow(data.customer.date, data.customer.time, orderNumber);
+    }
+
     // Reserve stock atomically per (flavour, delivery date) before we save.
-    await reserveStockOrThrow(data.items, data.customer.date);
+    try {
+      await reserveStockOrThrow(data.items, data.customer.date);
+    } catch (err) {
+      await releaseDeliverySlot(orderNumber);
+      throw err;
+    }
 
     // 1) Save the order as pending
     const { data: inserted, error: insertError } = await supabaseAdmin
@@ -468,6 +478,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     if (insertError || !inserted) {
       console.error("[createStripeCheckout] insert error", insertError);
       await restoreOrderStock(data.items, data.customer.date);
+      await releaseDeliverySlot(orderNumber);
       throw new Error("Could not save your order. Please try again.");
     }
 
@@ -572,6 +583,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       console.error("[createStripeCheckout] gateway error", resp.status, errText);
       // Stripe session creation failed — release the reservation.
       await restoreOrderStock(data.items, data.customer.date);
+      await releaseDeliverySlot(orderNumber);
       await supabaseAdmin
         .from("orders")
         .update({ payment_status: "failed", notes: "Stripe session creation failed" })
