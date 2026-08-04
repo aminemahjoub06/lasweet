@@ -414,7 +414,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
       delivery_time: data.customer.time,
       order_type: data.customer.orderType || null,
       notes: data.customer.notes || null,
-      items: data.items,
+      items: orderItems,
       subtotal,
       delivery_fee: deliveryFee,
       discount_amount: discountAmount,
@@ -432,7 +432,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
 
     if (error) {
       console.error("[createCashOrder] insert error", error);
-      await restoreOrderStock(data.items, data.customer.date);
+      await restoreOrderStock(orderItems, data.customer.date);
       await releaseDeliverySlot(orderNumber);
       throw new Error("Could not save your order. Please try again.");
     }
@@ -451,7 +451,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
       await notifyOwnerNewOrder({
         orderNumber,
         customer: data.customer,
-        items: data.items,
+        items: orderItems,
         subtotal,
         deliveryFee,
         discountAmount,
@@ -505,7 +505,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
 
     // Reserve stock atomically per (flavour, delivery date) before we save.
     try {
-      await reserveStockOrThrow(data.items, data.customer.date);
+      await reserveStockOrThrow(orderItems, data.customer.date);
     } catch (err) {
       await releaseDeliverySlot(orderNumber);
       throw err;
@@ -526,7 +526,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         delivery_time: data.customer.time,
         order_type: data.customer.orderType || null,
         notes: data.customer.notes || null,
-        items: data.items,
+        items: orderItems,
         subtotal,
         delivery_fee: deliveryFee,
         discount_amount: discountAmount,
@@ -547,7 +547,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
 
     if (insertError || !inserted) {
       console.error("[createStripeCheckout] insert error", insertError);
-      await restoreOrderStock(data.items, data.customer.date);
+      await restoreOrderStock(orderItems, data.customer.date);
       await releaseDeliverySlot(orderNumber);
       throw new Error("Could not save your order. Please try again.");
     }
@@ -625,7 +625,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       params.append(`line_items[0][quantity]`, "1");
     } else {
       let lineIndex = 0;
-      for (const item of data.items) {
+      for (const item of orderItems) {
         const label = [item.prefix, item.suffix].filter(Boolean).join("").trim() || item.name;
         const nameWithSize = item.sizeLabel ? `${label} (Size ${item.sizeLabel})` : label;
         params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
@@ -665,7 +665,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       const errText = await resp.text();
       console.error("[createStripeCheckout] gateway error", resp.status, errText);
       // Stripe session creation failed — release the reservation.
-      await restoreOrderStock(data.items, data.customer.date);
+      await restoreOrderStock(orderItems, data.customer.date);
       await releaseDeliverySlot(orderNumber);
       await supabaseAdmin
         .from("orders")
