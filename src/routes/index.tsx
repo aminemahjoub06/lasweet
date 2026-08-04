@@ -3238,14 +3238,6 @@ function CheckoutModal({
         </div>
       </aside>
       <PWAInstallPrompt />
-      <PromoPopup
-        open={promo.open}
-        onDismiss={promo.dismiss}
-        onOrderNow={() => {
-          promo.dismiss();
-          scrollToProducts();
-        }}
-      />
     </div>
   );
 }
