@@ -121,7 +121,10 @@ export function PromoPopup({
           ))}
         </div>
 
-        <p className="mt-5 text-center text-[11px] italic">
+        <p
+          className="mt-5 text-center text-[11px] italic"
+          style={{ color: "rgba(237, 228, 211, 0.7)" }}
+        >
           {PROMO_VALIDITY_TEXT}
         </p>
 
@@ -137,6 +140,7 @@ export function PromoPopup({
             type="button"
             onClick={onDismiss}
             className="w-full text-[11px] tracking-[0.18em] uppercase hover:text-gold transition-colors"
+            style={{ color: "rgba(237, 228, 211, 0.6)" }}
           >
             Not now
           </button>
