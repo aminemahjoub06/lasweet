@@ -2,7 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
   DEFAULT_DAILY_STOCK,
-  computePromoDiscount,
+  GIFT_CODE,
+  GIFT_ITEM_NAME,
+  GIFT_KEY,
+  GIFT_QTY,
+  isGiftItem,
+  isGiftUnlocked,
   getBrisbaneTodayIso,
   getEarliestOrderDateIso,
   NEXT_DAY_CUTOFF_MESSAGE,
@@ -89,18 +94,40 @@ function generateOrderNumber() {
   return `LAS-${year}-${rand}`;
 }
 
-function computeTotals(items: OrderPayload["items"], deliveryFee: number) {
-  const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
-  const totalPieces = items.reduce((n, i) => n + i.qty, 0);
-  // Promo is always recomputed server-side — never trust a client-sent discount.
-  const promo = computePromoDiscount(totalPieces, subtotal);
-  const discountAmount = Math.min(promo.amount, subtotal);
-  const total = Math.round((subtotal - discountAmount + deliveryFee) * 100) / 100;
+/**
+ * Anti-cheat: drop any gift line sent by the client, then re-add it server-side
+ * only when the *paying* pieces actually reach the threshold. The gift is always
+ * priced at 0 and can never be modified from the browser.
+ */
+function normalizeItems(items: OrderPayload["items"]) {
+  const paying = items.filter((i) => !isGiftItem(i));
+  const payingPieces = paying.reduce((n, i) => n + i.qty, 0);
+  const giftApplies = isGiftUnlocked(payingPieces);
+  const normalized: OrderPayload["items"] = giftApplies
+    ? [
+        ...paying,
+        {
+          key: GIFT_KEY,
+          name: GIFT_ITEM_NAME,
+          prefix: "Mystery ",
+          suffix: "Duo",
+          qty: GIFT_QTY,
+          price: 0,
+        },
+      ]
+    : paying;
+  return { items: normalized, payingItems: paying, payingPieces, giftApplies };
+}
+
+function computeTotals(items: OrderPayload["items"], deliveryFee: number, giftApplies: boolean) {
+  // Gift lines are priced at 0, so the subtotal is unaffected by them.
+  const subtotal = Math.round(items.reduce((s, i) => s + i.qty * i.price, 0) * 100) / 100;
+  const total = Math.round((subtotal + deliveryFee) * 100) / 100;
   return {
     subtotal,
     deliveryFee,
-    discountAmount,
-    discountCode: discountAmount > 0 ? promo.code : null,
+    discountAmount: 0,
+    discountCode: giftApplies ? GIFT_CODE : null,
     total,
   };
 }
@@ -204,7 +231,9 @@ async function reserveStockOrThrow(
     throw new Error("Please choose a delivery/pick-up date before ordering.");
   }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const usage = aggregateStockUsage(items);
+  // Gift pieces are picked by the chef from whatever is on hand — they don't
+  // consume the per-flavour daily stock.
+  const usage = aggregateStockUsage(items.filter((i) => !isGiftItem(i)));
   const reserved: Array<{ key: string; qty: number }> = [];
   for (const [key, qty] of Object.entries(usage)) {
     const { data, error } = await supabaseAdmin.rpc("decrement_daily_stock", {
