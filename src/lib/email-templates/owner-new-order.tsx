@@ -99,7 +99,8 @@ const OwnerNewOrderEmail = (p: Props) => {
             {items.map((i, idx) => (
               <Text key={idx} style={value}>
                 {i.qty} × {i.name}
-                {i.sizeLabel ? ` (Size ${i.sizeLabel})` : ''} — ${(i.qty * i.price).toFixed(2)}
+                {i.sizeLabel ? ` (Size ${i.sizeLabel})` : ''} —{' '}
+                {i.price === 0 ? 'FREE 🎁' : `$${(i.qty * i.price).toFixed(2)}`}
               </Text>
             ))}
           </Section>
@@ -108,9 +109,9 @@ const OwnerNewOrderEmail = (p: Props) => {
 
           <Section>
             <Text style={value}>Subtotal: ${(p.subtotal ?? 0).toFixed(2)}</Text>
-            {(p.discountAmount ?? 0) > 0 ? (
+            {items.some((i) => i.price === 0) ? (
               <Text style={{ ...value, color: '#b8860b' }}>
-                Promo discount (Buy 8, get 2 free): -${(p.discountAmount ?? 0).toFixed(2)}
+                Buy 8, get 2 free — prepare 2 mystery pieces (no charge).
               </Text>
             ) : null}
             <Text style={value}>Delivery fee: ${(p.deliveryFee ?? 0).toFixed(2)}</Text>
