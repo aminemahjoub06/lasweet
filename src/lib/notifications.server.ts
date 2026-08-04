@@ -31,6 +31,7 @@ type NotifyArgs = {
   }>;
   subtotal: number;
   deliveryFee: number;
+  discountAmount?: number;
   total: number;
   paymentMethod: "cash" | "online";
   paymentStatus: string;
@@ -163,6 +164,7 @@ export async function notifyOwnerNewOrder(args: NotifyArgs) {
     items: args.items,
     subtotal: args.subtotal,
     deliveryFee: args.deliveryFee,
+    discountAmount: args.discountAmount ?? 0,
     total: args.total,
     paymentMethod: args.paymentMethod,
     paymentStatus: args.paymentStatus,
