@@ -35,6 +35,7 @@ interface Props {
   items?: Item[]
   subtotal?: number
   deliveryFee?: number
+  discountAmount?: number
   total?: number
   paymentMethod?: 'cash' | 'online'
   paymentStatus?: string
@@ -107,6 +108,11 @@ const OwnerNewOrderEmail = (p: Props) => {
 
           <Section>
             <Text style={value}>Subtotal: ${(p.subtotal ?? 0).toFixed(2)}</Text>
+            {(p.discountAmount ?? 0) > 0 ? (
+              <Text style={{ ...value, color: '#b8860b' }}>
+                Promo discount (Buy 8, get 2 free): -${(p.discountAmount ?? 0).toFixed(2)}
+              </Text>
+            ) : null}
             <Text style={value}>Delivery fee: ${(p.deliveryFee ?? 0).toFixed(2)}</Text>
             <Text style={total}>Total: ${(p.total ?? 0).toFixed(2)}</Text>
           </Section>
