@@ -376,15 +376,16 @@ export const createCashOrder = createServerFn({ method: "POST" })
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
     await enforceOrderRateLimit({ endpoint: "createCashOrder", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const totalPieces = data.items.reduce((n, i) => n + i.qty, 0);
+    const { items: orderItems, payingPieces, giftApplies } = normalizeItems(data.items);
     const deliveryQuote = await resolveDeliveryFee({
       delivery: data.customer.delivery,
       address: data.customer.address,
-      totalPieces,
+      totalPieces: payingPieces,
     });
     const { subtotal, deliveryFee, discountAmount, discountCode, total } = computeTotals(
-      data.items,
+      orderItems,
       deliveryQuote.fee,
+      giftApplies,
     );
     const orderNumber = generateOrderNumber();
 
@@ -395,7 +396,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
 
     // Reserve stock atomically per (flavour, delivery date) before we save.
     try {
-      await reserveStockOrThrow(data.items, data.customer.date);
+      await reserveStockOrThrow(orderItems, data.customer.date);
     } catch (err) {
       await releaseDeliverySlot(orderNumber);
       throw err;
