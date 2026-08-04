@@ -580,6 +580,19 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       );
       params.append(`line_items[0][price_data][unit_amount]`, String(chargeCents));
       params.append(`line_items[0][quantity]`, "1");
+    } else if (discountAmount > 0) {
+      // Stripe has no negative line items — bill the discounted order as one line.
+      params.append(`line_items[0][price_data][currency]`, "aud");
+      params.append(
+        `line_items[0][price_data][product_data][name]`,
+        `L&A Sweet order ${orderNumber} — Buy 8, get 2 free`,
+      );
+      params.append(
+        `line_items[0][price_data][product_data][description]`,
+        `${data.items.map((i) => `${i.qty} × ${i.name}`).join(", ")} · Subtotal A$${subtotal.toFixed(2)} · Promo discount −A$${discountAmount.toFixed(2)}${deliveryFee > 0 ? ` · Delivery A$${deliveryFee.toFixed(2)}` : ""}`,
+      );
+      params.append(`line_items[0][price_data][unit_amount]`, String(chargeCents));
+      params.append(`line_items[0][quantity]`, "1");
     } else {
       let lineIndex = 0;
       for (const item of data.items) {
