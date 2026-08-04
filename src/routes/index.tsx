@@ -848,6 +848,19 @@ function IndexInner() {
   const [cartOpen, setCartOpen] = useState(false);
   const [addCount, setAddCount] = useState(0);
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
+  // Gift mechanic: 8 paying pieces unlock 2 free mystery pieces.
+  const giftUnlocked = isGiftUnlocked(cartCount);
+  const piecesToGift = Math.max(0, GIFT_MIN_PIECES - cartCount);
+  const displayCartCount = cartCount + (giftUnlocked ? GIFT_QTY : 0);
+  const prevGiftUnlocked = useRef(false);
+  useEffect(() => {
+    if (giftUnlocked && !prevGiftUnlocked.current) {
+      toast(`🎁 Gift unlocked — ${GIFT_QTY} mystery pieces added to your cart`);
+    } else if (!giftUnlocked && prevGiftUnlocked.current) {
+      toast(`Gift removed — ${GIFT_MIN_PIECES} pieces are needed to keep it`);
+    }
+    prevGiftUnlocked.current = giftUnlocked;
+  }, [giftUnlocked]);
   const [bump, setBump] = useState(0);
   const prevCartCount = useRef(0);
   useEffect(() => {
