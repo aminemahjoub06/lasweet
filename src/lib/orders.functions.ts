@@ -353,7 +353,10 @@ export const createCashOrder = createServerFn({ method: "POST" })
       address: data.customer.address,
       totalPieces,
     });
-    const { subtotal, deliveryFee, total } = computeTotals(data.items, deliveryQuote.fee);
+    const { subtotal, deliveryFee, discountAmount, discountCode, total } = computeTotals(
+      data.items,
+      deliveryQuote.fee,
+    );
     const orderNumber = generateOrderNumber();
 
     // Delivery slots are unique per date — lock it before anything else.
@@ -384,6 +387,8 @@ export const createCashOrder = createServerFn({ method: "POST" })
       items: data.items,
       subtotal,
       delivery_fee: deliveryFee,
+      discount_amount: discountAmount,
+      discount_code: discountCode,
       total,
       payment_method: "cash",
       payment_status: "cash_pending",
@@ -419,6 +424,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
         items: data.items,
         subtotal,
         deliveryFee,
+        discountAmount,
         total,
         paymentMethod: "cash",
         paymentStatus: "cash_pending",
