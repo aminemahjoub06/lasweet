@@ -2,7 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
   DEFAULT_DAILY_STOCK,
-  computePromoDiscount,
+  GIFT_CODE,
+  GIFT_ITEM_NAME,
+  GIFT_KEY,
+  GIFT_QTY,
+  isGiftItem,
+  isGiftUnlocked,
   getBrisbaneTodayIso,
   getEarliestOrderDateIso,
   NEXT_DAY_CUTOFF_MESSAGE,
@@ -89,18 +94,40 @@ function generateOrderNumber() {
   return `LAS-${year}-${rand}`;
 }
 
-function computeTotals(items: OrderPayload["items"], deliveryFee: number) {
-  const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
-  const totalPieces = items.reduce((n, i) => n + i.qty, 0);
-  // Promo is always recomputed server-side — never trust a client-sent discount.
-  const promo = computePromoDiscount(totalPieces, subtotal);
-  const discountAmount = Math.min(promo.amount, subtotal);
-  const total = Math.round((subtotal - discountAmount + deliveryFee) * 100) / 100;
+/**
+ * Anti-cheat: drop any gift line sent by the client, then re-add it server-side
+ * only when the *paying* pieces actually reach the threshold. The gift is always
+ * priced at 0 and can never be modified from the browser.
+ */
+function normalizeItems(items: OrderPayload["items"]) {
+  const paying = items.filter((i) => !isGiftItem(i));
+  const payingPieces = paying.reduce((n, i) => n + i.qty, 0);
+  const giftApplies = isGiftUnlocked(payingPieces);
+  const normalized: OrderPayload["items"] = giftApplies
+    ? [
+        ...paying,
+        {
+          key: GIFT_KEY,
+          name: GIFT_ITEM_NAME,
+          prefix: "Mystery ",
+          suffix: "Duo",
+          qty: GIFT_QTY,
+          price: 0,
+        },
+      ]
+    : paying;
+  return { items: normalized, payingItems: paying, payingPieces, giftApplies };
+}
+
+function computeTotals(items: OrderPayload["items"], deliveryFee: number, giftApplies: boolean) {
+  // Gift lines are priced at 0, so the subtotal is unaffected by them.
+  const subtotal = Math.round(items.reduce((s, i) => s + i.qty * i.price, 0) * 100) / 100;
+  const total = Math.round((subtotal + deliveryFee) * 100) / 100;
   return {
     subtotal,
     deliveryFee,
-    discountAmount,
-    discountCode: discountAmount > 0 ? promo.code : null,
+    discountAmount: 0,
+    discountCode: giftApplies ? GIFT_CODE : null,
     total,
   };
 }
@@ -204,7 +231,9 @@ async function reserveStockOrThrow(
     throw new Error("Please choose a delivery/pick-up date before ordering.");
   }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const usage = aggregateStockUsage(items);
+  // Gift pieces are picked by the chef from whatever is on hand — they don't
+  // consume the per-flavour daily stock.
+  const usage = aggregateStockUsage(items.filter((i) => !isGiftItem(i)));
   const reserved: Array<{ key: string; qty: number }> = [];
   for (const [key, qty] of Object.entries(usage)) {
     const { data, error } = await supabaseAdmin.rpc("decrement_daily_stock", {
@@ -347,15 +376,16 @@ export const createCashOrder = createServerFn({ method: "POST" })
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
     await enforceOrderRateLimit({ endpoint: "createCashOrder", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const totalPieces = data.items.reduce((n, i) => n + i.qty, 0);
+    const { items: orderItems, payingPieces, giftApplies } = normalizeItems(data.items);
     const deliveryQuote = await resolveDeliveryFee({
       delivery: data.customer.delivery,
       address: data.customer.address,
-      totalPieces,
+      totalPieces: payingPieces,
     });
     const { subtotal, deliveryFee, discountAmount, discountCode, total } = computeTotals(
-      data.items,
+      orderItems,
       deliveryQuote.fee,
+      giftApplies,
     );
     const orderNumber = generateOrderNumber();
 
@@ -366,7 +396,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
 
     // Reserve stock atomically per (flavour, delivery date) before we save.
     try {
-      await reserveStockOrThrow(data.items, data.customer.date);
+      await reserveStockOrThrow(orderItems, data.customer.date);
     } catch (err) {
       await releaseDeliverySlot(orderNumber);
       throw err;
@@ -384,7 +414,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
       delivery_time: data.customer.time,
       order_type: data.customer.orderType || null,
       notes: data.customer.notes || null,
-      items: data.items,
+      items: orderItems,
       subtotal,
       delivery_fee: deliveryFee,
       discount_amount: discountAmount,
@@ -402,7 +432,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
 
     if (error) {
       console.error("[createCashOrder] insert error", error);
-      await restoreOrderStock(data.items, data.customer.date);
+      await restoreOrderStock(orderItems, data.customer.date);
       await releaseDeliverySlot(orderNumber);
       throw new Error("Could not save your order. Please try again.");
     }
@@ -421,7 +451,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
       await notifyOwnerNewOrder({
         orderNumber,
         customer: data.customer,
-        items: data.items,
+        items: orderItems,
         subtotal,
         deliveryFee,
         discountAmount,
@@ -449,15 +479,16 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
     await enforceOrderRateLimit({ endpoint: "createStripeCheckout", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const totalPieces = data.items.reduce((n, i) => n + i.qty, 0);
+    const { items: orderItems, payingPieces, giftApplies } = normalizeItems(data.items);
     const deliveryQuote = await resolveDeliveryFee({
       delivery: data.customer.delivery,
       address: data.customer.address,
-      totalPieces,
+      totalPieces: payingPieces,
     });
     const { subtotal, deliveryFee, discountAmount, discountCode, total } = computeTotals(
-      data.items,
+      orderItems,
       deliveryQuote.fee,
+      giftApplies,
     );
     const orderNumber = generateOrderNumber();
 
@@ -475,7 +506,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
 
     // Reserve stock atomically per (flavour, delivery date) before we save.
     try {
-      await reserveStockOrThrow(data.items, data.customer.date);
+      await reserveStockOrThrow(orderItems, data.customer.date);
     } catch (err) {
       await releaseDeliverySlot(orderNumber);
       throw err;
@@ -496,7 +527,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         delivery_time: data.customer.time,
         order_type: data.customer.orderType || null,
         notes: data.customer.notes || null,
-        items: data.items,
+        items: orderItems,
         subtotal,
         delivery_fee: deliveryFee,
         discount_amount: discountAmount,
@@ -517,7 +548,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
 
     if (insertError || !inserted) {
       console.error("[createStripeCheckout] insert error", insertError);
-      await restoreOrderStock(data.items, data.customer.date);
+      await restoreOrderStock(orderItems, data.customer.date);
       await releaseDeliverySlot(orderNumber);
       throw new Error("Could not save your order. Please try again.");
     }
@@ -580,22 +611,11 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       );
       params.append(`line_items[0][price_data][unit_amount]`, String(chargeCents));
       params.append(`line_items[0][quantity]`, "1");
-    } else if (discountAmount > 0) {
-      // Stripe has no negative line items — bill the discounted order as one line.
-      params.append(`line_items[0][price_data][currency]`, "aud");
-      params.append(
-        `line_items[0][price_data][product_data][name]`,
-        `L&A Sweet order ${orderNumber} — Buy 8, get 2 free`,
-      );
-      params.append(
-        `line_items[0][price_data][product_data][description]`,
-        `${data.items.map((i) => `${i.qty} × ${i.name}`).join(", ")} · Subtotal A$${subtotal.toFixed(2)} · Promo discount −A$${discountAmount.toFixed(2)}${deliveryFee > 0 ? ` · Delivery A$${deliveryFee.toFixed(2)}` : ""}`,
-      );
-      params.append(`line_items[0][price_data][unit_amount]`, String(chargeCents));
-      params.append(`line_items[0][quantity]`, "1");
     } else {
       let lineIndex = 0;
-      for (const item of data.items) {
+      // A$0 lines are rejected by Stripe — the free gift is noted on the first
+      // billable line instead of being charged.
+      for (const item of orderItems.filter((i) => i.price > 0)) {
         const label = [item.prefix, item.suffix].filter(Boolean).join("").trim() || item.name;
         const nameWithSize = item.sizeLabel ? `${label} (Size ${item.sizeLabel})` : label;
         params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
@@ -606,6 +626,12 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         );
         params.append(`line_items[${lineIndex}][quantity]`, String(item.qty));
         lineIndex++;
+      }
+      if (giftApplies) {
+        params.append(
+          `line_items[0][price_data][product_data][description]`,
+          `Includes ${GIFT_QTY} free mystery pieces — our gift to you.`,
+        );
       }
       if (deliveryFee > 0) {
         params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
@@ -635,7 +661,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       const errText = await resp.text();
       console.error("[createStripeCheckout] gateway error", resp.status, errText);
       // Stripe session creation failed — release the reservation.
-      await restoreOrderStock(data.items, data.customer.date);
+      await restoreOrderStock(orderItems, data.customer.date);
       await releaseDeliverySlot(orderNumber);
       await supabaseAdmin
         .from("orders")

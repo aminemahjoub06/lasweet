@@ -31,7 +31,7 @@ Desserts are made in a kitchen that also handles nuts, dairy, gluten and eggs. C
 
 ## Ordering
 - Orders are placed online at https://la-sweet-bne.com
-- Current promotion (valid until 28 August 2026): Buy 8, get 2 free — 20% off automatically applied to orders of 10 pieces or more.
+- Current promotion (valid until 28 August 2026): Buy 8, get 2 free — order 8 pieces or more and 2 free mystery pieces (chef’s choice) are automatically added to your cart at A$0.
 - Minimum lead time: 1 day (D+1) before pick-up or delivery — same-day orders are not accepted
 - Payment options:
   1. 50% deposit online (via Stripe), balance in cash on collection.

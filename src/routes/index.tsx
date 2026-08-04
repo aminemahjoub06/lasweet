@@ -13,7 +13,7 @@ import {
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, computePromoDiscount, PROMO_RIBBON_TEXT, PROMO_LINE_LABEL } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked } from "@/lib/config";
 import { PromoPopup, usePromoPopup } from "@/components/PromoPopup";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
@@ -848,6 +848,19 @@ function IndexInner() {
   const [cartOpen, setCartOpen] = useState(false);
   const [addCount, setAddCount] = useState(0);
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
+  // Gift mechanic: 8 paying pieces unlock 2 free mystery pieces.
+  const giftUnlocked = isGiftUnlocked(cartCount);
+  const piecesToGift = Math.max(0, GIFT_MIN_PIECES - cartCount);
+  const displayCartCount = cartCount + (giftUnlocked ? GIFT_QTY : 0);
+  const prevGiftUnlocked = useRef(false);
+  useEffect(() => {
+    if (giftUnlocked && !prevGiftUnlocked.current) {
+      toast(`🎁 Gift unlocked — ${GIFT_QTY} mystery pieces added to your cart`);
+    } else if (!giftUnlocked && prevGiftUnlocked.current) {
+      toast(`Gift removed — ${GIFT_MIN_PIECES} pieces are needed to keep it`);
+    }
+    prevGiftUnlocked.current = giftUnlocked;
+  }, [giftUnlocked]);
   const [bump, setBump] = useState(0);
   const prevCartCount = useRef(0);
   useEffect(() => {
@@ -1056,7 +1069,6 @@ function IndexInner() {
   >([]);
   const snapshotTotal = orderSnapshot.reduce((s, i) => s + i.qty * i.price, 0);
   const snapshotPieces = orderSnapshot.reduce((n, i) => n + i.qty, 0);
-  const promoDiscount = computePromoDiscount(snapshotPieces, snapshotTotal).amount;
   const promo = usePromoPopup();
   const updateForm = <K extends keyof OrderForm>(k: K, v: OrderForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -1118,8 +1130,8 @@ function IndexInner() {
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     // Lock in a snapshot of the cart so quantities can't change mid-review.
-    setOrderSnapshot(
-      cartEntries.map(({ variant, qty }) => ({
+    setOrderSnapshot([
+      ...cartEntries.map(({ variant, qty }) => ({
         key: variant.key,
         no: variant.no,
         name: variant.name,
@@ -1130,7 +1142,21 @@ function IndexInner() {
         price: variant.price,
         sizeLabel: variant.sizeLabel,
       })),
-    );
+      // Free gift line — re-verified server-side, never priced by the client.
+      ...(giftUnlocked
+        ? [
+            {
+              key: GIFT_KEY,
+              no: "",
+              name: GIFT_ITEM_NAME,
+              prefix: "Mystery ",
+              suffix: "Duo",
+              qty: GIFT_QTY,
+              price: 0,
+            },
+          ]
+        : []),
+    ]);
     setCheckoutStep("review");
   };
 
@@ -1308,14 +1334,14 @@ function IndexInner() {
               className="relative z-50 inline-flex items-center justify-center h-10 w-10 border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors overflow-visible"
             >
               <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
-              {cartCount > 0 && (
+              {displayCartCount > 0 && (
                 <span
                   key={bump}
-                  aria-label={`${cartCount} item${cartCount > 1 ? "s" : ""} in cart`}
+                  aria-label={`${displayCartCount} item${displayCartCount > 1 ? "s" : ""} in cart`}
                   className="cart-badge-bump absolute -top-2 -right-2 z-[100] w-[22px] h-[22px] flex items-center justify-center bg-gold text-ink text-xs font-bold leading-none rounded-full drop-shadow-md pointer-events-none"
                   style={{ color: "#1a1a1a" }}
                 >
-                  {cartCount > 9 ? "9+" : cartCount}
+                  {displayCartCount > 9 ? "9+" : displayCartCount}
                 </span>
               )}
             </button>
@@ -2260,7 +2286,50 @@ function IndexInner() {
                     </li>
                   );
                 })}
+                {giftUnlocked && (
+                  <li
+                    key={GIFT_KEY}
+                    className="flex gap-4 border border-gold/40 bg-gold/[0.06] p-3"
+                  >
+                    <div className="h-16 w-16 shrink-0 border border-gold/40 bg-ink-3 flex items-center justify-center text-2xl">
+                      🎁
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
+                        Gift · Buy 8, get 2 free
+                      </div>
+                      <div className="font-serif-display text-lg leading-tight text-gold">
+                        {GIFT_NAME}
+                      </div>
+                      <div className="text-[11px] text-[color:var(--foreground)]/60 mt-1">
+                        {GIFT_DESCRIPTION}
+                      </div>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-[11px] tracking-[0.2em] uppercase text-[color:var(--foreground)]/55">
+                          × {GIFT_QTY}
+                        </span>
+                        <span className="text-gold font-serif-display text-base">FREE</span>
+                      </div>
+                    </div>
+                  </li>
+                )}
               </ul>
+            )}
+            {cartEntries.length > 0 && !giftUnlocked && (
+              <div className="mt-5 border border-gold/30 bg-gold/[0.05] p-4">
+                <p className="text-[11px] tracking-[0.16em] uppercase text-gold">
+                  Add {piecesToGift} more piece{piecesToGift > 1 ? "s" : ""} to get {GIFT_QTY} free
+                </p>
+                <div className="mt-3 h-1.5 w-full bg-ink-3 overflow-hidden">
+                  <div
+                    className="h-full bg-gold transition-all duration-500"
+                    style={{ width: `${Math.min(100, (cartCount / GIFT_MIN_PIECES) * 100)}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55">
+                  {cartCount}/{GIFT_MIN_PIECES} pieces · {GIFT_DESCRIPTION}
+                </p>
+              </div>
             )}
           </div>
 
@@ -2279,6 +2348,7 @@ function IndexInner() {
               style={{ letterSpacing: "0.08em", color: "rgba(245, 234, 210, 0.55)" }}
             >
               Pick-up: free · Delivery: fee calculated at checkout based on your address
+              {giftUnlocked ? ` · ${GIFT_QTY} mystery pieces included free` : ""}
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
@@ -2314,7 +2384,7 @@ function IndexInner() {
         validateDetails={validateDetails}
         orderSnapshot={orderSnapshot}
         snapshotTotal={snapshotTotal}
-        promoDiscount={promoDiscount}
+        giftUnlocked={giftUnlocked}
         cartCount={cartCount}
         paying={paying}
         payOrder={payOrder}
@@ -2390,7 +2460,7 @@ function CheckoutModal({
   validateDetails,
   orderSnapshot,
   snapshotTotal,
-  promoDiscount,
+  giftUnlocked,
   cartCount,
   paying,
   payOrder,
@@ -2417,7 +2487,7 @@ function CheckoutModal({
   validateDetails: (e: React.FormEvent) => void;
   orderSnapshot: SnapshotItem[];
   snapshotTotal: number;
-  promoDiscount: number;
+  giftUnlocked: boolean;
   cartCount: number;
   paying: boolean;
   payOrder: () => void;
@@ -2952,18 +3022,18 @@ function CheckoutModal({
                           {fee === 0 ? "Free" : `$${fee}`}
                         </span>
                       </div>
-                      {promoDiscount > 0 && (
+                      {giftUnlocked && (
                         <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
-                          <span>{PROMO_LINE_LABEL}</span>
+                          <span>Gift · {GIFT_QTY} mystery pieces</span>
                           <span className="normal-case tracking-normal font-serif-display text-base">
-                            −A${promoDiscount.toFixed(2)}
+                            FREE
                           </span>
                         </div>
                       )}
                       <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
                         <span>Total</span>
                         <span className="font-serif-display normal-case tracking-normal text-xl">
-                          ${(snapshotTotal - promoDiscount + fee).toFixed(2)}
+                          ${(snapshotTotal + fee).toFixed(2)}
                         </span>
                       </div>
                       <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
@@ -3084,16 +3154,16 @@ function CheckoutModal({
                         <span>Delivery fee</span>
                         <span className="text-gold">{fee === 0 ? "Free" : `$${fee}`}</span>
                       </div>
-                      {promoDiscount > 0 && (
+                      {giftUnlocked && (
                         <div className="mt-1 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-gold">
-                          <span>{PROMO_LINE_LABEL}</span>
-                          <span>−A${promoDiscount.toFixed(2)}</span>
+                          <span>Gift · {GIFT_QTY} mystery pieces</span>
+                          <span>FREE</span>
                         </div>
                       )}
                       <div className="mt-1 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
                         <span>Total</span>
                         <span className="font-serif-display normal-case tracking-normal text-base">
-                          ${(snapshotTotal - promoDiscount + fee).toFixed(2)}
+                          ${(snapshotTotal + fee).toFixed(2)}
                         </span>
                       </div>
                     </>
@@ -3104,7 +3174,7 @@ function CheckoutModal({
               {/* Payment options — 50% deposit or pay in full. */}
               {(() => {
                 const fee = effectiveDeliveryFee;
-                const orderTotal = Math.round((snapshotTotal - promoDiscount + fee) * 100) / 100;
+                const orderTotal = Math.round((snapshotTotal + fee) * 100) / 100;
                 const deposit = Math.round((orderTotal / 2) * 100) / 100;
                 const balance = Math.round((orderTotal - deposit) * 100) / 100;
                 const fulfilWord = form.delivery === "delivery" ? "delivery" : "pick-up";
