@@ -479,15 +479,16 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
     await enforceOrderRateLimit({ endpoint: "createStripeCheckout", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const totalPieces = data.items.reduce((n, i) => n + i.qty, 0);
+    const { items: orderItems, payingPieces, giftApplies } = normalizeItems(data.items);
     const deliveryQuote = await resolveDeliveryFee({
       delivery: data.customer.delivery,
       address: data.customer.address,
-      totalPieces,
+      totalPieces: payingPieces,
     });
     const { subtotal, deliveryFee, discountAmount, discountCode, total } = computeTotals(
-      data.items,
+      orderItems,
       deliveryQuote.fee,
+      giftApplies,
     );
     const orderNumber = generateOrderNumber();
 
@@ -610,22 +611,11 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       );
       params.append(`line_items[0][price_data][unit_amount]`, String(chargeCents));
       params.append(`line_items[0][quantity]`, "1");
-    } else if (discountAmount > 0) {
-      // Stripe has no negative line items — bill the discounted order as one line.
-      params.append(`line_items[0][price_data][currency]`, "aud");
-      params.append(
-        `line_items[0][price_data][product_data][name]`,
-        `L&A Sweet order ${orderNumber} — Buy 8, get 2 free`,
-      );
-      params.append(
-        `line_items[0][price_data][product_data][description]`,
-        `${data.items.map((i) => `${i.qty} × ${i.name}`).join(", ")} · Subtotal A$${subtotal.toFixed(2)} · Promo discount −A$${discountAmount.toFixed(2)}${deliveryFee > 0 ? ` · Delivery A$${deliveryFee.toFixed(2)}` : ""}`,
-      );
-      params.append(`line_items[0][price_data][unit_amount]`, String(chargeCents));
-      params.append(`line_items[0][quantity]`, "1");
     } else {
       let lineIndex = 0;
-      for (const item of orderItems) {
+      // A$0 lines are rejected by Stripe — the free gift is noted on the first
+      // billable line instead of being charged.
+      for (const item of orderItems.filter((i) => i.price > 0)) {
         const label = [item.prefix, item.suffix].filter(Boolean).join("").trim() || item.name;
         const nameWithSize = item.sizeLabel ? `${label} (Size ${item.sizeLabel})` : label;
         params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
@@ -636,6 +626,12 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         );
         params.append(`line_items[${lineIndex}][quantity]`, String(item.qty));
         lineIndex++;
+      }
+      if (giftApplies) {
+        params.append(
+          `line_items[0][price_data][product_data][description]`,
+          `Includes ${GIFT_QTY} free mystery pieces — our gift to you.`,
+        );
       }
       if (deliveryFee > 0) {
         params.append(`line_items[${lineIndex}][price_data][currency]`, "aud");
