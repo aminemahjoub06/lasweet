@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
   DEFAULT_DAILY_STOCK,
+  computePromoDiscount,
   getBrisbaneTodayIso,
   getEarliestOrderDateIso,
   NEXT_DAY_CUTOFF_MESSAGE,
@@ -90,8 +91,18 @@ function generateOrderNumber() {
 
 function computeTotals(items: OrderPayload["items"], deliveryFee: number) {
   const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
-  const total = subtotal + deliveryFee;
-  return { subtotal, deliveryFee, total };
+  const totalPieces = items.reduce((n, i) => n + i.qty, 0);
+  // Promo is always recomputed server-side — never trust a client-sent discount.
+  const promo = computePromoDiscount(totalPieces, subtotal);
+  const discountAmount = Math.min(promo.amount, subtotal);
+  const total = Math.round((subtotal - discountAmount + deliveryFee) * 100) / 100;
+  return {
+    subtotal,
+    deliveryFee,
+    discountAmount,
+    discountCode: discountAmount > 0 ? promo.code : null,
+    total,
+  };
 }
 
 // Re-resolve the delivery fee server-side from the customer's address.
