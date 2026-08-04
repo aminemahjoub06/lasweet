@@ -1054,6 +1054,8 @@ function IndexInner() {
     }[]
   >([]);
   const snapshotTotal = orderSnapshot.reduce((s, i) => s + i.qty * i.price, 0);
+  const snapshotPieces = orderSnapshot.reduce((n, i) => n + i.qty, 0);
+  const promoDiscount = computePromoDiscount(snapshotPieces, snapshotTotal).amount;
   const updateForm = <K extends keyof OrderForm>(k: K, v: OrderForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
