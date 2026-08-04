@@ -2390,6 +2390,7 @@ function CheckoutModal({
   validateDetails,
   orderSnapshot,
   snapshotTotal,
+  promoDiscount,
   cartCount,
   paying,
   payOrder,
@@ -2416,6 +2417,7 @@ function CheckoutModal({
   validateDetails: (e: React.FormEvent) => void;
   orderSnapshot: SnapshotItem[];
   snapshotTotal: number;
+  promoDiscount: number;
   cartCount: number;
   paying: boolean;
   payOrder: () => void;
