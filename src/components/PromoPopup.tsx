@@ -121,7 +121,7 @@ export function PromoPopup({
           ))}
         </div>
 
-        <p className="mt-5 text-center text-[11px] italic text-[color:var(--cream)]/70">
+        <p className="mt-5 text-center text-[11px] italic">
           {PROMO_VALIDITY_TEXT}
         </p>
 
@@ -136,7 +136,7 @@ export function PromoPopup({
           <button
             type="button"
             onClick={onDismiss}
-            className="w-full text-[11px] tracking-[0.18em] uppercase text-[color:var(--cream)]/60 hover:text-gold transition-colors"
+            className="w-full text-[11px] tracking-[0.18em] uppercase hover:text-gold transition-colors"
           >
             Not now
           </button>
