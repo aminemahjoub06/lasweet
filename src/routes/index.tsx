@@ -2314,6 +2314,7 @@ function IndexInner() {
         validateDetails={validateDetails}
         orderSnapshot={orderSnapshot}
         snapshotTotal={snapshotTotal}
+        promoDiscount={promoDiscount}
         cartCount={cartCount}
         paying={paying}
         payOrder={payOrder}
