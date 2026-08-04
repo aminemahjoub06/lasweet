@@ -2952,10 +2952,18 @@ function CheckoutModal({
                           {fee === 0 ? "Free" : `$${fee}`}
                         </span>
                       </div>
+                      {promoDiscount > 0 && (
+                        <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
+                          <span>{PROMO_LINE_LABEL}</span>
+                          <span className="normal-case tracking-normal font-serif-display text-base">
+                            −A${promoDiscount.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
                       <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
                         <span>Total</span>
                         <span className="font-serif-display normal-case tracking-normal text-xl">
-                          ${snapshotTotal + fee}
+                          ${(snapshotTotal - promoDiscount + fee).toFixed(2)}
                         </span>
                       </div>
                       <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
@@ -3076,10 +3084,16 @@ function CheckoutModal({
                         <span>Delivery fee</span>
                         <span className="text-gold">{fee === 0 ? "Free" : `$${fee}`}</span>
                       </div>
+                      {promoDiscount > 0 && (
+                        <div className="mt-1 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-gold">
+                          <span>{PROMO_LINE_LABEL}</span>
+                          <span>−A${promoDiscount.toFixed(2)}</span>
+                        </div>
+                      )}
                       <div className="mt-1 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
                         <span>Total</span>
                         <span className="font-serif-display normal-case tracking-normal text-base">
-                          ${snapshotTotal + fee}
+                          ${(snapshotTotal - promoDiscount + fee).toFixed(2)}
                         </span>
                       </div>
                     </>
@@ -3090,7 +3104,7 @@ function CheckoutModal({
               {/* Payment options — 50% deposit or pay in full. */}
               {(() => {
                 const fee = effectiveDeliveryFee;
-                const orderTotal = snapshotTotal + fee;
+                const orderTotal = Math.round((snapshotTotal - promoDiscount + fee) * 100) / 100;
                 const deposit = Math.round((orderTotal / 2) * 100) / 100;
                 const balance = Math.round((orderTotal - deposit) * 100) / 100;
                 const fulfilWord = form.delivery === "delivery" ? "delivery" : "pick-up";
