@@ -13,7 +13,7 @@ import {
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, computePromoDiscount, PROMO_RIBBON_TEXT, PROMO_LINE_LABEL } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked } from "@/lib/config";
 import { PromoPopup, usePromoPopup } from "@/components/PromoPopup";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
@@ -1056,7 +1056,6 @@ function IndexInner() {
   >([]);
   const snapshotTotal = orderSnapshot.reduce((s, i) => s + i.qty * i.price, 0);
   const snapshotPieces = orderSnapshot.reduce((n, i) => n + i.qty, 0);
-  const promoDiscount = computePromoDiscount(snapshotPieces, snapshotTotal).amount;
   const promo = usePromoPopup();
   const updateForm = <K extends keyof OrderForm>(k: K, v: OrderForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -2314,7 +2313,7 @@ function IndexInner() {
         validateDetails={validateDetails}
         orderSnapshot={orderSnapshot}
         snapshotTotal={snapshotTotal}
-        promoDiscount={promoDiscount}
+        giftUnlocked={giftUnlocked}
         cartCount={cartCount}
         paying={paying}
         payOrder={payOrder}
@@ -2390,7 +2389,7 @@ function CheckoutModal({
   validateDetails,
   orderSnapshot,
   snapshotTotal,
-  promoDiscount,
+  giftUnlocked,
   cartCount,
   paying,
   payOrder,
@@ -2417,7 +2416,7 @@ function CheckoutModal({
   validateDetails: (e: React.FormEvent) => void;
   orderSnapshot: SnapshotItem[];
   snapshotTotal: number;
-  promoDiscount: number;
+  giftUnlocked: boolean;
   cartCount: number;
   paying: boolean;
   payOrder: () => void;
@@ -2952,18 +2951,18 @@ function CheckoutModal({
                           {fee === 0 ? "Free" : `$${fee}`}
                         </span>
                       </div>
-                      {promoDiscount > 0 && (
+                      {giftUnlocked && (
                         <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
-                          <span>{PROMO_LINE_LABEL}</span>
+                          <span>Gift · {GIFT_QTY} mystery pieces</span>
                           <span className="normal-case tracking-normal font-serif-display text-base">
-                            −A${promoDiscount.toFixed(2)}
+                            FREE
                           </span>
                         </div>
                       )}
                       <div className="mt-3 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
                         <span>Total</span>
                         <span className="font-serif-display normal-case tracking-normal text-xl">
-                          ${(snapshotTotal - promoDiscount + fee).toFixed(2)}
+                          ${(snapshotTotal + fee).toFixed(2)}
                         </span>
                       </div>
                       <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55 leading-relaxed">
@@ -3084,16 +3083,16 @@ function CheckoutModal({
                         <span>Delivery fee</span>
                         <span className="text-gold">{fee === 0 ? "Free" : `$${fee}`}</span>
                       </div>
-                      {promoDiscount > 0 && (
+                      {giftUnlocked && (
                         <div className="mt-1 flex items-baseline justify-between text-[10px] tracking-[0.18em] uppercase text-gold">
-                          <span>{PROMO_LINE_LABEL}</span>
-                          <span>−A${promoDiscount.toFixed(2)}</span>
+                          <span>Gift · {GIFT_QTY} mystery pieces</span>
+                          <span>FREE</span>
                         </div>
                       )}
                       <div className="mt-1 flex items-baseline justify-between text-[11px] tracking-[0.18em] uppercase text-gold">
                         <span>Total</span>
                         <span className="font-serif-display normal-case tracking-normal text-base">
-                          ${(snapshotTotal - promoDiscount + fee).toFixed(2)}
+                          ${(snapshotTotal + fee).toFixed(2)}
                         </span>
                       </div>
                     </>
@@ -3104,7 +3103,7 @@ function CheckoutModal({
               {/* Payment options — 50% deposit or pay in full. */}
               {(() => {
                 const fee = effectiveDeliveryFee;
-                const orderTotal = Math.round((snapshotTotal - promoDiscount + fee) * 100) / 100;
+                const orderTotal = Math.round((snapshotTotal + fee) * 100) / 100;
                 const deposit = Math.round((orderTotal / 2) * 100) / 100;
                 const balance = Math.round((orderTotal - deposit) * 100) / 100;
                 const fulfilWord = form.delivery === "delivery" ? "delivery" : "pick-up";
