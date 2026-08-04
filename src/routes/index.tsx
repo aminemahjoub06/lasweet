@@ -1130,8 +1130,8 @@ function IndexInner() {
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     // Lock in a snapshot of the cart so quantities can't change mid-review.
-    setOrderSnapshot(
-      cartEntries.map(({ variant, qty }) => ({
+    setOrderSnapshot([
+      ...cartEntries.map(({ variant, qty }) => ({
         key: variant.key,
         no: variant.no,
         name: variant.name,
@@ -1142,7 +1142,21 @@ function IndexInner() {
         price: variant.price,
         sizeLabel: variant.sizeLabel,
       })),
-    );
+      // Free gift line — re-verified server-side, never priced by the client.
+      ...(giftUnlocked
+        ? [
+            {
+              key: GIFT_KEY,
+              no: "",
+              name: GIFT_ITEM_NAME,
+              prefix: "Mystery ",
+              suffix: "Duo",
+              qty: GIFT_QTY,
+              price: 0,
+            },
+          ]
+        : []),
+    ]);
     setCheckoutStep("review");
   };
 
@@ -1320,14 +1334,14 @@ function IndexInner() {
               className="relative z-50 inline-flex items-center justify-center h-10 w-10 border border-gold/40 text-gold hover:bg-gold hover:text-ink transition-colors overflow-visible"
             >
               <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
-              {cartCount > 0 && (
+              {displayCartCount > 0 && (
                 <span
                   key={bump}
-                  aria-label={`${cartCount} item${cartCount > 1 ? "s" : ""} in cart`}
+                  aria-label={`${displayCartCount} item${displayCartCount > 1 ? "s" : ""} in cart`}
                   className="cart-badge-bump absolute -top-2 -right-2 z-[100] w-[22px] h-[22px] flex items-center justify-center bg-gold text-ink text-xs font-bold leading-none rounded-full drop-shadow-md pointer-events-none"
                   style={{ color: "#1a1a1a" }}
                 >
-                  {cartCount > 9 ? "9+" : cartCount}
+                  {displayCartCount > 9 ? "9+" : displayCartCount}
                 </span>
               )}
             </button>
@@ -2272,7 +2286,50 @@ function IndexInner() {
                     </li>
                   );
                 })}
+                {giftUnlocked && (
+                  <li
+                    key={GIFT_KEY}
+                    className="flex gap-4 border border-gold/40 bg-gold/[0.06] p-3"
+                  >
+                    <div className="h-16 w-16 shrink-0 border border-gold/40 bg-ink-3 flex items-center justify-center text-2xl">
+                      🎁
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80">
+                        Gift · Buy 8, get 2 free
+                      </div>
+                      <div className="font-serif-display text-lg leading-tight text-gold">
+                        {GIFT_NAME}
+                      </div>
+                      <div className="text-[11px] text-[color:var(--foreground)]/60 mt-1">
+                        {GIFT_DESCRIPTION}
+                      </div>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-[11px] tracking-[0.2em] uppercase text-[color:var(--foreground)]/55">
+                          × {GIFT_QTY}
+                        </span>
+                        <span className="text-gold font-serif-display text-base">FREE</span>
+                      </div>
+                    </div>
+                  </li>
+                )}
               </ul>
+            )}
+            {cartEntries.length > 0 && !giftUnlocked && (
+              <div className="mt-5 border border-gold/30 bg-gold/[0.05] p-4">
+                <p className="text-[11px] tracking-[0.16em] uppercase text-gold">
+                  Add {piecesToGift} more piece{piecesToGift > 1 ? "s" : ""} to get {GIFT_QTY} free
+                </p>
+                <div className="mt-3 h-1.5 w-full bg-ink-3 overflow-hidden">
+                  <div
+                    className="h-full bg-gold transition-all duration-500"
+                    style={{ width: `${Math.min(100, (cartCount / GIFT_MIN_PIECES) * 100)}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-[11px] italic text-[color:var(--foreground)]/55">
+                  {cartCount}/{GIFT_MIN_PIECES} pieces · {GIFT_DESCRIPTION}
+                </p>
+              </div>
             )}
           </div>
 
@@ -2291,6 +2348,7 @@ function IndexInner() {
               style={{ letterSpacing: "0.08em", color: "rgba(245, 234, 210, 0.55)" }}
             >
               Pick-up: free · Delivery: fee calculated at checkout based on your address
+              {giftUnlocked ? ` · ${GIFT_QTY} mystery pieces included free` : ""}
             </p>
             <div className="flex flex-col gap-2 pt-1">
               <button
