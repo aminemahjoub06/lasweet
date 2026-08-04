@@ -147,6 +147,48 @@ export const ORDER_CUTOFF_HOUR = 20;
 export const NEXT_DAY_CUTOFF_MESSAGE =
   "Orders for next-day pickup and delivery close at 8:00 PM. Please select another available date.";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Limited-time promotion: Buy 8, get 2 free (20% off from 10 pieces)
+// Everything promo-related is gated on PROMO_END_DATE and disappears by itself.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const PROMO_END_DATE = "2026-08-28";
+export const PROMO_MIN_PIECES = 10;
+export const PROMO_DISCOUNT_PERCENT = 20;
+export const PROMO_CODE = "PROMO_10_PIECES";
+
+export const PROMO_LABEL = "LIMITED TIME OFFER";
+export const PROMO_TITLE = "Buy 8, get 2 FREE";
+export const PROMO_SUBTITLE =
+  "Order 10 or more pieces and get 2 for free — 20% off is automatically applied at checkout.";
+export const PROMO_VALIDITY_TEXT = "Offer valid until 28 August 2026";
+export const PROMO_RIBBON_TEXT =
+  "✨ Special offer — Buy 8, get 2 free until 28 August";
+export const PROMO_LINE_LABEL = "Promo: Buy 8 get 2 free";
+
+/** True while the promotion is still running (Brisbane date based). */
+export function isPromoActive(now: Date = new Date()): boolean {
+  return getBrisbaneTodayIso(now) <= PROMO_END_DATE;
+}
+
+/**
+ * Promo discount in AUD for a given cart.
+ * 20% off the subtotal from 10 pieces, while the promotion is running.
+ */
+export function computePromoDiscount(
+  totalPieces: number,
+  subtotal: number,
+  currentDate: Date = new Date(),
+): { amount: number; code: string | null } {
+  if (!isPromoActive(currentDate)) return { amount: 0, code: null };
+  if (!Number.isFinite(totalPieces) || totalPieces < PROMO_MIN_PIECES) {
+    return { amount: 0, code: null };
+  }
+  if (!Number.isFinite(subtotal) || subtotal <= 0) return { amount: 0, code: null };
+  const amount = Math.round(subtotal * (PROMO_DISCOUNT_PERCENT / 100) * 100) / 100;
+  return { amount, code: PROMO_CODE };
+}
+
 /** Current hour (0-23) in Australia/Brisbane. */
 function getBrisbaneHour(now: Date = new Date()): number {
   const h = new Intl.DateTimeFormat("en-GB", {

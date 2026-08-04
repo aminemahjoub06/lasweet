@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
   DEFAULT_DAILY_STOCK,
+  computePromoDiscount,
   getBrisbaneTodayIso,
   getEarliestOrderDateIso,
   NEXT_DAY_CUTOFF_MESSAGE,
@@ -90,8 +91,18 @@ function generateOrderNumber() {
 
 function computeTotals(items: OrderPayload["items"], deliveryFee: number) {
   const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
-  const total = subtotal + deliveryFee;
-  return { subtotal, deliveryFee, total };
+  const totalPieces = items.reduce((n, i) => n + i.qty, 0);
+  // Promo is always recomputed server-side — never trust a client-sent discount.
+  const promo = computePromoDiscount(totalPieces, subtotal);
+  const discountAmount = Math.min(promo.amount, subtotal);
+  const total = Math.round((subtotal - discountAmount + deliveryFee) * 100) / 100;
+  return {
+    subtotal,
+    deliveryFee,
+    discountAmount,
+    discountCode: discountAmount > 0 ? promo.code : null,
+    total,
+  };
 }
 
 // Re-resolve the delivery fee server-side from the customer's address.
@@ -342,7 +353,10 @@ export const createCashOrder = createServerFn({ method: "POST" })
       address: data.customer.address,
       totalPieces,
     });
-    const { subtotal, deliveryFee, total } = computeTotals(data.items, deliveryQuote.fee);
+    const { subtotal, deliveryFee, discountAmount, discountCode, total } = computeTotals(
+      data.items,
+      deliveryQuote.fee,
+    );
     const orderNumber = generateOrderNumber();
 
     // Delivery slots are unique per date — lock it before anything else.
@@ -373,6 +387,8 @@ export const createCashOrder = createServerFn({ method: "POST" })
       items: data.items,
       subtotal,
       delivery_fee: deliveryFee,
+      discount_amount: discountAmount,
+      discount_code: discountCode,
       total,
       payment_method: "cash",
       payment_status: "cash_pending",
@@ -408,6 +424,7 @@ export const createCashOrder = createServerFn({ method: "POST" })
         items: data.items,
         subtotal,
         deliveryFee,
+        discountAmount,
         total,
         paymentMethod: "cash",
         paymentStatus: "cash_pending",
@@ -438,7 +455,10 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       address: data.customer.address,
       totalPieces,
     });
-    const { subtotal, deliveryFee, total } = computeTotals(data.items, deliveryQuote.fee);
+    const { subtotal, deliveryFee, discountAmount, discountCode, total } = computeTotals(
+      data.items,
+      deliveryQuote.fee,
+    );
     const orderNumber = generateOrderNumber();
 
     const paymentPlan = data.paymentPlan ?? "full";
@@ -479,6 +499,8 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         items: data.items,
         subtotal,
         delivery_fee: deliveryFee,
+        discount_amount: discountAmount,
+        discount_code: discountCode,
         total,
         payment_method: "online",
         payment_status: "pending",
@@ -555,6 +577,19 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       params.append(
         `line_items[0][price_data][product_data][description]`,
         `50% deposit on your L&A Sweet order. Balance of A$${balanceDueAud.toFixed(2)} payable in cash on ${data.customer.delivery === "delivery" ? "delivery" : "pick-up"}.`,
+      );
+      params.append(`line_items[0][price_data][unit_amount]`, String(chargeCents));
+      params.append(`line_items[0][quantity]`, "1");
+    } else if (discountAmount > 0) {
+      // Stripe has no negative line items — bill the discounted order as one line.
+      params.append(`line_items[0][price_data][currency]`, "aud");
+      params.append(
+        `line_items[0][price_data][product_data][name]`,
+        `L&A Sweet order ${orderNumber} — Buy 8, get 2 free`,
+      );
+      params.append(
+        `line_items[0][price_data][product_data][description]`,
+        `${data.items.map((i) => `${i.qty} × ${i.name}`).join(", ")} · Subtotal A$${subtotal.toFixed(2)} · Promo discount −A$${discountAmount.toFixed(2)}${deliveryFee > 0 ? ` · Delivery A$${deliveryFee.toFixed(2)}` : ""}`,
       );
       params.append(`line_items[0][price_data][unit_amount]`, String(chargeCents));
       params.append(`line_items[0][quantity]`, "1");

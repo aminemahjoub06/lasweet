@@ -141,6 +141,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
                 items: Array.isArray(updated.items) ? (updated.items as never) : [],
                 subtotal: Number(updated.subtotal),
                 deliveryFee: Number(updated.delivery_fee),
+                discountAmount: Number(updated.discount_amount ?? 0),
                 total: Number(updated.total),
                 paymentMethod: "online",
                 paymentStatus: newStatus,

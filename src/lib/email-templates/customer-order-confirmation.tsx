@@ -31,6 +31,7 @@ interface Props {
   items?: Item[]
   subtotal?: number
   deliveryFee?: number
+  discountAmount?: number
   total?: number
   paymentMethod?: 'cash' | 'online'
   paymentStatus?: string
@@ -133,6 +134,11 @@ const CustomerOrderConfirmation = (p: Props) => {
           <Hr style={hr} />
 
           <Text style={value}>Subtotal: {formatAud(p.subtotal ?? 0)}</Text>
+          {(p.discountAmount ?? 0) > 0 ? (
+            <Text style={{ ...value, color: '#b8860b' }}>
+              Promo discount (Buy 8, get 2 free): -{formatAud(p.discountAmount ?? 0)}
+            </Text>
+          ) : null}
           <Text style={value}>Delivery fee: {formatAud(p.deliveryFee ?? 0)}</Text>
           <Text style={totalRow}>Total: {formatAud(p.total ?? 0)} AUD</Text>
 
