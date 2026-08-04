@@ -148,23 +148,33 @@ export const NEXT_DAY_CUTOFF_MESSAGE =
   "Orders for next-day pickup and delivery close at 8:00 PM. Please select another available date.";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Limited-time promotion: Buy 8, get 2 free (20% off from 10 pieces)
+// Limited-time promotion: Buy 8, get 2 free — 2 mystery pieces added as a gift
 // Everything promo-related is gated on PROMO_END_DATE and disappears by itself.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const PROMO_END_DATE = "2026-08-28";
-export const PROMO_MIN_PIECES = 10;
-export const PROMO_DISCOUNT_PERCENT = 20;
-export const PROMO_CODE = "PROMO_10_PIECES";
+
+/** Paying pieces required to unlock the gift. */
+export const GIFT_MIN_PIECES = 8;
+/** Number of free mystery pieces added to the cart. */
+export const GIFT_QTY = 2;
+/** Informative value of the gift, stored on the order for reporting. */
+export const GIFT_VALUE_AUD = 30;
+export const GIFT_CODE = "MYSTERY_DUO_8PLUS";
+/** Stable cart key for the gift line (never a real product key). */
+export const GIFT_KEY = "GIFT-MYSTERY-DUO";
+export const GIFT_NAME = "Mystery Duo — our gift to you 🎁";
+/** Name stored in orders.items / shown in emails. */
+export const GIFT_ITEM_NAME = "Mystery Duo (gift)";
+export const GIFT_DESCRIPTION = "2 surprise flavours chosen by our chef";
 
 export const PROMO_LABEL = "LIMITED TIME OFFER";
 export const PROMO_TITLE = "Buy 8, get 2 FREE";
 export const PROMO_SUBTITLE =
-  "Order 10 or more pieces and get 2 for free — 20% off is automatically applied at checkout.";
+  "Order 8 pieces or more and receive 2 surprise flavours free — automatically added to your cart.";
 export const PROMO_VALIDITY_TEXT = "Offer valid until 28 August 2026";
 export const PROMO_RIBBON_TEXT =
-  "✨ Special offer — Buy 8, get 2 free until 28 August";
-export const PROMO_LINE_LABEL = "Promo: Buy 8 get 2 free";
+  "✨ Buy 8, get 2 free — until 28 August";
 
 /** True while the promotion is still running (Brisbane date based). */
 export function isPromoActive(now: Date = new Date()): boolean {
@@ -172,21 +182,19 @@ export function isPromoActive(now: Date = new Date()): boolean {
 }
 
 /**
- * Promo discount in AUD for a given cart.
- * 20% off the subtotal from 10 pieces, while the promotion is running.
+ * True when the gift applies: promotion running and enough *paying* pieces.
+ * Gift pieces themselves never count towards the threshold.
  */
-export function computePromoDiscount(
-  totalPieces: number,
-  subtotal: number,
-  currentDate: Date = new Date(),
-): { amount: number; code: string | null } {
-  if (!isPromoActive(currentDate)) return { amount: 0, code: null };
-  if (!Number.isFinite(totalPieces) || totalPieces < PROMO_MIN_PIECES) {
-    return { amount: 0, code: null };
-  }
-  if (!Number.isFinite(subtotal) || subtotal <= 0) return { amount: 0, code: null };
-  const amount = Math.round(subtotal * (PROMO_DISCOUNT_PERCENT / 100) * 100) / 100;
-  return { amount, code: PROMO_CODE };
+export function isGiftUnlocked(payingPieces: number, now: Date = new Date()): boolean {
+  if (!isPromoActive(now)) return false;
+  return Number.isFinite(payingPieces) && payingPieces >= GIFT_MIN_PIECES;
+}
+
+/** True when an order item is the free mystery gift line. */
+export function isGiftItem(item: { key?: string; name?: string; price?: number }): boolean {
+  if (item.key === GIFT_KEY) return true;
+  const name = (item.name ?? "").toLowerCase();
+  return name.includes("mystery duo");
 }
 
 /** Current hour (0-23) in Australia/Brisbane. */
