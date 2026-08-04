@@ -1437,6 +1437,17 @@ function IndexInner() {
         </div>
       </section>
 
+      {/* PROMO RIBBON — auto-hides after PROMO_END_DATE */}
+      {promo.active && (
+        <button
+          type="button"
+          onClick={promo.reopen}
+          className="block w-full border-y border-gold/40 bg-gold/10 px-6 py-3 text-center text-[11px] md:text-[12px] tracking-[0.18em] uppercase text-gold hover:bg-gold/20 transition-colors"
+        >
+          {PROMO_RIBBON_TEXT}
+        </button>
+      )}
+
       {/* STATS BAR */}
       <section className="border-y border-line bg-ink-2">
         <div className="mx-auto max-w-[1000px] px-6 md:px-10 py-8 md:py-10 grid grid-cols-2 md:grid-cols-4 gap-0 items-center text-center">
