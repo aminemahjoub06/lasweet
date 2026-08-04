@@ -455,7 +455,10 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
       address: data.customer.address,
       totalPieces,
     });
-    const { subtotal, deliveryFee, total } = computeTotals(data.items, deliveryQuote.fee);
+    const { subtotal, deliveryFee, discountAmount, discountCode, total } = computeTotals(
+      data.items,
+      deliveryQuote.fee,
+    );
     const orderNumber = generateOrderNumber();
 
     const paymentPlan = data.paymentPlan ?? "full";
@@ -496,6 +499,8 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
         items: data.items,
         subtotal,
         delivery_fee: deliveryFee,
+        discount_amount: discountAmount,
+        discount_code: discountCode,
         total,
         payment_method: "online",
         payment_status: "pending",
