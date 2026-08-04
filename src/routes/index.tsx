@@ -13,7 +13,8 @@ import {
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, computePromoDiscount, PROMO_RIBBON_TEXT, PROMO_LINE_LABEL } from "@/lib/config";
+import { PromoPopup, usePromoPopup } from "@/components/PromoPopup";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
 import raspberryImg from "@/assets/raspberry.png";
