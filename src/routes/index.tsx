@@ -1439,6 +1439,14 @@ function IndexInner() {
       </section>
 
       {/* PROMO RIBBON — auto-hides after PROMO_END_DATE */}
+      <PromoPopup
+        open={promo.open}
+        onDismiss={promo.dismiss}
+        onOrderNow={() => {
+          promo.dismiss();
+          scrollToProducts();
+        }}
+      />
       {promo.active && (
         <button
           type="button"
