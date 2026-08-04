@@ -124,19 +124,25 @@ const CustomerOrderConfirmation = (p: Props) => {
           <Hr style={hr} />
 
           <Text style={label}>Items</Text>
-          {items.map((i, idx) => (
-            <Text key={idx} style={value}>
-              {i.qty} × {i.name}
-              {i.sizeLabel ? ` (Size ${i.sizeLabel})` : ''} — {formatAud(i.price)} each ({formatAud(i.qty * i.price)})
-            </Text>
-          ))}
+          {items.map((i, idx) =>
+            i.price === 0 ? (
+              <Text key={idx} style={{ ...value, color: '#b8860b' }}>
+                {i.qty} × {i.name} — FREE 🎁
+              </Text>
+            ) : (
+              <Text key={idx} style={value}>
+                {i.qty} × {i.name}
+                {i.sizeLabel ? ` (Size ${i.sizeLabel})` : ''} — {formatAud(i.price)} each ({formatAud(i.qty * i.price)})
+              </Text>
+            ),
+          )}
 
           <Hr style={hr} />
 
           <Text style={value}>Subtotal: {formatAud(p.subtotal ?? 0)}</Text>
-          {(p.discountAmount ?? 0) > 0 ? (
+          {items.some((i) => i.price === 0) ? (
             <Text style={{ ...value, color: '#b8860b' }}>
-              Promo discount (Buy 8, get 2 free): -{formatAud(p.discountAmount ?? 0)}
+              Buy 8, get 2 free — 2 mystery pieces included at no charge.
             </Text>
           ) : null}
           <Text style={value}>Delivery fee: {formatAud(p.deliveryFee ?? 0)}</Text>
