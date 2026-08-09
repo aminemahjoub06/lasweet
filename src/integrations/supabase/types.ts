@@ -176,6 +176,27 @@ export type Database = {
         }
         Relationships: []
       }
+      no_show_log: {
+        Row: {
+          cancelled_at: string
+          created_at: string
+          id: string
+          order_number: string
+        }
+        Insert: {
+          cancelled_at?: string
+          created_at?: string
+          id?: string
+          order_number: string
+        }
+        Update: {
+          cancelled_at?: string
+          created_at?: string
+          id?: string
+          order_number?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount_paid_online: number
@@ -202,13 +223,16 @@ export type Database = {
           discount_code: string | null
           id: string
           items: Json
+          no_show_cancelled_at: string | null
           notes: string | null
           order_number: string
+          order_status: string | null
           order_type: string | null
           payment_method: string
           payment_plan: string
           payment_status: string
           pending_delivery_quote: boolean
+          picked_up_at: string | null
           refunded_amount: number
           refunded_at: string | null
           stripe_session_id: string | null
@@ -241,13 +265,16 @@ export type Database = {
           discount_code?: string | null
           id?: string
           items: Json
+          no_show_cancelled_at?: string | null
           notes?: string | null
           order_number: string
+          order_status?: string | null
           order_type?: string | null
           payment_method: string
           payment_plan?: string
           payment_status?: string
           pending_delivery_quote?: boolean
+          picked_up_at?: string | null
           refunded_amount?: number
           refunded_at?: string | null
           stripe_session_id?: string | null
@@ -280,13 +307,16 @@ export type Database = {
           discount_code?: string | null
           id?: string
           items?: Json
+          no_show_cancelled_at?: string | null
           notes?: string | null
           order_number?: string
+          order_status?: string | null
           order_type?: string | null
           payment_method?: string
           payment_plan?: string
           payment_status?: string
           pending_delivery_quote?: boolean
+          picked_up_at?: string | null
           refunded_amount?: number
           refunded_at?: string | null
           stripe_session_id?: string | null
