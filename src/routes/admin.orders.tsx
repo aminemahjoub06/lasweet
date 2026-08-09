@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Fragment, useState } from "react";
 import { listAdminOrders } from "@/lib/admin.functions";
-import { markBalanceCollected } from "@/lib/orders.functions";
+import { markBalanceCollected, markPickedUp } from "@/lib/orders.functions";
+import { getBrisbaneTodayIso } from "@/lib/config";
 
 export const Route = createFileRoute("/admin/orders")({
   component: AdminOrdersPage,
@@ -24,6 +25,7 @@ type Order = {
   delivery_method: string;
   delivery_address: string | null;
   delivery_date: string | null;
+  delivery_time: string | null;
   order_type: string | null;
   notes: string | null;
   items: Array<{ name?: string; qty?: number; price?: number; sizeLabel?: string }>;
@@ -36,18 +38,23 @@ type Order = {
   amount_paid_online?: number | null;
   balance_due_cash?: number | null;
   balance_collected_at?: string | null;
+  picked_up_at?: string | null;
+  no_show_cancelled_at?: string | null;
+  order_status?: string | null;
   created_at: string;
 };
 
 function AdminOrdersPage() {
   const fetchOrders = useServerFn(listAdminOrders);
   const collectBalance = useServerFn(markBalanceCollected);
+  const markCollected = useServerFn(markPickedUp);
   const [password, setPassword] = useState("");
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [collectingId, setCollectingId] = useState<string | null>(null);
+  const [pickingUpId, setPickingUpId] = useState<string | null>(null);
 
   async function load(e?: React.FormEvent) {
     e?.preventDefault();
@@ -77,6 +84,27 @@ function AdminOrdersPage() {
       alert(err instanceof Error ? err.message : "Failed to mark balance collected.");
     } finally {
       setCollectingId(null);
+    }
+  }
+
+  async function handlePickedUp(o: Order) {
+    if (pickingUpId) return;
+    const owing = Number(o.balance_due_cash ?? 0) > 0 && o.payment_status !== "paid";
+    const alsoCash = owing
+      ? confirm(
+          `Also mark the outstanding A$${Number(o.balance_due_cash ?? 0).toFixed(2)} as collected in cash for ${o.order_number}?`,
+        )
+      : false;
+    setPickingUpId(o.id);
+    try {
+      await markCollected({
+        data: { password, orderNumber: o.order_number, collectBalance: alsoCash },
+      });
+      await load();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to mark order as picked up.");
+    } finally {
+      setPickingUpId(null);
     }
   }
 
