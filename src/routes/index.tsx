@@ -14,7 +14,7 @@ import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { OrderDatePicker } from "@/components/OrderDatePicker";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, getFirstSelectableOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked, PICKUP_NO_SHOW_NOTICE, isDateBlocked, BLOCKED_DATE_MESSAGE, BLOCKED_ORDER_DATES } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, getFirstSelectableOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked, PICKUP_NO_SHOW_NOTICE, isDateBlocked, BLOCKED_DATE_MESSAGE } from "@/lib/config";
 import { PromoPopup, usePromoPopup } from "@/components/PromoPopup";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
