@@ -13,7 +13,8 @@ import {
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, getFirstSelectableOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked, PICKUP_NO_SHOW_NOTICE, isDateBlocked, BLOCKED_DATE_MESSAGE, BLOCKED_ORDER_DATES } from "@/lib/config";
+import { OrderDatePicker } from "@/components/OrderDatePicker";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, getFirstSelectableOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked, PICKUP_NO_SHOW_NOTICE, isDateBlocked, BLOCKED_DATE_MESSAGE } from "@/lib/config";
 import { PromoPopup, usePromoPopup } from "@/components/PromoPopup";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
@@ -929,7 +930,7 @@ function IndexInner() {
     phone: "",
     business: "",
     orderType: "Other",
-    date: new Date().toISOString().slice(0, 10),
+    date: getFirstSelectableOrderDateIso(),
     time: "",
     delivery: "delivery",
     address: "",
@@ -2665,26 +2666,15 @@ function CheckoutModal({
                   </p>
                 </div>
                 <FieldLA label="Preferred date">
-                  <input
-                    type="date"
+                  <OrderDatePicker
                     value={form.date}
-                    min={getFirstSelectableOrderDateIso()}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      const today = getBrisbaneTodayIso();
-                      if (v && v <= today) {
-                        setFormError("Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.");
-                        updateForm("date", "");
-                        return;
-                      }
-                      if (v && isDateBlocked(v)) {
+                    onChange={(v) => {
+                      if (isDateBlocked(v)) {
                         setFormError(BLOCKED_DATE_MESSAGE);
-                        updateForm("date", "");
                         return;
                       }
-                      if (v && !isDateAllowedForOrder(v)) {
+                      if (!isDateAllowedForOrder(v)) {
                         setFormError(NEXT_DAY_CUTOFF_MESSAGE);
-                        updateForm("date", "");
                         return;
                       }
                       setFormError(null);
@@ -2694,17 +2684,10 @@ function CheckoutModal({
                         updateForm("time", "");
                       }
                     }}
-                    className={inputCls}
                   />
                   <p className="mt-2 text-xs italic text-[color:var(--foreground)]/55">
                     We need at least 1 day to prepare your order with care 🍰
                   </p>
-                  {BLOCKED_ORDER_DATES.filter((d) => d >= getBrisbaneTodayIso()).length > 0 && (
-                    <p className="mt-1 text-xs text-gold/90">
-                      {BLOCKED_DATE_MESSAGE}:{" "}
-                      {BLOCKED_ORDER_DATES.filter((d) => d >= getBrisbaneTodayIso()).join(", ")}
-                    </p>
-                  )}
                   {form.date && stockByNo && (
                     <div className="mt-2 space-y-1">
                       {Object.entries(stockByNo).map(([no, info]) => {
