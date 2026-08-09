@@ -65,14 +65,6 @@ const rejectSameDay = (val: { customer: { date?: string } }, ctx: z.RefinementCt
     });
     return;
   }
-  if (isDateBlocked(date)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["customer", "date"],
-      message: BLOCKED_DATE_SERVER_MESSAGE,
-    });
-    return;
-  }
   const earliest = getEarliestOrderDateIso();
   if (date < earliest) {
     ctx.addIssue({
