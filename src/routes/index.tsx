@@ -2677,6 +2677,11 @@ function CheckoutModal({
                         updateForm("date", "");
                         return;
                       }
+                      if (v && isDateBlocked(v)) {
+                        setFormError(BLOCKED_DATE_MESSAGE);
+                        updateForm("date", "");
+                        return;
+                      }
                       if (v && !isDateAllowedForOrder(v)) {
                         setFormError(NEXT_DAY_CUTOFF_MESSAGE);
                         updateForm("date", "");
@@ -2694,6 +2699,12 @@ function CheckoutModal({
                   <p className="mt-2 text-xs italic text-[color:var(--foreground)]/55">
                     We need at least 1 day to prepare your order with care 🍰
                   </p>
+                  {BLOCKED_ORDER_DATES.filter((d) => d >= getBrisbaneTodayIso()).length > 0 && (
+                    <p className="mt-1 text-xs text-gold/90">
+                      {BLOCKED_DATE_MESSAGE}:{" "}
+                      {BLOCKED_ORDER_DATES.filter((d) => d >= getBrisbaneTodayIso()).join(", ")}
+                    </p>
+                  )}
                   {form.date && stockByNo && (
                     <div className="mt-2 space-y-1">
                       {Object.entries(stockByNo).map(([no, info]) => {
