@@ -384,6 +384,12 @@ export const createCashOrder = createServerFn({ method: "POST" })
   .inputValidator((input) => orderPayloadSchema.parse(input))
   .handler(async ({ data }) => {
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
+    if (isDateBlocked(data.customer.date?.trim())) {
+      throw new Response(
+        JSON.stringify({ error: BLOCKED_DATE_SERVER_MESSAGE, code: "date_unavailable" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
     await enforceOrderRateLimit({ endpoint: "createCashOrder", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { items: orderItems, payingPieces, giftApplies } = normalizeItems(data.items);
@@ -487,6 +493,12 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
   .inputValidator((input) => stripeCheckoutSchema.parse(input))
   .handler(async ({ data }) => {
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
+    if (isDateBlocked(data.customer.date?.trim())) {
+      throw new Response(
+        JSON.stringify({ error: BLOCKED_DATE_SERVER_MESSAGE, code: "date_unavailable" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
     await enforceOrderRateLimit({ endpoint: "createStripeCheckout", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { items: orderItems, payingPieces, giftApplies } = normalizeItems(data.items);
