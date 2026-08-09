@@ -215,6 +215,33 @@ function AdminOrdersPage() {
                           <span className="text-[color:var(--foreground)]/40">—</span>
                         )}
                       </td>
+                      <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
+                        {o.delivery_method !== "pickup" ? (
+                          <span className="text-[color:var(--foreground)]/40">—</span>
+                        ) : o.no_show_cancelled_at ? (
+                          <span className="text-red-400 text-[11px]">No-show cancelled</span>
+                        ) : o.picked_up_at ? (
+                          <span className="text-green-400 text-[11px]">
+                            Picked up {new Date(o.picked_up_at).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        ) : (
+                          <div className="flex flex-col items-end gap-1">
+                            {o.delivery_date === getBrisbaneTodayIso() && (
+                              <span className="text-[9px] tracking-[0.18em] uppercase text-gold/80">
+                                Today {o.delivery_time ?? ""}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              disabled={pickingUpId === o.id}
+                              onClick={() => handlePickedUp(o)}
+                              className="text-[9px] tracking-[0.22em] uppercase text-ink bg-gold px-2 py-1 hover:bg-[color:var(--gold-soft)] disabled:opacity-50"
+                            >
+                              {pickingUpId === o.id ? "Saving…" : "Mark as picked up"}
+                            </button>
+                          </div>
+                        )}
+                      </td>
                     </tr>
                     {openId === o.id && (
                       <tr className="bg-ink-3/40">
