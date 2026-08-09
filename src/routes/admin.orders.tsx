@@ -160,6 +160,7 @@ function AdminOrdersPage() {
                   <th className="text-left px-3 py-2">Status</th>
                   <th className="text-right px-3 py-2">Total</th>
                   <th className="text-right px-3 py-2">Balance to collect</th>
+                  <th className="text-right px-3 py-2">Pick-up</th>
                 </tr>
               </thead>
               <tbody>
