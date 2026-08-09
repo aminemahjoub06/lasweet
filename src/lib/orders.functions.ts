@@ -11,6 +11,8 @@ import {
   getBrisbaneTodayIso,
   getEarliestOrderDateIso,
   NEXT_DAY_CUTOFF_MESSAGE,
+  isDateBlocked,
+  BLOCKED_DATE_SERVER_MESSAGE,
 } from "./config";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -60,6 +62,14 @@ const rejectSameDay = (val: { customer: { date?: string } }, ctx: z.RefinementCt
       path: ["customer", "date"],
       message:
         "Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.",
+    });
+    return;
+  }
+  if (isDateBlocked(date)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["customer", "date"],
+      message: BLOCKED_DATE_SERVER_MESSAGE,
     });
     return;
   }
