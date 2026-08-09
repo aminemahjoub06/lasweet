@@ -2808,6 +2808,11 @@ function CheckoutModal({
                   Times shown in 24-hour format.
                   {form.delivery === "delivery" ? " Crossed-out times are already booked." : ""}
                 </p>
+                {form.delivery === "pickup" && (
+                  <p className="mt-2 text-xs leading-relaxed text-gold/90 border-l-2 border-gold/60 pl-3">
+                    {PICKUP_NO_SHOW_NOTICE}
+                  </p>
+                )}
               </FieldLA>
 
               {form.delivery === "delivery" && (
