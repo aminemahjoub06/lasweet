@@ -13,7 +13,7 @@ import {
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, getFirstSelectableOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked, PICKUP_NO_SHOW_NOTICE, isDateBlocked, BLOCKED_DATE_MESSAGE, BLOCKED_ORDER_DATES } from "@/lib/config";
 import { PromoPopup, usePromoPopup } from "@/components/PromoPopup";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
@@ -2668,12 +2668,17 @@ function CheckoutModal({
                   <input
                     type="date"
                     value={form.date}
-                    min={getEarliestOrderDateIso()}
+                    min={getFirstSelectableOrderDateIso()}
                     onChange={(e) => {
                       const v = e.target.value;
                       const today = getBrisbaneTodayIso();
                       if (v && v <= today) {
                         setFormError("Same-day orders are no longer accepted. Please choose a date from tomorrow onwards.");
+                        updateForm("date", "");
+                        return;
+                      }
+                      if (v && isDateBlocked(v)) {
+                        setFormError(BLOCKED_DATE_MESSAGE);
                         updateForm("date", "");
                         return;
                       }
@@ -2694,6 +2699,12 @@ function CheckoutModal({
                   <p className="mt-2 text-xs italic text-[color:var(--foreground)]/55">
                     We need at least 1 day to prepare your order with care 🍰
                   </p>
+                  {BLOCKED_ORDER_DATES.filter((d) => d >= getBrisbaneTodayIso()).length > 0 && (
+                    <p className="mt-1 text-xs text-gold/90">
+                      {BLOCKED_DATE_MESSAGE}:{" "}
+                      {BLOCKED_ORDER_DATES.filter((d) => d >= getBrisbaneTodayIso()).join(", ")}
+                    </p>
+                  )}
                   {form.date && stockByNo && (
                     <div className="mt-2 space-y-1">
                       {Object.entries(stockByNo).map(([no, info]) => {
@@ -2808,6 +2819,11 @@ function CheckoutModal({
                   Times shown in 24-hour format.
                   {form.delivery === "delivery" ? " Crossed-out times are already booked." : ""}
                 </p>
+                {form.delivery === "pickup" && (
+                  <p className="mt-2 text-xs leading-relaxed text-gold/90 border-l-2 border-gold/60 pl-3">
+                    {PICKUP_NO_SHOW_NOTICE}
+                  </p>
+                )}
               </FieldLA>
 
               {form.delivery === "delivery" && (

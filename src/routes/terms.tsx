@@ -118,6 +118,21 @@ function TermsPage() {
                 a partial or full refund at our discretion.
               </li>
             </ul>
+            <h3 className="font-serif-display text-lg text-gold mt-6 mb-2">No-show policy (pick-up orders)</h3>
+            <p className="mb-3">
+              When you place a pick-up order you choose a specific collection time. We allow a grace period of
+              <strong> 1 hour</strong> after that time. If your order has not been collected within that hour and
+              you have not contacted us, the order is <strong>automatically cancelled</strong> and the amount
+              already paid — whether a 50% deposit or a full payment — is <strong>not refundable</strong>. This is
+              because your desserts are handcrafted fresh for your chosen slot and cannot be resold.
+            </p>
+            <p>
+              This policy is disclosed before purchase, at checkout and in your order confirmation email. If
+              something comes up and you can't make your slot, please contact us as soon as possible at{" "}
+              <a href="mailto:l.asweetbne@gmail.com" className="text-gold underline">l.asweetbne@gmail.com</a>{" "}
+              and we will do our best to accommodate you. Nothing in this policy limits your rights under the
+              Australian Consumer Law.
+            </p>
           </section>
 
           <section>

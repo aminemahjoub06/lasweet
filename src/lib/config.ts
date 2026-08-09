@@ -148,6 +148,35 @@ export const NEXT_DAY_CUTOFF_MESSAGE =
   "Orders for next-day pickup and delivery close at 8:00 PM. Please select another available date.";
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Temporarily blocked order dates (restocking days, closures, …)
+// Dates are Brisbane calendar dates in YYYY-MM-DD. Remove entries once past.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const BLOCKED_ORDER_DATES: string[] = ["2026-08-10"];
+
+export const BLOCKED_DATE_MESSAGE =
+  "We're restocking — this date is unavailable";
+
+export const BLOCKED_DATE_SERVER_MESSAGE =
+  "This date is unavailable for orders. Please choose another date.";
+
+/** True when the given Brisbane date is temporarily unavailable for orders. */
+export function isDateBlocked(dateIso: string | null | undefined): boolean {
+  if (!dateIso) return false;
+  return BLOCKED_ORDER_DATES.includes(dateIso);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pick-up no-show policy
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Grace period, in hours, after the chosen pick-up time. */
+export const PICKUP_GRACE_HOURS = 1;
+
+export const PICKUP_NO_SHOW_NOTICE =
+  "Please collect your order within 1 hour of your chosen time. Uncollected orders are cancelled without refund.";
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Limited-time promotion: Buy 8, get 2 free — 2 mystery pieces added as a gift
 // Everything promo-related is gated on PROMO_END_DATE and disappears by itself.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -230,11 +259,27 @@ export function getEarliestOrderDateIso(now: Date = new Date()): string {
   return addDaysIso(today, isPastNextDayCutoff(now) ? 2 : 1);
 }
 
+/**
+ * First date a customer can actually select: the cut-off date, advanced past
+ * any consecutive blocked (restocking) dates. Used as the date picker's `min`
+ * because native date inputs can't grey out arbitrary days.
+ */
+export function getFirstSelectableOrderDateIso(now: Date = new Date()): string {
+  let candidate = getEarliestOrderDateIso(now);
+  let guard = 0;
+  while (isDateBlocked(candidate) && guard < 60) {
+    candidate = addDaysIso(candidate, 1);
+    guard++;
+  }
+  return candidate;
+}
+
 /** True if the given ISO date is allowed at `now` given the cut-off. */
 export function isDateAllowedForOrder(
   dateIso: string | null | undefined,
   now: Date = new Date(),
 ): boolean {
   if (!dateIso) return false;
+  if (isDateBlocked(dateIso)) return false;
   return dateIso >= getEarliestOrderDateIso(now);
 }

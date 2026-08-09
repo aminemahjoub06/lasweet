@@ -11,6 +11,8 @@ import {
   getBrisbaneTodayIso,
   getEarliestOrderDateIso,
   NEXT_DAY_CUTOFF_MESSAGE,
+  isDateBlocked,
+  BLOCKED_DATE_SERVER_MESSAGE,
 } from "./config";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -374,6 +376,12 @@ export const createCashOrder = createServerFn({ method: "POST" })
   .inputValidator((input) => orderPayloadSchema.parse(input))
   .handler(async ({ data }) => {
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
+    if (isDateBlocked(data.customer.date?.trim())) {
+      throw new Response(
+        JSON.stringify({ error: BLOCKED_DATE_SERVER_MESSAGE, code: "date_unavailable" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
     await enforceOrderRateLimit({ endpoint: "createCashOrder", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { items: orderItems, payingPieces, giftApplies } = normalizeItems(data.items);
@@ -477,6 +485,12 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
   .inputValidator((input) => stripeCheckoutSchema.parse(input))
   .handler(async ({ data }) => {
     const { enforceOrderRateLimit } = await import("./rate-limit.server");
+    if (isDateBlocked(data.customer.date?.trim())) {
+      throw new Response(
+        JSON.stringify({ error: BLOCKED_DATE_SERVER_MESSAGE, code: "date_unavailable" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
     await enforceOrderRateLimit({ endpoint: "createStripeCheckout", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { items: orderItems, payingPieces, giftApplies } = normalizeItems(data.items);
@@ -820,4 +834,65 @@ export const markBalanceCollected = createServerFn({ method: "POST" })
       throw new Error("Order not found or balance already collected.");
     }
     return { ok: true, orderNumber: row.order_number };
+  });
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin: mark a pick-up order as collected. Setting `picked_up_at` is what
+// protects the order from the automatic no-show cancellation sweep.
+// Optionally also settles a 50% deposit balance in the same click.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const markPickedUp = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        password: z.string().min(1).max(200),
+        orderNumber: z.string().min(3).max(40),
+        collectBalance: z.boolean().optional().default(false),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const expected = process.env.ADMIN_DASHBOARD_PASSWORD;
+    if (!expected || data.password !== expected) {
+      throw new Error("Invalid admin password.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existing, error: readErr } = await supabaseAdmin
+      .from("orders")
+      .select("id, order_number, payment_status, balance_due_cash")
+      .eq("order_number", data.orderNumber)
+      .maybeSingle();
+    if (readErr) {
+      console.error("[markPickedUp] read error", readErr);
+      throw new Error("Could not update this order.");
+    }
+    if (!existing) throw new Error("Order not found.");
+
+    const patch: {
+      picked_up_at: string;
+      order_status: string;
+      payment_status?: string;
+      balance_due_cash?: number;
+      balance_collected_at?: string;
+    } = {
+      picked_up_at: new Date().toISOString(),
+      order_status: "collected",
+    };
+    if (data.collectBalance && existing.payment_status === "deposit_paid") {
+      patch.payment_status = "paid";
+      patch.balance_due_cash = 0;
+      patch.balance_collected_at = new Date().toISOString();
+    }
+    if (data.collectBalance && existing.payment_status === "cash_pending") {
+      patch.payment_status = "paid";
+      patch.balance_due_cash = 0;
+      patch.balance_collected_at = new Date().toISOString();
+    }
+
+    const { error } = await supabaseAdmin.from("orders").update(patch).eq("id", existing.id);
+    if (error) {
+      console.error("[markPickedUp] update error", error);
+      throw new Error("Could not mark this order as picked up.");
+    }
+    return { ok: true, orderNumber: existing.order_number };
   });

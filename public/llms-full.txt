@@ -38,6 +38,7 @@ Desserts are made in a kitchen that also handles nuts, dairy, gluten and eggs. C
   2. Full payment online (via Stripe).
 - Deposits are non-refundable within 1 day of the scheduled collection or delivery time.
 - Order lookup: https://la-sweet-bne.com/orders/lookup (email + order number).
+- No-show policy (pick-up): customers must collect their order within 1 hour of the chosen pick-up time. If the order is not collected within that grace period and the customer has not contacted us, the order is automatically cancelled and any amount already paid (50% deposit or full payment) is not refundable, because desserts are handcrafted fresh for the chosen slot. Customers who cannot make their slot should contact l.asweetbne@gmail.com as early as possible.
 
 ## Fulfilment
 - Pick-up: free, at 803b Stanley Street, Woolloongabba QLD 4102 (next to Coles).

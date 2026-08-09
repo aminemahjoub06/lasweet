@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Fragment, useState } from "react";
 import { listAdminOrders } from "@/lib/admin.functions";
-import { markBalanceCollected } from "@/lib/orders.functions";
+import { markBalanceCollected, markPickedUp } from "@/lib/orders.functions";
+import { getBrisbaneTodayIso } from "@/lib/config";
 
 export const Route = createFileRoute("/admin/orders")({
   component: AdminOrdersPage,
@@ -24,6 +25,7 @@ type Order = {
   delivery_method: string;
   delivery_address: string | null;
   delivery_date: string | null;
+  delivery_time: string | null;
   order_type: string | null;
   notes: string | null;
   items: Array<{ name?: string; qty?: number; price?: number; sizeLabel?: string }>;
@@ -36,18 +38,23 @@ type Order = {
   amount_paid_online?: number | null;
   balance_due_cash?: number | null;
   balance_collected_at?: string | null;
+  picked_up_at?: string | null;
+  no_show_cancelled_at?: string | null;
+  order_status?: string | null;
   created_at: string;
 };
 
 function AdminOrdersPage() {
   const fetchOrders = useServerFn(listAdminOrders);
   const collectBalance = useServerFn(markBalanceCollected);
+  const markCollected = useServerFn(markPickedUp);
   const [password, setPassword] = useState("");
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [collectingId, setCollectingId] = useState<string | null>(null);
+  const [pickingUpId, setPickingUpId] = useState<string | null>(null);
 
   async function load(e?: React.FormEvent) {
     e?.preventDefault();
@@ -77,6 +84,27 @@ function AdminOrdersPage() {
       alert(err instanceof Error ? err.message : "Failed to mark balance collected.");
     } finally {
       setCollectingId(null);
+    }
+  }
+
+  async function handlePickedUp(o: Order) {
+    if (pickingUpId) return;
+    const owing = Number(o.balance_due_cash ?? 0) > 0 && o.payment_status !== "paid";
+    const alsoCash = owing
+      ? confirm(
+          `Also mark the outstanding A$${Number(o.balance_due_cash ?? 0).toFixed(2)} as collected in cash for ${o.order_number}?`,
+        )
+      : false;
+    setPickingUpId(o.id);
+    try {
+      await markCollected({
+        data: { password, orderNumber: o.order_number, collectBalance: alsoCash },
+      });
+      await load();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to mark order as picked up.");
+    } finally {
+      setPickingUpId(null);
     }
   }
 
@@ -132,6 +160,7 @@ function AdminOrdersPage() {
                   <th className="text-left px-3 py-2">Status</th>
                   <th className="text-right px-3 py-2">Total</th>
                   <th className="text-right px-3 py-2">Balance to collect</th>
+                  <th className="text-right px-3 py-2">Pick-up</th>
                 </tr>
               </thead>
               <tbody>
@@ -186,10 +215,37 @@ function AdminOrdersPage() {
                           <span className="text-[color:var(--foreground)]/40">—</span>
                         )}
                       </td>
+                      <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
+                        {o.delivery_method !== "pickup" ? (
+                          <span className="text-[color:var(--foreground)]/40">—</span>
+                        ) : o.no_show_cancelled_at ? (
+                          <span className="text-red-400 text-[11px]">No-show cancelled</span>
+                        ) : o.picked_up_at ? (
+                          <span className="text-green-400 text-[11px]">
+                            Picked up {new Date(o.picked_up_at).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        ) : (
+                          <div className="flex flex-col items-end gap-1">
+                            {o.delivery_date === getBrisbaneTodayIso() && (
+                              <span className="text-[9px] tracking-[0.18em] uppercase text-gold/80">
+                                Today {o.delivery_time ?? ""}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              disabled={pickingUpId === o.id}
+                              onClick={() => handlePickedUp(o)}
+                              className="text-[9px] tracking-[0.22em] uppercase text-ink bg-gold px-2 py-1 hover:bg-[color:var(--gold-soft)] disabled:opacity-50"
+                            >
+                              {pickingUpId === o.id ? "Saving…" : "Mark as picked up"}
+                            </button>
+                          </div>
+                        )}
+                      </td>
                     </tr>
                     {openId === o.id && (
                       <tr className="bg-ink-3/40">
-                        <td colSpan={8} className="px-3 py-4 text-xs">
+                        <td colSpan={9} className="px-3 py-4 text-xs">
                           <div className="grid sm:grid-cols-2 gap-4">
                             <div>
                               <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80 mb-1">Customer</div>
@@ -237,7 +293,7 @@ function AdminOrdersPage() {
                 ))}
                 {orders.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-3 py-6 text-center text-[color:var(--foreground)]/60">
+                    <td colSpan={9} className="px-3 py-6 text-center text-[color:var(--foreground)]/60">
                       No orders yet.
                     </td>
                   </tr>

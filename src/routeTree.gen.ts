@@ -32,6 +32,7 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 import { Route as ApiPublicReviewsModerateRouteImport } from './routes/api/public/reviews/moderate'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksReviewRemindersRouteImport } from './routes/api/public/hooks/review-reminders'
+import { Route as ApiPublicHooksNoShowCancellationsRouteImport } from './routes/api/public/hooks/no-show-cancellations'
 import { Route as ApiPublicHooksCleanupPendingOrdersRouteImport } from './routes/api/public/hooks/cleanup-pending-orders'
 import { Route as ApiPublicDeliveryQuoteRouteImport } from './routes/api/public/delivery/quote'
 
@@ -156,6 +157,12 @@ const ApiPublicHooksReviewRemindersRoute =
     path: '/api/public/hooks/review-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksNoShowCancellationsRoute =
+  ApiPublicHooksNoShowCancellationsRouteImport.update({
+    id: '/api/public/hooks/no-show-cancellations',
+    path: '/api/public/hooks/no-show-cancellations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksCleanupPendingOrdersRoute =
   ApiPublicHooksCleanupPendingOrdersRouteImport.update({
     id: '/api/public/hooks/cleanup-pending-orders',
@@ -185,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/delivery/quote': typeof ApiPublicDeliveryQuoteRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
+  '/api/public/hooks/no-show-cancellations': typeof ApiPublicHooksNoShowCancellationsRoute
   '/api/public/hooks/review-reminders': typeof ApiPublicHooksReviewRemindersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/reviews/moderate': typeof ApiPublicReviewsModerateRoute
@@ -212,6 +220,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/delivery/quote': typeof ApiPublicDeliveryQuoteRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
+  '/api/public/hooks/no-show-cancellations': typeof ApiPublicHooksNoShowCancellationsRoute
   '/api/public/hooks/review-reminders': typeof ApiPublicHooksReviewRemindersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/reviews/moderate': typeof ApiPublicReviewsModerateRoute
@@ -240,6 +249,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/delivery/quote': typeof ApiPublicDeliveryQuoteRoute
   '/api/public/hooks/cleanup-pending-orders': typeof ApiPublicHooksCleanupPendingOrdersRoute
+  '/api/public/hooks/no-show-cancellations': typeof ApiPublicHooksNoShowCancellationsRoute
   '/api/public/hooks/review-reminders': typeof ApiPublicHooksReviewRemindersRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/reviews/moderate': typeof ApiPublicReviewsModerateRoute
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/delivery/quote'
     | '/api/public/hooks/cleanup-pending-orders'
+    | '/api/public/hooks/no-show-cancellations'
     | '/api/public/hooks/review-reminders'
     | '/api/public/payments/webhook'
     | '/api/public/reviews/moderate'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/delivery/quote'
     | '/api/public/hooks/cleanup-pending-orders'
+    | '/api/public/hooks/no-show-cancellations'
     | '/api/public/hooks/review-reminders'
     | '/api/public/payments/webhook'
     | '/api/public/reviews/moderate'
@@ -323,6 +335,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/delivery/quote'
     | '/api/public/hooks/cleanup-pending-orders'
+    | '/api/public/hooks/no-show-cancellations'
     | '/api/public/hooks/review-reminders'
     | '/api/public/payments/webhook'
     | '/api/public/reviews/moderate'
@@ -351,6 +364,7 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicDeliveryQuoteRoute: typeof ApiPublicDeliveryQuoteRoute
   ApiPublicHooksCleanupPendingOrdersRoute: typeof ApiPublicHooksCleanupPendingOrdersRoute
+  ApiPublicHooksNoShowCancellationsRoute: typeof ApiPublicHooksNoShowCancellationsRoute
   ApiPublicHooksReviewRemindersRoute: typeof ApiPublicHooksReviewRemindersRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicReviewsModerateRoute: typeof ApiPublicReviewsModerateRoute
@@ -525,6 +539,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksReviewRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/no-show-cancellations': {
+      id: '/api/public/hooks/no-show-cancellations'
+      path: '/api/public/hooks/no-show-cancellations'
+      fullPath: '/api/public/hooks/no-show-cancellations'
+      preLoaderRoute: typeof ApiPublicHooksNoShowCancellationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/cleanup-pending-orders': {
       id: '/api/public/hooks/cleanup-pending-orders'
       path: '/api/public/hooks/cleanup-pending-orders'
@@ -560,6 +581,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDeliveryQuoteRoute: ApiPublicDeliveryQuoteRoute,
   ApiPublicHooksCleanupPendingOrdersRoute:
     ApiPublicHooksCleanupPendingOrdersRoute,
+  ApiPublicHooksNoShowCancellationsRoute:
+    ApiPublicHooksNoShowCancellationsRoute,
   ApiPublicHooksReviewRemindersRoute: ApiPublicHooksReviewRemindersRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicReviewsModerateRoute: ApiPublicReviewsModerateRoute,

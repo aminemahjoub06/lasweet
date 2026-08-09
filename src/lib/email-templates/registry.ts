@@ -4,6 +4,8 @@ import { template as customerOrderConfirmation } from './customer-order-confirma
 import { template as ownerOrderRefunded } from './owner-order-refunded'
 import { template as newReviewPending } from './new-review-pending'
 import { template as reviewReminder } from './review-reminder'
+import { template as customerOrderNoShow } from './customer-order-no-show'
+import { template as ownerOrderNoShow } from './owner-order-no-show'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -28,4 +30,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'owner-order-refunded': ownerOrderRefunded,
   'new-review-pending': newReviewPending,
   'review-reminder': reviewReminder,
+  'customer-order-no-show': customerOrderNoShow,
+  'owner-order-no-show': ownerOrderNoShow,
 }
