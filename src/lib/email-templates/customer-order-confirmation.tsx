@@ -12,7 +12,7 @@ import {
   Text,
 } from '@react-email/components'
 import type { TemplateEntry } from './registry'
-import { PICKUP_ADDRESS } from '@/lib/config'
+import { PICKUP_ADDRESS, PICKUP_NO_SHOW_NOTICE } from '@/lib/config'
 
 interface Item {
   name: string
@@ -116,6 +116,9 @@ const CustomerOrderConfirmation = (p: Props) => {
           ) : null}
           {!isDelivery ? (
             <Text style={value}>Pick-up address: {PICKUP_ADDRESS}</Text>
+          ) : null}
+          {!isDelivery ? (
+            <Text style={{ ...value, color: '#b8860b' }}>{PICKUP_NO_SHOW_NOTICE}</Text>
           ) : null}
           {isDelivery && p.deliveryAddress ? (
             <Text style={value}>Delivery address: {p.deliveryAddress}</Text>
