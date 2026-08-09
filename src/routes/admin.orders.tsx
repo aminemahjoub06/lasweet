@@ -245,7 +245,7 @@ function AdminOrdersPage() {
                     </tr>
                     {openId === o.id && (
                       <tr className="bg-ink-3/40">
-                        <td colSpan={8} className="px-3 py-4 text-xs">
+                        <td colSpan={9} className="px-3 py-4 text-xs">
                           <div className="grid sm:grid-cols-2 gap-4">
                             <div>
                               <div className="text-[10px] tracking-[0.22em] uppercase text-gold/80 mb-1">Customer</div>
@@ -293,7 +293,7 @@ function AdminOrdersPage() {
                 ))}
                 {orders.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-3 py-6 text-center text-[color:var(--foreground)]/60">
+                    <td colSpan={9} className="px-3 py-6 text-center text-[color:var(--foreground)]/60">
                       No orders yet.
                     </td>
                   </tr>
