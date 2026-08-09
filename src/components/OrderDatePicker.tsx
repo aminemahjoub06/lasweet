@@ -185,7 +185,7 @@ export function OrderDatePicker({
                         ? "opacity-35 cursor-not-allowed text-[color:var(--foreground)]/70"
                         : c.iso === value
                           ? "bg-gold text-ink font-semibold"
-                          : "text-cream hover:bg-[color:var(--gold-soft)]/20",
+                          : "text-[color:var(--foreground)] hover:bg-[color:var(--gold-soft)]/20",
                     ].join(" ")}
                   >
                     {c.day}
@@ -193,7 +193,7 @@ export function OrderDatePicker({
                   {c.reason && (
                     <span
                       role="tooltip"
-                      className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:block whitespace-nowrap z-50 bg-ink border border-[color:var(--gold-soft)] px-2 py-1 text-[10px] text-cream"
+                      className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:block whitespace-nowrap z-50 bg-ink border border-[color:var(--gold-soft)] px-2 py-1 text-[10px] text-[color:var(--foreground)]"
                     >
                       {c.reason}
                     </span>
