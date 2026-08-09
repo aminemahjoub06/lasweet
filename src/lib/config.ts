@@ -256,9 +256,16 @@ function addDaysIso(iso: string, days: number): string {
  */
 export function getEarliestOrderDateIso(now: Date = new Date()): string {
   const today = getBrisbaneTodayIso(now);
-  let candidate = addDaysIso(today, isPastNextDayCutoff(now) ? 2 : 1);
-  // Skip over any leading blocked dates so the date picker's `min` already
-  // excludes them (native date inputs can't grey out arbitrary days).
+  return addDaysIso(today, isPastNextDayCutoff(now) ? 2 : 1);
+}
+
+/**
+ * First date a customer can actually select: the cut-off date, advanced past
+ * any consecutive blocked (restocking) dates. Used as the date picker's `min`
+ * because native date inputs can't grey out arbitrary days.
+ */
+export function getFirstSelectableOrderDateIso(now: Date = new Date()): string {
+  let candidate = getEarliestOrderDateIso(now);
   let guard = 0;
   while (isDateBlocked(candidate) && guard < 60) {
     candidate = addDaysIso(candidate, 1);
