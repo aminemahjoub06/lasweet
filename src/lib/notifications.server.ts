@@ -213,3 +213,45 @@ export async function notifyOwnerOrderRefunded(args: {
     console.error("[notifications] refund notify error", e);
   }
 }
+
+/**
+ * Sends customer + owner emails when a pick-up order is auto-cancelled for a
+ * no-show. Best-effort; never throws.
+ */
+export async function notifyNoShowCancellation(args: {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  pickupDate?: string | null;
+  pickupTime?: string | null;
+  total?: number;
+  amountPaidOnline?: number;
+  paymentStatus?: string;
+}) {
+  const data = {
+    orderNumber: args.orderNumber,
+    customerName: args.customerName,
+    customerEmail: args.customerEmail,
+    customerPhone: args.customerPhone,
+    pickupDate: args.pickupDate ?? undefined,
+    pickupTime: args.pickupTime ?? undefined,
+    total: args.total ?? 0,
+    amountPaidOnline: args.amountPaidOnline ?? 0,
+    paymentStatus: args.paymentStatus,
+  };
+  await Promise.allSettled([
+    enqueueTemplate({
+      templateName: "customer-order-no-show",
+      to: args.customerEmail,
+      data,
+      idempotencyKey: `no-show-customer-${args.orderNumber}`,
+    }),
+    enqueueTemplate({
+      templateName: "owner-order-no-show",
+      to: "l.asweetbne@gmail.com",
+      data,
+      idempotencyKey: `no-show-owner-${args.orderNumber}`,
+    }),
+  ]);
+}
