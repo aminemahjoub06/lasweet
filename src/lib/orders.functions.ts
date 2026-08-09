@@ -876,7 +876,13 @@ export const markPickedUp = createServerFn({ method: "POST" })
     }
     if (!existing) throw new Error("Order not found.");
 
-    const patch: Record<string, unknown> = {
+    const patch: {
+      picked_up_at: string;
+      order_status: string;
+      payment_status?: string;
+      balance_due_cash?: number;
+      balance_collected_at?: string;
+    } = {
       picked_up_at: new Date().toISOString(),
       order_status: "collected",
     };
