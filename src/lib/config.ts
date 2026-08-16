@@ -152,7 +152,7 @@ export const NEXT_DAY_CUTOFF_MESSAGE =
 // Dates are Brisbane calendar dates in YYYY-MM-DD. Remove entries once past.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const BLOCKED_ORDER_DATES: string[] = ["2026-08-10"];
+export const BLOCKED_ORDER_DATES: string[] = ["2026-08-10", "2026-08-18"];
 
 export const BLOCKED_DATE_MESSAGE =
   "We're restocking — this date is unavailable";
@@ -164,6 +164,48 @@ export const BLOCKED_DATE_SERVER_MESSAGE =
 export function isDateBlocked(dateIso: string | null | undefined): boolean {
   if (!dateIso) return false;
   return BLOCKED_ORDER_DATES.includes(dateIso);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Ordering horizon — no orders can be placed after this Brisbane date.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const MAX_ORDER_DATE = "2026-08-27";
+
+export const BEYOND_MAX_DATE_MESSAGE = "Orders are not open for this date yet";
+
+export const BEYOND_MAX_DATE_SERVER_MESSAGE =
+  "Orders are not open for this date yet. Please choose a date on or before 27 August 2026.";
+
+/** True when the date falls after the last date open for ordering. */
+export function isDateBeyondMax(dateIso: string | null | undefined): boolean {
+  if (!dateIso) return false;
+  return dateIso > MAX_ORDER_DATE;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Blocked time windows (Brisbane local, every open day, pick-up and delivery)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const BLOCKED_TIME_WINDOWS: ReadonlyArray<{ start: string; end: string }> = [
+  { start: "17:30", end: "20:45" },
+];
+
+export const BLOCKED_TIME_MESSAGE = "This time slot is unavailable";
+
+export const BLOCKED_TIME_SERVER_MESSAGE =
+  "This time slot is unavailable. Please choose another time.";
+
+function toMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+
+/** True when a HH:MM slot falls inside a blocked window (inclusive bounds). */
+export function isTimeBlocked(time: string | null | undefined): boolean {
+  if (!time || !/^\d{1,2}:\d{2}$/.test(time)) return false;
+  const t = toMinutes(time);
+  return BLOCKED_TIME_WINDOWS.some((w) => t >= toMinutes(w.start) && t <= toMinutes(w.end));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -281,5 +323,6 @@ export function isDateAllowedForOrder(
 ): boolean {
   if (!dateIso) return false;
   if (isDateBlocked(dateIso)) return false;
+  if (isDateBeyondMax(dateIso)) return false;
   return dateIso >= getEarliestOrderDateIso(now);
 }

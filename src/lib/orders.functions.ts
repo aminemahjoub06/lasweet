@@ -13,6 +13,10 @@ import {
   NEXT_DAY_CUTOFF_MESSAGE,
   isDateBlocked,
   BLOCKED_DATE_SERVER_MESSAGE,
+  BEYOND_MAX_DATE_SERVER_MESSAGE,
+  BLOCKED_TIME_SERVER_MESSAGE,
+  isDateBeyondMax,
+  isTimeBlocked,
 } from "./config";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -382,6 +386,18 @@ export const createCashOrder = createServerFn({ method: "POST" })
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
+    if (isDateBeyondMax(data.customer.date?.trim())) {
+      throw new Response(
+        JSON.stringify({ error: BEYOND_MAX_DATE_SERVER_MESSAGE, code: "date_not_open" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    if (isTimeBlocked(data.customer.time?.trim())) {
+      throw new Response(
+        JSON.stringify({ error: BLOCKED_TIME_SERVER_MESSAGE, code: "time_unavailable" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
     await enforceOrderRateLimit({ endpoint: "createCashOrder", email: data.customer.email });
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { items: orderItems, payingPieces, giftApplies } = normalizeItems(data.items);
@@ -488,6 +504,18 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
     if (isDateBlocked(data.customer.date?.trim())) {
       throw new Response(
         JSON.stringify({ error: BLOCKED_DATE_SERVER_MESSAGE, code: "date_unavailable" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    if (isDateBeyondMax(data.customer.date?.trim())) {
+      throw new Response(
+        JSON.stringify({ error: BEYOND_MAX_DATE_SERVER_MESSAGE, code: "date_not_open" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    if (isTimeBlocked(data.customer.time?.trim())) {
+      throw new Response(
+        JSON.stringify({ error: BLOCKED_TIME_SERVER_MESSAGE, code: "time_unavailable" }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
