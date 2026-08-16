@@ -1,9 +1,12 @@
 import * as React from "react";
 import {
   BLOCKED_DATE_MESSAGE,
+  BEYOND_MAX_DATE_MESSAGE,
   getBrisbaneTodayIso,
   getEarliestOrderDateIso,
   isDateBlocked,
+  isDateBeyondMax,
+  MAX_ORDER_DATE,
 } from "@/lib/config";
 
 const D1_MESSAGE = "We need at least 1 day to prepare your order";
@@ -86,17 +89,25 @@ export function OrderDatePicker({
       const iso = isoOf(view.y, view.m, d);
       const tooEarly = iso <= today || iso < earliest;
       const blocked = isDateBlocked(iso);
+      const beyond = isDateBeyondMax(iso);
       out.push({
         iso,
         day: d,
-        disabled: tooEarly || blocked,
-        reason: tooEarly ? D1_MESSAGE : blocked ? BLOCKED_DATE_MESSAGE : null,
+        disabled: tooEarly || blocked || beyond,
+        reason: tooEarly
+          ? D1_MESSAGE
+          : blocked
+            ? BLOCKED_DATE_MESSAGE
+            : beyond
+              ? BEYOND_MAX_DATE_MESSAGE
+              : null,
       });
     }
     return out;
   }, [view.y, view.m, today, earliest]);
 
   const canGoBack = isoOf(view.y, view.m, 1) > earliest.slice(0, 7) + "-01";
+  const canGoForward = isoOf(view.y, view.m, 1) < MAX_ORDER_DATE.slice(0, 7) + "-01";
 
   function shiftMonth(delta: number) {
     setView((v) => {
@@ -145,8 +156,9 @@ export function OrderDatePicker({
             <button
               type="button"
               aria-label="Next month"
+              disabled={!canGoForward}
               onClick={() => shiftMonth(1)}
-              className="px-2 py-1 text-gold hover:bg-[color:var(--gold-soft)]/20"
+              className="px-2 py-1 text-gold hover:bg-[color:var(--gold-soft)]/20 disabled:opacity-30 disabled:hover:bg-transparent"
             >
               →
             </button>
