@@ -1459,8 +1459,8 @@ function IndexInner() {
               ))}
             </div>
             <div className="flex md:hidden items-center gap-3">
-              <button onClick={prev} className="text-gold border border-line h-9 w-9">←</button>
-              <button onClick={next} className="text-gold border border-line h-9 w-9">→</button>
+              <button onClick={prev} aria-label="Previous flavour" className="text-gold border border-line h-9 w-9"><span aria-hidden>←</span></button>
+              <button onClick={next} aria-label="Next flavour" className="text-gold border border-line h-9 w-9"><span aria-hidden>→</span></button>
             </div>
           </div>
         </div>
