@@ -14,7 +14,7 @@ import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { OrderDatePicker } from "@/components/OrderDatePicker";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, getFirstSelectableOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked, PICKUP_NO_SHOW_NOTICE, isDateBlocked, BLOCKED_DATE_MESSAGE } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, getFirstSelectableOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked, PICKUP_NO_SHOW_NOTICE, isDateBlocked, BLOCKED_DATE_MESSAGE, isDateBeyondMax, BEYOND_MAX_DATE_MESSAGE, isTimeBlocked, BLOCKED_TIME_MESSAGE } from "@/lib/config";
 import { PromoPopup, usePromoPopup } from "@/components/PromoPopup";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
@@ -1128,6 +1128,7 @@ function IndexInner() {
     const allowedSlots = getAvailableSlots(form.date);
     if (!allowedSlots.includes(form.time as (typeof allowedSlots)[number]))
       return setFormError("Please choose a valid time slot.");
+    if (isTimeBlocked(form.time)) return setFormError(BLOCKED_TIME_MESSAGE + ". Please choose another time.");
     if (form.notes.length > 1000) return setFormError("Notes must be under 1000 characters.");
     if (cartEntries.length === 0) return setFormError("Your selection is empty — add a flavour first.");
     // Lock in a snapshot of the cart so quantities can't change mid-review.
@@ -2673,6 +2674,10 @@ function CheckoutModal({
                         setFormError(BLOCKED_DATE_MESSAGE);
                         return;
                       }
+                      if (isDateBeyondMax(v)) {
+                        setFormError(BEYOND_MAX_DATE_MESSAGE);
+                        return;
+                      }
                       if (!isDateAllowedForOrder(v)) {
                         setFormError(NEXT_DAY_CUTOFF_MESSAGE);
                         return;
@@ -2776,15 +2781,23 @@ function CheckoutModal({
                         // One delivery per slot per day; pick-ups are unlimited.
                         const taken =
                           form.delivery === "delivery" && bookedSlots.includes(slot);
+                        const windowBlocked = isTimeBlocked(slot);
+                        const disabled = taken || windowBlocked;
                         return (
                           <button
                             key={slot}
                             type="button"
-                            disabled={taken}
-                            title={taken ? "Already booked" : undefined}
+                            disabled={disabled}
+                            title={
+                              windowBlocked
+                                ? BLOCKED_TIME_MESSAGE
+                                : taken
+                                  ? "Already booked"
+                                  : undefined
+                            }
                             onClick={() => updateForm("time", slot)}
                             className={`text-[11px] tracking-[0.18em] py-2 border transition-colors ${
-                              taken
+                              disabled
                                 ? "cursor-not-allowed line-through opacity-40 text-[color:var(--foreground)]/50 border-[color:var(--foreground)]/20"
                                 : form.time === slot
                                   ? "bg-gold text-ink border-gold"
