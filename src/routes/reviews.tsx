@@ -146,7 +146,7 @@ export function ReviewCard({ review }: { review: PublicReview }) {
       <p className="text-sm text-[color:var(--foreground)]/85 leading-relaxed whitespace-pre-wrap flex-1">
         {text}
         {truncated && (
-          <button type="button" onClick={() => setExpanded(true)} className="ml-1 text-gold underline text-xs">read more</button>
+          <button type="button" onClick={() => setExpanded(true)} className="ml-1 text-gold underline text-xs">read full review</button>
         )}
       </p>
       {review.photo_urls.length > 0 && (
