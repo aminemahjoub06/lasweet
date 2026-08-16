@@ -177,7 +177,7 @@ function LeaveReviewPage() {
               {previews.map((src, i) => (
                 <div key={i} className="relative w-24 h-24 border border-gold/30 overflow-hidden">
                   <img src={src} alt={`upload-${i + 1}`} className="w-full h-full object-cover" />
-                  <button type="button" onClick={() => removePhoto(i)} className="absolute top-1 right-1 bg-ink/90 border border-gold/50 text-gold w-6 h-6 flex items-center justify-center text-xs">✕</button>
+                  <button type="button" onClick={() => removePhoto(i)} aria-label={`Remove photo ${i + 1}`} title="Remove photo" className="absolute top-1 right-1 bg-ink/90 border border-gold/50 text-gold w-6 h-6 flex items-center justify-center text-xs"><span aria-hidden>✕</span></button>
                 </div>
               ))}
               {remaining > 0 && (
