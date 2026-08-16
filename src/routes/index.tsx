@@ -746,7 +746,7 @@ function HomeReviewCard({ review }: { review: PublicReview }) {
       <p className="text-sm text-[color:var(--foreground)]/85 leading-relaxed whitespace-pre-wrap flex-1">
         {text}
         {truncated && (
-          <button type="button" onClick={() => setExpanded(true)} className="ml-1 text-gold underline text-xs">read more</button>
+          <button type="button" onClick={() => setExpanded(true)} className="ml-1 text-gold underline text-xs">read full review</button>
         )}
       </p>
       {review.photo_urls.length > 0 && (
@@ -1459,8 +1459,8 @@ function IndexInner() {
               ))}
             </div>
             <div className="flex md:hidden items-center gap-3">
-              <button onClick={prev} className="text-gold border border-line h-9 w-9">←</button>
-              <button onClick={next} className="text-gold border border-line h-9 w-9">→</button>
+              <button onClick={prev} aria-label="Previous flavour" className="text-gold border border-line h-9 w-9"><span aria-hidden>←</span></button>
+              <button onClick={next} aria-label="Next flavour" className="text-gold border border-line h-9 w-9"><span aria-hidden>→</span></button>
             </div>
           </div>
         </div>
