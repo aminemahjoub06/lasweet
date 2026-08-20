@@ -18,6 +18,12 @@ import {
   isDateBeyondMax,
   isTimeBlocked,
 } from "./config";
+import {
+  ORDER_STATUS_REQUEST_ACCEPTED,
+  ORDER_STATUS_REQUEST_PENDING,
+  PAYMENT_LINK_TTL_HOURS,
+  REQUEST_ACTION_TTL_DAYS,
+} from "./config";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Schemas
@@ -923,4 +929,251 @@ export const markPickedUp = createServerFn({ method: "POST" })
       throw new Error("Could not mark this order as picked up.");
     }
     return { ok: true, orderNumber: existing.order_number };
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ORDER REQUEST FLOW (ORDER_MODE = 'request')
+// The customer submits a request — no payment. Stock is only decremented once
+// the accepted request is actually paid; the delivery slot is locked at
+// submission and released on decline / expiry.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Reserve daily stock for a saved order (used at payment time in request mode). */
+export async function reserveOrderStock(
+  items: OrderPayload["items"] | unknown,
+  deliveryDate: string | null | undefined,
+) {
+  if (!deliveryDate || !Array.isArray(items)) return;
+  await reserveStockOrThrow(items as OrderPayload["items"], deliveryDate);
+}
+
+const orderRequestSchema = orderPayloadBaseSchema
+  .extend({ origin: z.string().url().max(2048).optional() })
+  .superRefine(rejectSameDay);
+
+export const submitOrderRequest = createServerFn({ method: "POST" })
+  .inputValidator((input) => orderRequestSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { enforceOrderRateLimit } = await import("./rate-limit.server");
+    if (isDateBlocked(data.customer.date?.trim())) {
+      throw new Response(
+        JSON.stringify({ error: BLOCKED_DATE_SERVER_MESSAGE, code: "date_unavailable" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    if (isDateBeyondMax(data.customer.date?.trim())) {
+      throw new Response(
+        JSON.stringify({ error: BEYOND_MAX_DATE_SERVER_MESSAGE, code: "date_not_open" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    if (isTimeBlocked(data.customer.time?.trim())) {
+      throw new Response(
+        JSON.stringify({ error: BLOCKED_TIME_SERVER_MESSAGE, code: "time_unavailable" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    await enforceOrderRateLimit({
+      endpoint: "submitOrderRequest",
+      email: data.customer.email,
+    });
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { items: orderItems, payingPieces, giftApplies } = normalizeItems(data.items);
+    const deliveryQuote = await resolveDeliveryFee({
+      delivery: data.customer.delivery,
+      address: data.customer.address,
+      totalPieces: payingPieces,
+    });
+    const { subtotal, deliveryFee, discountAmount, discountCode, total } = computeTotals(
+      orderItems,
+      deliveryQuote.fee,
+      giftApplies,
+    );
+    const orderNumber = generateOrderNumber();
+
+    // Lock the delivery slot at submission so two requests can't hold it.
+    if (data.customer.delivery === "delivery") {
+      await lockDeliverySlotOrThrow(data.customer.date, data.customer.time, orderNumber);
+    }
+
+    const { error } = await supabaseAdmin.from("orders").insert({
+      order_number: orderNumber,
+      customer_name: data.customer.fullName,
+      customer_email: data.customer.email,
+      customer_phone: data.customer.phone,
+      business: data.customer.business || null,
+      delivery_method: data.customer.delivery,
+      delivery_address: data.customer.delivery === "delivery" ? data.customer.address : null,
+      delivery_date: data.customer.date || null,
+      delivery_time: data.customer.time,
+      order_type: data.customer.orderType || null,
+      notes: data.customer.notes || null,
+      items: orderItems,
+      subtotal,
+      delivery_fee: deliveryFee,
+      discount_amount: discountAmount,
+      discount_code: discountCode,
+      total,
+      payment_method: "pending",
+      payment_status: "request_pending",
+      payment_plan: "full",
+      amount_paid_online: 0,
+      balance_due_cash: 0,
+      order_status: ORDER_STATUS_REQUEST_PENDING,
+      request_submitted_at: new Date().toISOString(),
+      delivery_distance_km: deliveryQuote.distanceKm,
+      delivery_lat: deliveryQuote.lat,
+      delivery_lng: deliveryQuote.lng,
+      pending_delivery_quote: deliveryQuote.pending,
+    });
+
+    if (error) {
+      console.error("[submitOrderRequest] insert error", error);
+      await releaseDeliverySlot(orderNumber);
+      throw new Error("Could not submit your request. Please try again.");
+    }
+
+    // Owner accept/decline magic links + customer acknowledgement (best-effort).
+    try {
+      const {
+        createRequestToken,
+        requestEmailData,
+        siteOrigin,
+        getOrderByNumber,
+      } = await import("./order-requests.server");
+      const base = siteOrigin(data.origin ?? null);
+      const ttlHours = REQUEST_ACTION_TTL_DAYS * 24;
+      const acceptToken = await createRequestToken(orderNumber, "accept", ttlHours);
+      const declineToken = await createRequestToken(orderNumber, "decline", ttlHours);
+      const saved = await getOrderByNumber(orderNumber);
+      const { notifyOrderRequestSubmitted } = await import("./notifications.server");
+      await notifyOrderRequestSubmitted({
+        ...requestEmailData(saved ?? {}),
+        acceptUrl: `${base}/api/public/orders/request-action?token=${acceptToken}`,
+        declineUrl: `${base}/api/public/orders/request-action?token=${declineToken}`,
+      });
+    } catch (e) {
+      console.error("[submitOrderRequest] notify failed", e);
+    }
+
+    return { orderNumber, total };
+  });
+
+/** Details shown on the /pay/{orderNumber} page — token-gated, no PII beyond the basics. */
+export const getRequestPaymentContext = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        orderNumber: z.string().min(3).max(40),
+        token: z.string().min(10).max(200),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { readRequestToken, getOrderByNumber } = await import("./order-requests.server");
+    const lookup = await readRequestToken(data.token);
+    if (!lookup.ok || lookup.action !== "pay" || lookup.orderNumber !== data.orderNumber) {
+      return {
+        valid: false as const,
+        reason:
+          !lookup.ok && lookup.reason === "expired"
+            ? ("expired" as const)
+            : ("invalid" as const),
+      };
+    }
+    const order = await getOrderByNumber(data.orderNumber);
+    if (!order) return { valid: false as const, reason: "invalid" as const };
+    if (["paid", "deposit_paid"].includes(order.payment_status ?? "")) {
+      return { valid: false as const, reason: "paid" as const };
+    }
+    if (order.order_status !== ORDER_STATUS_REQUEST_ACCEPTED) {
+      return { valid: false as const, reason: "invalid" as const };
+    }
+    if (
+      order.payment_link_expires_at &&
+      new Date(order.payment_link_expires_at) < new Date()
+    ) {
+      return { valid: false as const, reason: "expired" as const };
+    }
+    return {
+      valid: true as const,
+      order: {
+        orderNumber: order.order_number as string,
+        customerName: order.customer_name as string,
+        items: (Array.isArray(order.items) ? order.items : []) as OrderPayload["items"],
+        subtotal: Number(order.subtotal ?? 0),
+        deliveryFee: Number(order.delivery_fee ?? 0),
+        total: Number(order.total ?? 0),
+        deliveryMethod: order.delivery_method as string,
+        deliveryAddress: (order.delivery_address as string) ?? null,
+        deliveryDate: (order.delivery_date as string) ?? null,
+        deliveryTime: (order.delivery_time as string) ?? null,
+        expiresAt: (order.payment_link_expires_at as string) ?? null,
+      },
+    };
+  });
+
+/** Start Stripe Checkout for an accepted request (deposit 50% or full). */
+export const startRequestPayment = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        orderNumber: z.string().min(3).max(40),
+        token: z.string().min(10).max(200),
+        paymentPlan: z.enum(["full", "deposit_50"]),
+        origin: z.string().url().max(2048).optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const {
+      readRequestToken,
+      getOrderByNumber,
+      createStripeSessionForOrder,
+    } = await import("./order-requests.server");
+    const lookup = await readRequestToken(data.token);
+    if (!lookup.ok || lookup.action !== "pay" || lookup.orderNumber !== data.orderNumber) {
+      throw new Error("This payment link is no longer valid.");
+    }
+    const order = await getOrderByNumber(data.orderNumber);
+    if (!order || order.order_status !== ORDER_STATUS_REQUEST_ACCEPTED) {
+      throw new Error("This payment link is no longer valid.");
+    }
+    if (
+      order.payment_link_expires_at &&
+      new Date(order.payment_link_expires_at) < new Date()
+    ) {
+      throw new Error("This payment link has expired. Please submit a new request.");
+    }
+    const { url } = await createStripeSessionForOrder(order, data.paymentPlan, data.origin ?? "");
+    return { url };
+  });
+
+/** Admin dashboard: accept or decline a pending request. */
+export const adminActionOrderRequest = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        password: z.string().min(1).max(200),
+        orderNumber: z.string().min(3).max(40),
+        action: z.enum(["accept", "decline"]),
+        origin: z.string().url().max(2048).optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const expected = process.env.ADMIN_DASHBOARD_PASSWORD;
+    if (!expected || data.password !== expected) {
+      throw new Error("Invalid admin password.");
+    }
+    const { acceptOrderRequest, declineOrderRequest } = await import(
+      "./order-requests.server"
+    );
+    const outcome =
+      data.action === "accept"
+        ? await acceptOrderRequest(data.orderNumber, data.origin ?? "")
+        : await declineOrderRequest(data.orderNumber);
+    if (!outcome.ok) throw new Error(outcome.message);
+    return { ok: true, status: outcome.status, paymentWindowHours: PAYMENT_LINK_TTL_HOURS };
   });

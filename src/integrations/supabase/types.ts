@@ -197,6 +197,36 @@ export type Database = {
         }
         Relationships: []
       }
+      order_request_tokens: {
+        Row: {
+          action: string
+          created_at: string
+          expires_at: string
+          id: string
+          order_number: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          order_number: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          order_number?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount_paid_online: number
@@ -228,6 +258,7 @@ export type Database = {
           order_number: string
           order_status: string | null
           order_type: string | null
+          payment_link_expires_at: string | null
           payment_method: string
           payment_plan: string
           payment_status: string
@@ -235,6 +266,9 @@ export type Database = {
           picked_up_at: string | null
           refunded_amount: number
           refunded_at: string | null
+          request_actioned_at: string | null
+          request_submitted_at: string | null
+          stock_reserved_at: string | null
           stripe_session_id: string | null
           subtotal: number
           total: number
@@ -270,6 +304,7 @@ export type Database = {
           order_number: string
           order_status?: string | null
           order_type?: string | null
+          payment_link_expires_at?: string | null
           payment_method: string
           payment_plan?: string
           payment_status?: string
@@ -277,6 +312,9 @@ export type Database = {
           picked_up_at?: string | null
           refunded_amount?: number
           refunded_at?: string | null
+          request_actioned_at?: string | null
+          request_submitted_at?: string | null
+          stock_reserved_at?: string | null
           stripe_session_id?: string | null
           subtotal: number
           total: number
@@ -312,6 +350,7 @@ export type Database = {
           order_number?: string
           order_status?: string | null
           order_type?: string | null
+          payment_link_expires_at?: string | null
           payment_method?: string
           payment_plan?: string
           payment_status?: string
@@ -319,6 +358,9 @@ export type Database = {
           picked_up_at?: string | null
           refunded_amount?: number
           refunded_at?: string | null
+          request_actioned_at?: string | null
+          request_submitted_at?: string | null
+          stock_reserved_at?: string | null
           stripe_session_id?: string | null
           subtotal?: number
           total?: number

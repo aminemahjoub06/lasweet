@@ -35,7 +35,9 @@ async function handleCleanup(request: Request) {
 
   const { data: candidates, error: selErr } = await supabaseAdmin
     .from("orders")
-    .select("id, order_number, stripe_session_id, notes, total, items, delivery_date")
+    .select(
+      "id, order_number, stripe_session_id, notes, total, items, delivery_date, order_status, stock_reserved_at",
+    )
     .eq("payment_method", "online")
     .eq("payment_status", "pending")
     .lt("created_at", cutoff);
@@ -95,8 +97,14 @@ async function handleCleanup(request: Request) {
       rowsUpdated++;
       // Release reserved stock so other customers can book this date.
       try {
-        const { restoreOrderStock } = await import("@/lib/orders.functions");
-        await restoreOrderStock(order.items, order.delivery_date);
+        // Request-mode orders only take stock at payment time — never return
+        // units that were never reserved.
+        const neverReserved =
+          order.order_status === "accepted_awaiting_payment" && !order.stock_reserved_at;
+        if (!neverReserved) {
+          const { restoreOrderStock } = await import("@/lib/orders.functions");
+          await restoreOrderStock(order.items, order.delivery_date);
+        }
       } catch (err) {
         console.error("[cleanup-pending] restore stock failed", order.order_number, err);
       }

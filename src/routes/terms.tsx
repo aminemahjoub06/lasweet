@@ -52,13 +52,22 @@ function TermsPage() {
               All prices displayed on our website are in Australian Dollars (AUD) and are inclusive of
               applicable taxes unless otherwise stated.
             </p>
+            <p className="mb-3">
+              <strong>Order request process.</strong> Due to high demand and the limited availability of our
+              premium ingredients, all orders placed on our website are currently submitted as
+              <em> requests</em>. No payment is taken when you submit a request. We review availability and
+              respond within 24 hours. If your request is approved, we email you a secure payment link
+              valid for 24 hours; your order becomes firm once payment is completed. If the link is not used
+              within 24 hours, the reservation expires and the time slot is released. If we cannot fulfil your
+              request, we decline it and you are charged nothing.
+            </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>
-                <strong>Pay in full now:</strong> Pay 100% securely by card via Stripe at checkout.
+                <strong>Pay in full:</strong> Pay 100% securely by card via Stripe on the payment link.
                 Nothing else to settle on pick-up or delivery.
               </li>
               <li>
-                <strong>50% deposit:</strong> Pay a 50% deposit securely by card via Stripe at checkout
+                <strong>50% deposit:</strong> Pay a 50% deposit securely by card via Stripe on the payment link
                 to secure your order. The remaining 50% is collected in cash at pick-up or delivery.
               </li>
             </ul>

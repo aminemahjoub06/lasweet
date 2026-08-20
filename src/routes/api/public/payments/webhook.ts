@@ -100,12 +100,29 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           const balanceDueCash = Math.max(0, total - amountPaidOnline);
           const newStatus = isDeposit ? "deposit_paid" : "paid";
 
+          // Request mode: stock is only committed once the customer actually
+          // pays. Reserve it here, then mark the request as a firm order.
+          const wasRequest = existing.order_status === "accepted_awaiting_payment";
+          if (wasRequest && !existing.stock_reserved_at) {
+            try {
+              const { reserveOrderStock } = await import("@/lib/orders.functions");
+              await reserveOrderStock(existing.items, existing.delivery_date);
+              await supabaseAdmin
+                .from("orders")
+                .update({ stock_reserved_at: new Date().toISOString() })
+                .eq("id", existing.id);
+            } catch (e) {
+              console.error("[stripe-webhook] request stock reserve failed", e);
+            }
+          }
+
           const { data: updated, error } = await supabaseAdmin
             .from("orders")
             .update({
               payment_status: newStatus,
               amount_paid_online: amountPaidOnline,
               balance_due_cash: balanceDueCash,
+              ...(wasRequest ? { order_status: "confirmed" } : {}),
             })
             .eq("id", existing.id)
             .select("*")
@@ -161,7 +178,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             const q = supabaseAdmin
               .from("orders")
               .update({ payment_status: "failed" })
-              .select("items, delivery_date, payment_status");
+              .select("items, delivery_date, payment_status, stock_reserved_at, order_status");
             const { data: updatedRow } = await (orderNumber
               ? q.eq("order_number", orderNumber)
               : q.eq("stripe_session_id", sessionId!)
@@ -175,7 +192,12 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             }
             // Release the daily-stock reservation now that payment failed.
             try {
-              if (updatedRow?.delivery_date) {
+              // Request-mode orders only reserve stock at payment time — never
+              // restore units that were never taken.
+              const neverReserved =
+                updatedRow?.order_status === "accepted_awaiting_payment" &&
+                !updatedRow?.stock_reserved_at;
+              if (updatedRow?.delivery_date && !neverReserved) {
                 const { restoreOrderStock } = await import(
                   "@/lib/orders.functions"
                 );
