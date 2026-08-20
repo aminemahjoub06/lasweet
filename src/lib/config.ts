@@ -4,6 +4,31 @@
 export const PICKUP_ADDRESS =
   "803b Stanley Street, Woolloongabba QLD 4102 (next to Coles)";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Order mode — 'request' (manual approval, no payment upfront) or 'instant'
+// (the classic pay-now flow). Flip this single value to switch back.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const ORDER_MODE: "request" | "instant" = "request";
+
+/** Hours we promise to review an order request within. */
+export const REQUEST_REVIEW_HOURS = 24;
+
+/** Hours a payment link stays valid once a request has been accepted. */
+export const PAYMENT_LINK_TTL_HOURS = 24;
+
+/** Days an owner accept/decline magic link stays valid. */
+export const REQUEST_ACTION_TTL_DAYS = 7;
+
+export const REQUEST_MODE_NOTICE =
+  "⏳ Please note: due to high demand and limited availability of our premium ingredients, all orders are currently submitted as requests. We confirm availability within 24 hours before any payment is taken.";
+
+/** Order request lifecycle statuses stored in orders.order_status. */
+export const ORDER_STATUS_REQUEST_PENDING = "request_pending";
+export const ORDER_STATUS_REQUEST_ACCEPTED = "accepted_awaiting_payment";
+export const ORDER_STATUS_REQUEST_DECLINED = "request_declined";
+export const ORDER_STATUS_REQUEST_EXPIRED = "request_expired";
+
 // Geographic origin used for distance-based delivery pricing.
 // Coordinates are for 803b Stanley Street, Woolloongabba QLD 4102.
 export const PICKUP_ORIGIN = { lat: -27.4988, lng: 153.0345 } as const;

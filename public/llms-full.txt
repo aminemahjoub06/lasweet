@@ -31,6 +31,7 @@ Desserts are made in a kitchen that also handles nuts, dairy, gluten and eggs. C
 
 ## Ordering
 - Orders are placed online at https://la-sweet-bne.com
+- Orders are currently submitted as requests. L&A Sweet confirms availability within 24 hours, then sends a secure payment link. No payment is taken at submission. Payment links are valid for 24 hours; if unpaid, the reservation expires and the delivery time slot is released.
 - Current promotion (valid until 28 August 2026): Buy 8, get 2 free — order 8 pieces or more and 2 free mystery pieces (chef’s choice) are automatically added to your cart at A$0.
 - Minimum lead time: 1 day (D+1) before pick-up or delivery — same-day orders are not accepted
 - Payment options:

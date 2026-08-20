@@ -192,6 +192,112 @@ export async function notifyOwnerNewOrder(args: NotifyArgs) {
  * Sends owner email when an order has been refunded (full or partial) via Stripe.
  * Best-effort; never throws.
  */
+// ─────────────────────────────────────────────────────────────────────────────
+// Order request flow (ORDER_MODE = 'request')
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type OrderRequestEmailData = {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  business?: string;
+  orderType?: string;
+  notes?: string;
+  items: Array<{ name: string; qty: number; price: number; sizeLabel?: string }>;
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
+  deliveryMethod: "delivery" | "pickup";
+  deliveryAddress?: string;
+  deliveryDate?: string;
+  deliveryTime?: string;
+  giftIncluded?: boolean;
+};
+
+/** Customer "request received" + owner "new request" with accept/decline links. */
+export async function notifyOrderRequestSubmitted(
+  args: OrderRequestEmailData & { acceptUrl: string; declineUrl: string },
+) {
+  await Promise.allSettled([
+    enqueueTemplate({
+      templateName: "order-request-received",
+      to: args.customerEmail,
+      data: args,
+      idempotencyKey: `request-received-${args.orderNumber}`,
+    }),
+    enqueueTemplate({
+      templateName: "owner-new-order-request",
+      to: "l.asweetbne@gmail.com",
+      data: args,
+      idempotencyKey: `request-owner-${args.orderNumber}`,
+    }),
+  ]);
+}
+
+/** Customer email with the secure payment link after the owner accepts. */
+export async function notifyOrderRequestAccepted(
+  args: OrderRequestEmailData & { payUrl: string },
+) {
+  await enqueueTemplate({
+    templateName: "order-request-accepted",
+    to: args.customerEmail,
+    data: args,
+    idempotencyKey: `request-accepted-${args.orderNumber}`,
+  });
+}
+
+/** Customer email when the owner declines a request. */
+export async function notifyOrderRequestDeclined(args: {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  deliveryDate?: string | null;
+}) {
+  await enqueueTemplate({
+    templateName: "order-request-declined",
+    to: args.customerEmail,
+    data: { ...args, deliveryDate: args.deliveryDate ?? undefined },
+    idempotencyKey: `request-declined-${args.orderNumber}`,
+  });
+}
+
+/** Customer + owner emails when an accepted request is not paid in time. */
+export async function notifyOrderRequestExpired(args: {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  deliveryMethod?: string | null;
+  deliveryDate?: string | null;
+  deliveryTime?: string | null;
+  total?: number;
+}) {
+  const data = {
+    ...args,
+    deliveryMethod: args.deliveryMethod ?? undefined,
+    deliveryDate: args.deliveryDate ?? undefined,
+    deliveryTime: args.deliveryTime ?? undefined,
+  };
+  await Promise.allSettled([
+    enqueueTemplate({
+      templateName: "order-request-expired",
+      to: args.customerEmail,
+      data,
+      idempotencyKey: `request-expired-customer-${args.orderNumber}`,
+    }),
+    enqueueTemplate({
+      templateName: "owner-order-request-expired",
+      to: "l.asweetbne@gmail.com",
+      data,
+      idempotencyKey: `request-expired-owner-${args.orderNumber}`,
+    }),
+  ]);
+}
+
+/**
+ * Sends owner email when an order has been refunded (full or partial) via Stripe.
+ * Best-effort; never throws.
+ */
 export async function notifyOwnerOrderRefunded(args: {
   orderNumber: string;
   customerEmail: string;

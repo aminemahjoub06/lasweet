@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Fragment, useState } from "react";
 import { listAdminOrders } from "@/lib/admin.functions";
-import { markBalanceCollected, markPickedUp } from "@/lib/orders.functions";
+import { markBalanceCollected, markPickedUp, adminActionOrderRequest } from "@/lib/orders.functions";
 import { getBrisbaneTodayIso } from "@/lib/config";
 
 export const Route = createFileRoute("/admin/orders")({
@@ -48,6 +48,7 @@ function AdminOrdersPage() {
   const fetchOrders = useServerFn(listAdminOrders);
   const collectBalance = useServerFn(markBalanceCollected);
   const markCollected = useServerFn(markPickedUp);
+  const actionRequest = useServerFn(adminActionOrderRequest);
   const [password, setPassword] = useState("");
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -55,6 +56,7 @@ function AdminOrdersPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [collectingId, setCollectingId] = useState<string | null>(null);
   const [pickingUpId, setPickingUpId] = useState<string | null>(null);
+  const [requestBusyId, setRequestBusyId] = useState<string | null>(null);
 
   async function load(e?: React.FormEvent) {
     e?.preventDefault();
@@ -108,6 +110,28 @@ function AdminOrdersPage() {
     }
   }
 
+  async function handleRequest(o: Order, action: "accept" | "decline") {
+    if (requestBusyId) return;
+    const verb = action === "accept" ? "Accept" : "Decline";
+    if (!confirm(`${verb} request ${o.order_number}?`)) return;
+    setRequestBusyId(o.id);
+    try {
+      await actionRequest({
+        data: {
+          password,
+          orderNumber: o.order_number,
+          action,
+          origin: window.location.origin,
+        },
+      });
+      await load();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : `Failed to ${action} the request.`);
+    } finally {
+      setRequestBusyId(null);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-ink text-foreground px-4 py-10">
       <div className="max-w-6xl mx-auto">
@@ -158,6 +182,7 @@ function AdminOrdersPage() {
                   <th className="text-left px-3 py-2">Method</th>
                   <th className="text-left px-3 py-2">Pay</th>
                   <th className="text-left px-3 py-2">Status</th>
+                  <th className="text-left px-3 py-2">Request</th>
                   <th className="text-right px-3 py-2">Total</th>
                   <th className="text-right px-3 py-2">Balance to collect</th>
                   <th className="text-right px-3 py-2">Pick-up</th>
@@ -194,6 +219,39 @@ function AdminOrdersPage() {
                         >
                           {o.payment_status}
                         </span>
+                      </td>
+                      <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                        {o.order_status === "request_pending" ? (
+                          <div className="flex flex-col items-start gap-1">
+                            <span className="text-yellow-400 text-[11px]">Request pending</span>
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                disabled={requestBusyId === o.id}
+                                onClick={() => handleRequest(o, "accept")}
+                                className="text-[9px] tracking-[0.22em] uppercase text-ink bg-gold px-2 py-1 hover:bg-[color:var(--gold-soft)] disabled:opacity-50"
+                              >
+                                {requestBusyId === o.id ? "…" : "Accept"}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={requestBusyId === o.id}
+                                onClick={() => handleRequest(o, "decline")}
+                                className="text-[9px] tracking-[0.22em] uppercase text-red-300 border border-red-400/50 px-2 py-1 hover:bg-red-400 hover:text-ink disabled:opacity-50"
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          </div>
+                        ) : o.order_status === "accepted_awaiting_payment" ? (
+                          <span className="text-gold text-[11px]">Awaiting payment</span>
+                        ) : o.order_status === "request_declined" ? (
+                          <span className="text-red-400 text-[11px]">Declined</span>
+                        ) : o.order_status === "request_expired" ? (
+                          <span className="text-[color:var(--foreground)]/60 text-[11px]">Expired</span>
+                        ) : (
+                          <span className="text-[color:var(--foreground)]/40">—</span>
+                        )}
                       </td>
                       <td className="px-3 py-2 text-right text-gold">${Number(o.total).toFixed(2)}</td>
                       <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>

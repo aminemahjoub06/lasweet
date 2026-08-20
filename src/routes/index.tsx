@@ -9,12 +9,13 @@ import {
   createStripeCheckout,
   getDailyStockForDate,
   getBookedDeliverySlots,
+  submitOrderRequest,
 } from "@/lib/orders.functions";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { FlavourCoverflow } from "@/components/FlavourCoverflow";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { OrderDatePicker } from "@/components/OrderDatePicker";
-import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, getFirstSelectableOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked, PICKUP_NO_SHOW_NOTICE, isDateBlocked, BLOCKED_DATE_MESSAGE, isDateBeyondMax, BEYOND_MAX_DATE_MESSAGE, isTimeBlocked, BLOCKED_TIME_MESSAGE } from "@/lib/config";
+import { PICKUP_ADDRESS, getAvailableSlots, getBrisbaneTodayIso, getEarliestOrderDateIso, getFirstSelectableOrderDateIso, isDateAllowedForOrder, NEXT_DAY_CUTOFF_MESSAGE, PROMO_RIBBON_TEXT, GIFT_MIN_PIECES, GIFT_QTY, GIFT_KEY, GIFT_NAME, GIFT_ITEM_NAME, GIFT_DESCRIPTION, isGiftUnlocked, PICKUP_NO_SHOW_NOTICE, isDateBlocked, BLOCKED_DATE_MESSAGE, isDateBeyondMax, BEYOND_MAX_DATE_MESSAGE, isTimeBlocked, BLOCKED_TIME_MESSAGE, ORDER_MODE, REQUEST_MODE_NOTICE, REQUEST_REVIEW_HOURS } from "@/lib/config";
 import { PromoPopup, usePromoPopup } from "@/components/PromoPopup";
 import { getHomeReviews, type PublicReview } from "@/lib/reviews.functions";
 import { StarDisplay } from "@/components/Stars";
@@ -215,7 +216,7 @@ export const Route = createFileRoute("/")({
                   name: "How do I order from L&A Sweet?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "Orders are placed online at https://la-sweet-bne.com. Minimum 1 day (D+1) in advance — same-day orders are not accepted. You can choose to pay a 50% deposit online and the balance in cash on collection, or pay in full online via Stripe.",
+                    text: "Orders are placed online at https://la-sweet-bne.com. Orders are currently submitted as requests: no payment is taken at submission. We confirm availability within 24 hours and then send a secure payment link, where you can choose to pay a 50% deposit online with the balance in cash on collection, or pay in full online via Stripe. Minimum 1 day (D+1) in advance — same-day orders are not accepted.",
                   },
                 },
                 {
@@ -973,6 +974,9 @@ function IndexInner() {
   const [paying, setPaying] = useState(false);
   const [paymentPlan, setPaymentPlan] = useState<"full" | "deposit_50" | null>(null);
   const submitOnlineOrder = useServerFn(createStripeCheckout);
+  // Request mode: no payment at submission — the owner approves first.
+  const requestMode = ORDER_MODE === "request";
+  const sendOrderRequest = useServerFn(submitOrderRequest);
 
   // Delivery slots already booked for the selected date (delivery only).
   const fetchBookedSlots = useServerFn(getBookedDeliverySlots);
@@ -1170,7 +1174,7 @@ function IndexInner() {
 
   const payOrder = async () => {
     if (paying || orderSnapshot.length === 0) return;
-    if (!paymentPlan) {
+    if (!requestMode && !paymentPlan) {
       setFormError("Please choose a payment option.");
       return;
     }
@@ -1212,6 +1216,16 @@ function IndexInner() {
           sizeLabel: i.sizeLabel,
         })),
       };
+
+      if (requestMode) {
+        const res = await sendOrderRequest({
+          data: { ...payload, origin: window.location.origin },
+        });
+        setCart({});
+        setOrderRef(res.orderNumber);
+        setCheckoutStep("confirmed");
+        return;
+      }
 
       const { url } = await submitOnlineOrder({
         data: { ...payload, origin: window.location.origin, paymentPlan },
@@ -2391,6 +2405,7 @@ function IndexInner() {
         paying={paying}
         payOrder={payOrder}
         orderRef={orderRef}
+        requestMode={requestMode}
         resetOrder={resetOrder}
         paymentPlan={paymentPlan}
         setPaymentPlan={setPaymentPlan}
@@ -2467,6 +2482,7 @@ function CheckoutModal({
   paying,
   payOrder,
   orderRef,
+  requestMode,
   resetOrder,
   paymentPlan,
   setPaymentPlan,
@@ -2494,6 +2510,7 @@ function CheckoutModal({
   paying: boolean;
   payOrder: () => void;
   orderRef: string | null;
+  requestMode: boolean;
   resetOrder: () => void;
   paymentPlan: "full" | "deposit_50" | null;
   setPaymentPlan: (m: "full" | "deposit_50" | null) => void;
@@ -2516,7 +2533,7 @@ function CheckoutModal({
   const steps: { k: CheckoutStep; l: string }[] = [
     { k: "details", l: "1 · Details" },
     { k: "review", l: "2 · Review" },
-    { k: "payment", l: "3 · Payment" },
+    { k: "payment", l: requestMode ? "3 · Submit request" : "3 · Payment" },
   ];
   const order: CheckoutStep[] = ["details", "review", "payment", "confirmed"];
 
@@ -2590,6 +2607,11 @@ function CheckoutModal({
           {/* STEP: DETAILS */}
           {step === "details" && (
             <form onSubmit={validateDetails} className="space-y-5" noValidate>
+              {requestMode && (
+                <p className="text-[12px] leading-relaxed border border-gold/30 bg-ink-3/60 px-4 py-3 text-[color:var(--foreground)]/80">
+                  {REQUEST_MODE_NOTICE}
+                </p>
+              )}
               <div>
                 <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">
                   Your details
@@ -3109,14 +3131,32 @@ function CheckoutModal({
           {step === "payment" && (
             <div className="space-y-5">
               <div>
-                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">Payment</div>
+                <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">
+                  {requestMode ? "Submit request" : "Payment"}
+                </div>
                 <h3 className="font-serif-display text-2xl">
-                  Choose your <span className="italic text-gold">payment method</span>
+                  {requestMode ? (
+                    <>
+                      Send your <span className="italic text-gold">order request</span>
+                    </>
+                  ) : (
+                    <>
+                      Choose your <span className="italic text-gold">payment method</span>
+                    </>
+                  )}
                 </h3>
                 <p className="mt-2 text-sm text-[color:var(--foreground)]/70 leading-relaxed">
-                  Pay securely online with card now, or pay in cash on pick-up or delivery.
+                  {requestMode
+                    ? `No payment is taken now. We'll review availability and reply within ${REQUEST_REVIEW_HOURS} hours with a secure payment link if your request is approved.`
+                    : "Pay securely online with card now, or pay in cash on pick-up or delivery."}
                 </p>
               </div>
+
+              {requestMode && (
+                <p className="text-[12px] leading-relaxed border border-gold/30 bg-ink-3/60 px-4 py-3 text-[color:var(--foreground)]/80">
+                  {REQUEST_MODE_NOTICE}
+                </p>
+              )}
 
               {/* Final order summary */}
               <div className="border border-gold/30 bg-ink-3/40 p-5 space-y-3">
@@ -3184,7 +3224,7 @@ function CheckoutModal({
               </div>
 
               {/* Payment options — 50% deposit or pay in full. */}
-              {(() => {
+              {!requestMode && (() => {
                 const fee = effectiveDeliveryFee;
                 const orderTotal = Math.round((snapshotTotal + fee) * 100) / 100;
                 const deposit = Math.round((orderTotal / 2) * 100) / 100;
@@ -3281,10 +3321,14 @@ function CheckoutModal({
                   className="flex-1 bg-gold text-ink text-[11px] tracking-[0.24em] uppercase py-4 hover:bg-[color:var(--gold-soft)] transition-colors disabled:opacity-50 disabled:cursor-wait"
                 >
                   {paying
-                    ? "Processing…"
-                    : paymentPlan
-                      ? "Continue to Secure Payment →"
-                      : "Choose a payment option"}
+                    ? requestMode
+                      ? "Submitting…"
+                      : "Processing…"
+                    : requestMode
+                      ? "Submit order request →"
+                      : paymentPlan
+                        ? "Continue to Secure Payment →"
+                        : "Choose a payment option"}
                 </button>
               </div>
             </div>
@@ -3296,18 +3340,39 @@ function CheckoutModal({
               <div className="mx-auto mb-6 inline-flex h-14 w-14 items-center justify-center border border-gold/50 text-gold text-xl">
                 ✓
               </div>
-              <div className="eyebrow justify-center mb-4 inline-flex">Order Confirmed</div>
+              <div className="eyebrow justify-center mb-4 inline-flex">
+                {requestMode ? "Request received" : "Order Confirmed"}
+              </div>
               <h3 className="font-serif-display text-3xl mb-4">
-                Thank you — your <span className="italic text-gold">order is confirmed</span>.
+                {requestMode ? (
+                  <>
+                    Thank you — your <span className="italic text-gold">request is received</span>.
+                  </>
+                ) : (
+                  <>
+                    Thank you — your <span className="italic text-gold">order is confirmed</span>.
+                  </>
+                )}
               </h3>
               <p className="text-sm text-[color:var(--foreground)]/75 max-w-md mx-auto leading-relaxed">
-                A confirmation has been sent to{" "}
-                <span className="text-gold">{form.email}</span>. Payment will be
-                collected in cash on {form.delivery === "delivery" ? "delivery" : "pick-up"}.
+                {requestMode ? (
+                  <>
+                    We'll review your request and confirm availability within{" "}
+                    {REQUEST_REVIEW_HOURS} hours. You'll receive an email at{" "}
+                    <span className="text-gold">{form.email}</span> as soon as it's approved, with a
+                    secure payment link. No payment has been taken.
+                  </>
+                ) : (
+                  <>
+                    A confirmation has been sent to{" "}
+                    <span className="text-gold">{form.email}</span>. Payment will be collected in
+                    cash on {form.delivery === "delivery" ? "delivery" : "pick-up"}.
+                  </>
+                )}
               </p>
               <div className="mt-8 inline-block border border-gold/40 bg-ink-3/60 px-6 py-4">
                 <div className="text-[10px] tracking-[0.28em] uppercase text-[color:var(--foreground)]/55 mb-1">
-                  Order reference
+                  {requestMode ? "Request reference" : "Order reference"}
                 </div>
                 <div className="font-serif-display text-2xl text-gold tracking-wider">
                   {orderRef}
@@ -3315,6 +3380,7 @@ function CheckoutModal({
               </div>
               <div className="mt-6 mx-auto max-w-sm border border-gold/30 bg-ink-3/40 px-5 py-4 text-left text-[12px] leading-relaxed text-[color:var(--foreground)]/80">
                 <div className="text-[10px] tracking-[0.28em] uppercase text-gold mb-2">
+                  {requestMode ? "Requested " : ""}
                   {form.delivery === "delivery" ? "Delivery" : "Pick-up"} details
                 </div>
                 {form.delivery === "pickup" ? (
